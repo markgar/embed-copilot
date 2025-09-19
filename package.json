@@ -9,8 +9,8 @@
         "start": "NODE_ENV=production node ./src/server.js",
         "start:debug": "NODE_ENV=production node --inspect=9229 ./src/server.js"
     },
-    "author": "",
-    "license": "ISC",
+    "author": "Mark Garner",
+    "license": "MIT",
     "dependencies": {
         "@azure/msal-node": "^1.12.0",
         "axios": "^1.12.2",
