@@ -46,8 +46,65 @@ function loadConfig() {
     return enhancedConfig;
 }
 
+/**
+ * Validate configuration to ensure all required fields are present and valid
+ * @param {Object} [config] - Optional config object to validate (defaults to loadConfig())
+ * @returns {string|null} Error message if validation fails, null if valid
+ */
+function validateConfig(config = null) {
+    if (!config) {
+        config = loadConfig();
+    }
+
+    const guid = require("guid");
+
+    if (!config.clientId) {
+        return "ClientId is empty. Please register your application as Native app in https://dev.powerbi.com/apps and fill Client Id in config.json.";
+    }
+
+    if (!guid.isGuid(config.clientId)) {
+        return "ClientId must be a Guid object. Please register your application as Native app in https://dev.powerbi.com/apps and fill Client Id in config.json.";
+    }
+
+    if (!config.powerBIReportId) {
+        return "ReportId is empty. Please select a report you own and fill its Id in config.json.";
+    }
+
+    if (!guid.isGuid(config.powerBIReportId)) {
+        return "ReportId must be a Guid object. Please select a report you own and fill its Id in config.json.";
+    }
+
+    if (!config.powerBIGroupId) {
+        return "WorkspaceId is empty. Please select a group you own and fill its Id in config.json.";
+    }
+
+    if (!guid.isGuid(config.powerBIGroupId)) {
+        return "WorkspaceId must be a Guid object. Please select a workspace you own and fill its Id in config.json.";
+    }
+
+    if (!config.authorityUrl) {
+        return "AuthorityUrl is empty. Please fill valid AuthorityUrl in config.json.";
+    }
+
+    // Service Principal validation
+    if (!config.clientSecret || !config.clientSecret.trim()) {
+        return "ClientSecret is empty. Please fill Power BI ServicePrincipal ClientSecret in config.json.";
+    }
+
+    if (!config.tenantId) {
+        return "TenantId is empty. Please fill the TenantId in config.json.";
+    }
+
+    if (!guid.isGuid(config.tenantId)) {
+        return "TenantId must be a Guid object. Please select a workspace you own and fill its Id in config.json.";
+    }
+
+    return null; // No validation errors
+}
+
 module.exports = { 
     loadConfig,
+    validateConfig,
     constants: {
         METADATA_CACHE_DURATION
     }
