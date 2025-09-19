@@ -169,17 +169,18 @@ Use **parallel development** with the current code (`src/`) running alongside th
    - [x] **🧪 BUILD TEST**: Verify `src-v2/` still starts with new services
    - [x] **🧪 INTEGRATION TEST**: Run test suite against `src-v2/` if endpoints still work
 
-### Session 2B: PowerBI Service (Single Session)  
+### Session 2B: PowerBI Service (Single Session) ✅ **COMPLETED**
 **Goal**: Consolidate ALL Power BI related functionality into one comprehensive service
 
-**Step 2B-1: Create PowerBI Service**
-   - [ ] Create `src-v2/services/powerbiService.js` with ALL Power BI logic:
+**Step 2B-1: Create PowerBI Service** ✅ **COMPLETED**
+   - [x] Create `src-v2/services/powerbiService.js` with ALL Power BI logic:
      - Authentication functions from `src/authentication.js`
      - Embed logic from `src/embedConfigService.js`  
      - Metadata logic from `src/datasetMetadata.js`
      - Integration with cacheService (created in Phase 2A) for metadata caching
-   - [ ] Design as class with methods: `getAccessToken()`, `getEmbedInfo()`, `getDatasetMetadata()`, `getDatasetIdFromReport()`
-   - [ ] **🧪 UNIT TEST**: Test PowerBI service methods individually
+   - [x] Design as class with methods: `getAccessToken()`, `getEmbedInfo()`, `getDatasetMetadata()`, `getDatasetIdFromReport()`
+   - [x] **🧪 UNIT TEST**: Test PowerBI service methods individually (18 tests passing)
+   - [x] **🧪 INTEGRATION TEST**: Test PowerBI service integration with other services (12 tests passing)
 
 **Step 2B-2: Update Endpoints to Use PowerBI Service**
    - [ ] Update `/getEmbedToken` route in `src-v2/` to use powerbiService
