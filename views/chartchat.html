@@ -1,0 +1,79 @@
+<!-- Copyright (c) Microsoft Corporation.
+Licensed under the MIT license. -->
+
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+
+    <link rel="shortcut icon" href="#" />
+    <link rel="stylesheet" href="/css/bootstrap.min.css">
+    <link rel="stylesheet" href="/css/chartchat.css">
+    <title>Chart Chat</title>
+</head>
+
+<body>
+    <!-- TreeView Panel -->
+    <div class="treeview-panel" id="treeview-panel">
+        <div class="treeview-header">
+            <span class="treeview-title">Dataset Schema</span>
+            <button id="treeview-toggle" class="treeview-toggle" title="Toggle Schema Panel">◀</button>
+        </div>
+        <div class="treeview-controls">
+            <button id="expand-all-btn" class="treeview-control-btn" title="Expand All Tables">Expand All</button>
+            <button id="collapse-all-btn" class="treeview-control-btn" title="Collapse All Tables">Collapse All</button>
+        </div>
+        <div class="treeview-content" id="treeview-content">
+            <div class="treeview-loading">Loading schema...</div>
+        </div>
+    </div>
+
+    <!-- Main Content Area -->
+    <div class="main-content">
+        <!-- Data control buttons positioned in top left (hidden by default) -->
+        <button id="add-totalsales-btn" class="data-control-btn" style="position: fixed; top: 50px; left: 10px; z-index: 1000; background: #0078d4; color: white; border: none; padding: 10px 15px; border-radius: 4px; cursor: pointer; font-size: 14px; width: auto; white-space: nowrap; display: none;">Show TotalSales</button>
+        <button id="add-totalunits-btn" class="data-control-btn" style="position: fixed; top: 90px; left: 10px; z-index: 1000; background: #0078d4; color: white; border: none; padding: 10px 15px; border-radius: 4px; cursor: pointer; font-size: 14px; width: auto; white-space: nowrap; display: none;">Show TotalUnits</button>
+        <button id="add-month-btn" class="data-control-btn" style="position: fixed; top: 130px; left: 10px; z-index: 1000; background: #0078d4; color: white; border: none; padding: 10px 15px; border-radius: 4px; cursor: pointer; font-size: 14px; width: auto; white-space: nowrap; display: none;">Show by Month</button>
+        <button id="add-district-btn" class="data-control-btn" style="position: fixed; top: 170px; left: 10px; z-index: 1000; background: #0078d4; color: white; border: none; padding: 10px 15px; border-radius: 4px; cursor: pointer; font-size: 14px; width: auto; white-space: nowrap; display: none;">Show by District</button>
+
+        <!-- Full-screen report container -->
+        <section id="report-container">
+        </section>
+
+        <!-- Used to display report embed error messages -->
+        <section class="error-container" style="display: none;">
+        </section>
+    </div>
+
+    <!-- Chat Panel -->
+    <div class="chat-panel" id="chat-panel">
+        <div class="chat-header">
+            Chart Chat Agent
+        </div>
+        <div class="chat-messages" id="chat-messages">
+            <div class="message assistant">
+                Hi! I'm your Chart Chat agent. I can help you with your Power BI charts. Ask me about what fields are available or you can ask me to make a chart like "Show me Sales by Month" or "Show me Units by District".
+            </div>
+        </div>
+        <div class="chat-input-container">
+            <textarea 
+                id="chat-input" 
+                class="chat-input" 
+                placeholder="Loading report... Please wait."
+                rows="1"
+                disabled></textarea>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="/js/jquery.min.js"></script>
+    <script src="/js/powerbi.min.js"></script>
+    <script src="https://unpkg.com/powerbi-report-authoring@latest/dist/powerbi-report-authoring.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <script src="/js/chartchat.js"></script>
+</body>
+
+</html>
