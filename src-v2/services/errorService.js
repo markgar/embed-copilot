@@ -68,10 +68,27 @@ function handleError(res, error, message = 'An error occurred') {
   return serverError(res, message, error.message);
 }
 
+/**
+ * Generic error sender that dispatches to appropriate error type
+ * @param {Object} res - Express response object
+ * @param {number} status - HTTP status code
+ * @param {string} message - Error message
+ * @param {string} [details] - Optional error details
+ * @returns {Object} Express response
+ */
+function sendError(res, status, message, details = null) {
+  const errorResponse = { error: message };
+  if (details) {
+    errorResponse.details = details;
+  }
+  return res.status(status).json(errorResponse);
+}
+
 module.exports = {
   badRequest,
   serverError,
   notFound,
   success,
-  handleError
+  handleError,
+  sendError
 };

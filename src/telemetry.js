@@ -108,6 +108,36 @@ class TelemetryLogger {
     const content = fs.readFileSync(this.logFile, 'utf8');
     return content.trim().split('\n').map(line => JSON.parse(line));
   }
+
+  /**
+   * Record a custom event for telemetry
+   * @param {string} eventType - Type of event
+   * @param {Object} eventData - Event data to log
+   */
+  recordEvent(eventType, eventData) {
+    if (!this.enabled) return;
+
+    const logEntry = {
+      timestamp: new Date().toISOString(),
+      type: 'event',
+      eventType: eventType,
+      data: this.sanitizeObject(eventData)
+    };
+
+    // Log to console if enabled
+    if (this.console) {
+      console.log('\n=== TELEMETRY EVENT ===');
+      console.log(JSON.stringify(logEntry, null, 2));
+      console.log('=== END TELEMETRY EVENT ===\n');
+    }
+
+    // Log to file
+    try {
+      fs.appendFileSync(this.logFile, JSON.stringify(logEntry) + '\n');
+    } catch (error) {
+      console.error('[Telemetry] Failed to write event log:', error.message);
+    }
+  }
 }
 
 module.exports = new TelemetryLogger();
