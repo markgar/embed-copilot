@@ -110,3 +110,10 @@ dist
 .yarn/build-state.yml
 .yarn/install-state.gz
 .pnp.*
+
+# Telemetry data files
+logs/
+telemetry.jsonl
+telemetry_data.json
+clean_telemetry.json
+*_telemetry.json

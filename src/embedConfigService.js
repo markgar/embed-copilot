@@ -21,7 +21,7 @@ async function getEmbedInfo() {
         const config = loadConfig();
 
         // Get report details and embed token
-        const embedParams = await getEmbedParamsForSingleReport(config.powerBIWorkspaceId, config.powerBIReportId);
+        const embedParams = await getEmbedParamsForSingleReport(config.powerBIGroupId, config.powerBIReportId);
 
         return {
             'accessToken': embedParams.embedToken.token,

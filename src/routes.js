@@ -6,6 +6,7 @@ const DatasetMetadataService = require('./datasetMetadata');
 const fetch = require('node-fetch');
 const { buildDynamicSystemPrompt } = require('./agent');
 const { loadConfig } = require('./configLoader');
+const telemetry = require('./telemetry');
 
 // Shared state
 let metadataService;
@@ -58,7 +59,7 @@ module.exports = function mountRoutes(app) {
       }
       // Metadata service is initialized on startup, no need to check again
       const config = loadConfig();
-      const groupId = config.powerBIGroupId || config.powerBIWorkspaceId || req.query.groupId;
+      const groupId = config.powerBIGroupId || req.query.groupId;
       let datasetId = config.powerBIDatasetId || req.query.datasetId;
       if (!groupId) return res.status(400).json({ error: 'groupId is required.' });
       if (!datasetId && config.powerBIReportId) {
@@ -114,7 +115,7 @@ module.exports = function mountRoutes(app) {
         } else {
           // If no cached metadata, fetch it now for the chat
           const config = loadConfig();
-          const groupId = config.powerBIGroupId || config.powerBIWorkspaceId;
+          const groupId = config.powerBIGroupId;
           const datasetId = config.powerBIDatasetId;
           if (groupId && datasetId) {
             metadata = await metadataService.getCompleteDatasetMetadata(groupId, datasetId);
@@ -135,10 +136,30 @@ module.exports = function mountRoutes(app) {
       ];
 
       const requestBody = { messages: messages, max_tokens: 500, temperature: 0.7 };
+      
+      // Log OpenAI interaction for telemetry
+      if (telemetry.enabled) {
+        console.log('[Telemetry] OpenAI Request:', {
+          url: url.replace(/api-key=[^&]+/, 'api-key=[REDACTED]'),
+          messages: telemetry.sanitizeObject(messages),
+          currentChart: telemetry.sanitizeObject(currentChart),
+          hasMetadata: !!metadata
+        });
+      }
+      
       const response = await fetch(url, { method: 'POST', headers: { 'Content-Type': 'application/json', 'api-key': config.azureOpenAIApiKey }, body: JSON.stringify(requestBody) });
       if (!response.ok) throw new Error(`Azure OpenAI API error: ${response.status}`);
       const data = await response.json();
       const aiResponse = data.choices?.[0]?.message?.content || '';
+      
+      // Log OpenAI response for telemetry
+      if (telemetry.enabled) {
+        console.log('[Telemetry] OpenAI Response:', {
+          response: aiResponse,
+          usage: data.usage
+        });
+      }
+      
       res.json({ response: aiResponse });
     } catch (error) {
       console.error('[app] Chat error:', error);
@@ -146,17 +167,45 @@ module.exports = function mountRoutes(app) {
     }
   });
 
-  // Logging
+    // Logging
   app.post('/log-error', (req, res) => {
-    const { error, context, timestamp } = req.body;
-    console.log('[FRONTEND ERROR]', { timestamp: timestamp || new Date().toISOString(), context, error });
+    const { error } = req.body;
+    console.error('[CLIENT]', error);
     res.json({ success: true });
   });
 
   app.post('/log-console', (req, res) => {
-    const { message, type, timestamp } = req.body;
-    console.log(`[FRONTEND ${ (type || 'log').toUpperCase() }]`, { timestamp: timestamp || new Date().toISOString(), message });
+    const { message } = req.body;
+    console.log('[CLIENT]', message);
     res.json({ success: true });
+  });
+
+  // Telemetry control endpoint
+  app.post('/telemetry-control', (req, res) => {
+    const { action } = req.body;
+    
+    if (action === 'enable') {
+      process.env.TELEMETRY_MODE = 'true';
+      process.env.TELEMETRY_CONSOLE = 'true';
+      telemetry.enabled = true;
+      telemetry.console = true;
+      res.json({ success: true, message: 'Telemetry enabled' });
+    } else if (action === 'disable') {
+      process.env.TELEMETRY_MODE = 'false';
+      process.env.TELEMETRY_CONSOLE = 'false';
+      telemetry.enabled = false;
+      telemetry.console = false;
+      res.json({ success: true, message: 'Telemetry disabled' });
+    } else if (action === 'status') {
+      res.json({ 
+        enabled: telemetry.enabled,
+        console: telemetry.console,
+        env_telemetry: process.env.TELEMETRY_MODE,
+        env_console: process.env.TELEMETRY_CONSOLE
+      });
+    } else {
+      res.status(400).json({ error: 'Invalid action. Use enable, disable, or status' });
+    }
   });
 
   // Initialize metadata service on startup

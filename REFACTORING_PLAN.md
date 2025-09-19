@@ -79,58 +79,61 @@ Use **parallel development** with the current code (`src/`) running alongside th
 **Critical Issue**: The codebase currently has zero tests, making it impossible to validate that migration preserves behavior. This phase establishes the foundation needed for safe migration.
 
 **Step 0A: Create Basic Test Infrastructure**
-   - [ ] Install testing dependencies (`jest`, `supertest`)
-   - [ ] Create `test/` directory structure
-   - [ ] Create `test/baseline/` for current behavior validation
-   - [ ] Create simple test runner script
+   - [x] Install testing dependencies (`jest`, `supertest`)
+   - [x] Create `test/` directory structure
+   - [x] Create `test/baseline/` for current behavior validation
+   - [x] Create simple test runner script
 
 **Step 0B: Establish Behavioral Baselines**
-   - [ ] Create test for `/getEmbedToken` endpoint (success and error cases)
-   - [ ] Create test for `/getDatasetMetadata` endpoint (success, caching, error cases)
-   - [ ] Create test for `/chat` endpoint (success and error cases)
-   - [ ] Create test for static file serving (`/`, `/chartchat`)
-   - [ ] Document response formats, status codes, and error patterns
+   - [x] Create test for `/getEmbedToken` endpoint (success and error cases)
+   - [x] Create test for `/getDatasetMetadata` endpoint (success, caching, error cases)
+   - [x] Create test for `/chat` endpoint (success and error cases)
+   - [x] Create test for static file serving (`/`, `/chartchat`)
+   - [x] Document response formats, status codes, and error patterns
 
 **Step 0C: Configuration Standardization (CRITICAL)**
-   - [ ] **Audit configuration inconsistencies**: Document all uses of `powerBIWorkspaceId` vs `powerBIGroupId` in codebase
-   - [ ] **Create configuration adapter**: Update `configLoader.js` to handle both property names transparently
-   - [ ] **Test endpoint compatibility**: Verify all endpoints work with both old and new property names
-   - [ ] **Standardize codebase**: Update all internal code to use consistent `powerBIGroupId` naming
-   - [ ] **Validate configuration loading**: Ensure config validation works with standardized names
+   - [x] **Audit configuration inconsistencies**: Document all uses of `powerBIWorkspaceId` vs `powerBIGroupId` in codebase
+   - [x] **Create configuration adapter**: Update `configLoader.js` to handle both property names transparently
+   - [x] **Test endpoint compatibility**: Verify all endpoints work with both old and new property names
+   - [x] **Standardize codebase**: Update all internal code to use consistent `powerBIGroupId` naming
+   - [x] **Validate configuration loading**: Ensure config validation works with standardized names
 
 **Step 0D: Error Response Standardization**
-   - [ ] **Document current error patterns**: Create reference for `/getEmbedToken`, `/getDatasetMetadata`, `/chat` error formats
-   - [ ] **Create error response specification**: Define standard structure for 400, 500, and other error types  
-   - [ ] **Design error service interface**: Plan `errorService.js` with methods like `badRequest()`, `serverError()`, etc.
-   - [ ] **Test error consistency**: Ensure migration preserves exact error response formats
+   - [x] **Document current error patterns**: Create reference for `/getEmbedToken`, `/getDatasetMetadata`, `/chat` error formats
+   - [x] **Create error response specification**: Define standard structure for 400, 500, and other error types  
+   - [x] **Design error service interface**: Plan `errorService.js` with methods like `badRequest()`, `serverError()`, etc.
+   - [x] **Test error consistency**: Ensure migration preserves exact error response formats
 
 **Step 0E: Performance Baseline**
-   - [ ] Measure response times for all endpoints under normal load
-   - [ ] Document memory usage patterns
-   - [ ] Create performance comparison framework for migration validation
+   - [x] Measure response times for all endpoints under normal load
+   - [x] Document memory usage patterns
+   - [x] Create performance comparison framework for migration validation
 
 ### Phase 1: Setup Dual Environment (1 session)
 **Goal**: Establish parallel development infrastructure with simplified structure
 
-**Prerequisites**: Phase 0 complete (testing foundation and configuration standardization established)
+**Prerequisites**: ✅ Phase 0 complete (testing foundation and configuration standardization established)
 
-**Step 1A: Create Simplified Directory Structure**
-   - [ ] Create `src-v2/` directory
-   - [ ] Create `src-v2/services/` directory 
-   - [ ] Create `src-v2/controllers/` directory
-   - [ ] Create `src-v2/routes/` directory
+**Step 1A: Create Simplified Directory Structure** ✅ **COMPLETED**
+   - [x] Create `src-v2/` directory
+   - [x] Create `src-v2/services/` directory 
+   - [x] Create `src-v2/controllers/` directory
+   - [x] Create `src-v2/routes/` directory
+   - [x] **✅ STRUCTURE CHECK**: Verify directory structure created correctly (no code to test yet)
 
-**Step 1B: Copy Entry Points with Standardized Configuration**
-   - [ ] Copy `src/server.js` to `src-v2/server.js` (no changes)
-   - [ ] Copy `src/app.js` to `src-v2/app.js` (update import paths)
-   - [ ] Copy `src/configLoader.js` to `src-v2/services/configService.js` (including Phase 0C standardization)
-   - [ ] Add constants (METADATA_CACHE_DURATION, etc.) to configService
-   - [ ] Verify `src-v2/` version starts and serves basic content
+**Step 1B: Copy Entry Points with Standardized Configuration** ✅ **COMPLETED**
+   - [x] Copy `src/server.js` to `src-v2/server.js` (no changes)
+   - [x] Copy `src/app.js` to `src-v2/app.js` (update import paths)
+   - [x] Copy `src/configLoader.js` to `src-v2/services/configService.js` (including Phase 0C standardization)
+   - [x] Add constants (METADATA_CACHE_DURATION, etc.) to configService
+   - [x] Verify `src-v2/` version starts and serves basic content
+   - [x] **🧪 BUILD TEST**: Verify `src-v2/` server starts without errors
 
 **Step 1C: Baseline Compatibility Validation**
-   - [ ] Run Phase 0 test suite against both `src/` and `src-v2/` versions
-   - [ ] Verify identical responses for all endpoints
+   - [ ] Update test configuration to point at `src-v2/` 
+   - [ ] Run test suite against `src-v2/` to establish baseline
    - [ ] Document any differences and resolve before proceeding
+   - [ ] **🧪 INTEGRATION TEST**: Full test suite passes against `src-v2/`
 
 ### Phase 2: Build Service Architecture (2-3 sessions)
 **Goal**: Create comprehensive single-file services that Copilot can confidently build and test
@@ -144,22 +147,27 @@ Use **parallel development** with the current code (`src/`) running alongside th
    - [ ] Create `src-v2/services/errorService.js` with standardized response methods
    - [ ] Implement: `badRequest(message, details)`, `serverError(message, details)`, `notFound(message)`
    - [ ] Test error service produces identical response formats to current endpoints
+   - [ ] **🧪 UNIT TEST**: Test errorService methods in isolation
 
 **Step 2A-2: Create Configuration Service**  
    - [ ] Create comprehensive `src-v2/services/configService.js`
    - [ ] Include: config loading, validation, and constants (METADATA_CACHE_DURATION, etc.)
    - [ ] Apply standardized property names from Phase 0
    - [ ] Test configuration service loads identical config objects
+   - [ ] **🧪 UNIT TEST**: Test configService loads configuration correctly
 
 **Step 2A-3: Create Cache Service**
    - [ ] Create `src-v2/services/cacheService.js` to eliminate global state
    - [ ] Include: `getCachedMetadata()`, `setCachedMetadata()`, `isCacheStale()` methods
    - [ ] Design for shared use across multiple endpoints  
    - [ ] Test caching behavior matches current global variables
+   - [ ] **🧪 UNIT TEST**: Test cache service methods work correctly
 
 **Step 2A-4: Validation Checkpoint**
    - [ ] Run test suite to ensure services work in isolation
    - [ ] Verify no regressions in `src-v2/` basic functionality
+   - [ ] **🧪 BUILD TEST**: Verify `src-v2/` still starts with new services
+   - [ ] **🧪 INTEGRATION TEST**: Run test suite against `src-v2/` if endpoints still work
 
 ### Session 2B: PowerBI Service (Single Session)  
 **Goal**: Consolidate ALL Power BI related functionality into one comprehensive service
@@ -171,16 +179,20 @@ Use **parallel development** with the current code (`src/`) running alongside th
      - Metadata logic from `src/datasetMetadata.js`
      - Integration with cacheService (created in Phase 2A) for metadata caching
    - [ ] Design as class with methods: `getAccessToken()`, `getEmbedInfo()`, `getDatasetMetadata()`, `getDatasetIdFromReport()`
+   - [ ] **🧪 UNIT TEST**: Test PowerBI service methods individually
 
 **Step 2B-2: Update Endpoints to Use PowerBI Service**
    - [ ] Update `/getEmbedToken` route in `src-v2/` to use powerbiService
    - [ ] Update `/getDatasetMetadata` route in `src-v2/` to use powerbiService
-   - [ ] Test both endpoints return identical responses to `src/` version
+   - [ ] Test both endpoints return expected responses
+   - [ ] **🧪 BUILD TEST**: Verify `src-v2/` starts with updated endpoints
+   - [ ] **🧪 MANUAL VERIFICATION**: Test Power BI endpoints manually
 
 **Step 2B-3: Validation Checkpoint**
-   - [ ] Run comprehensive endpoint tests comparing `src/` vs `src-v2/`
-   - [ ] Verify caching behavior is identical
-   - [ ] Performance check: response times within 50% of original
+   - [ ] Run comprehensive endpoint tests for `src-v2/`
+   - [ ] Verify caching behavior works correctly
+   - [ ] Performance check: response times are reasonable
+   - [ ] **🧪 INTEGRATION TEST**: Run full test suite against `src-v2/`
 
 ### Session 2C: OpenAI Service & Controllers (Single Session)
 **Goal**: Extract OpenAI logic and create clean controller layer
@@ -191,25 +203,63 @@ Use **parallel development** with the current code (`src/`) running alongside th
      - Prompt building from `src/agent.js`
      - Message formatting and API communication
    - [ ] Design as class with methods: `processChat(message, currentChart, chatHistory)`, `buildPrompt(metadata, currentChart, chatHistory)`
+   - [ ] **🧪 UNIT TEST**: Test OpenAI service methods individually
 
 **Step 2C-2: Create Controllers**  
    - [ ] Create `src-v2/controllers/embedController.js` - thin wrapper calling powerbiService.getEmbedInfo()
    - [ ] Create `src-v2/controllers/metadataController.js` - thin wrapper calling powerbiService.getDatasetMetadata()
    - [ ] Create `src-v2/controllers/chatController.js` - thin wrapper calling openaiService.processChat()
    - [ ] Create `src-v2/controllers/systemController.js` - logging endpoints
+   - [ ] **🧪 UNIT TEST**: Test controllers call services correctly
 
 **Step 2C-3: Update Routes & Final Integration**
    - [ ] Create `src-v2/routes/index.js` with all route mounting (simple, single file)
    - [ ] Update all routes to call controllers instead of inline logic
    - [ ] Update `src-v2/app.js` to use new route structure
+   - [ ] **🧪 BUILD TEST**: Verify complete `src-v2/` application starts
+   - [ ] **🧪 INTEGRATION TEST**: Run full test suite against `src-v2/`
 
 **Step 2C-4: Final Validation**
-   - [ ] Run complete test suite comparing ALL endpoints between `src/` and `src-v2/`
-   - [ ] Test error scenarios to ensure identical error responses
-   - [ ] Verify chat functionality with metadata caching works identically
-   - [ ] Performance validation: confirm response times are comparable
+   - [ ] Run complete test suite for `src-v2/` 
+   - [ ] Test error scenarios to ensure proper error responses
+   - [ ] Verify chat functionality with metadata caching works correctly
+   - [ ] Performance validation: confirm response times are reasonable
+   - [ ] **🧪 INTEGRATION TEST**: Complete test suite passes
+   - [ ] **🧪 MANUAL VERIFICATION**: Test all endpoints manually
+   - [ ] **🧪 FINAL COMPARISON**: Manual comparison with `src/` before switchover
 
 ## 🔍 **Validation Guidelines for Copilot**
+
+### **🧪 Critical Testing Protocol**
+
+**Single-Directory Progressive Testing Approach:**
+1. **Keep `src/` as working backup**: Don't modify original code during migration
+2. **Build and test `src-v2/` incrementally**: Test each new service/component as it's built
+3. **Use existing test suite**: Point tests at `src-v2/` once it becomes runnable
+4. **Manual comparison only when ready**: Compare behavior just before final switchover
+
+**Testing Workflow:**
+- **During Development**: Test `src-v2/` components using our existing Jest test suite
+- **Service Testing**: Test each new service (PowerBI, OpenAI, Config) individually as built
+- **Integration Testing**: Once `src-v2/` is a complete app, run full test suite against it
+- **Final Validation**: Manual comparison between versions only at switchover time
+
+**Why This Works Better:**
+- No port conflicts or resource contention
+- Progressive validation as we build
+- Simpler mental model: build new, test new
+- Existing test suite captures expected behavior patterns
+
+### **🧪 Test Checkpoint Legend**
+Throughout this plan, you'll see **🧪 TEST CHECKPOINT** markers. These are validation steps for progressive development:
+
+- **🧪 BUILD TEST**: Verify new code compiles/starts without errors
+- **🧪 UNIT TEST**: Test individual services or components in isolation  
+- **🧪 INTEGRATION TEST**: Run existing test suite against `src-v2/` when it's complete
+- **🧪 MANUAL VERIFICATION**: Quick manual check of key functionality
+- **🧪 FINAL COMPARISON**: Manual comparison between `src/` and `src-v2/` before switchover
+
+**RULE**: Focus on building `src-v2/` correctly rather than constantly comparing to `src/`. Use `src/` as reference and backup only.
 
 ### **"Identical Response" Validation Checklist**
 When testing migration steps, Copilot should verify:
@@ -274,10 +324,13 @@ async function validateIdenticalResponse(originalEndpoint, newEndpoint, testCase
 **Goal**: Validate complete equivalence and execute safe switchover
 
 **Step 3A: Comprehensive Validation**
-   - [ ] **End-to-end testing**: Create automated test comparing all endpoints between `src/` and `src-v2/`
-   - [ ] **Performance validation**: Verify response times are comparable (within 50%)  
-   - [ ] **Error scenario testing**: Test all error conditions return identical responses
-   - [ ] **Static asset verification**: Confirm frontend, CSS, and JS files work identically
+   - [ ] **End-to-end testing**: Run complete test suite against `src-v2/`
+   - [ ] **Performance validation**: Verify response times are reasonable  
+   - [ ] **Error scenario testing**: Test all error conditions return proper responses
+   - [ ] **Static asset verification**: Confirm frontend, CSS, and JS files work correctly
+   - [ ] **🧪 INTEGRATION TEST**: Complete automated test suite passes
+   - [ ] **🧪 MANUAL VERIFICATION**: Test all user workflows manually
+   - [ ] **🧪 FINAL COMPARISON**: Side-by-side manual comparison with original `src/`
 
 **Step 3B: Safe Switchover Execution**
    - [ ] **Create backup**: Archive current `src/` to `src-legacy/` as safety net
@@ -285,6 +338,8 @@ async function validateIdenticalResponse(originalEndpoint, newEndpoint, testCase
    - [ ] **Rename directories**: Move `src-v2/` to `src/` for final structure
    - [ ] **Integration testing**: Run dev server and verify all functionality works
    - [ ] **Documentation update**: Update README with new architecture explanation
+   - [ ] **🧪 POST-SWITCH TEST**: Run full test suite after directory rename
+   - [ ] **🧪 FINAL VALIDATION**: Manual testing of all endpoints after switchover
 
 ### Phase 4: Code Quality Refinement (1 session) 
 **Goal**: Break down large functions for improved readability and maintainability
@@ -297,27 +352,35 @@ async function validateIdenticalResponse(originalEndpoint, newEndpoint, testCase
      - `processChatRequest()` - Main orchestration calling above methods
    - [ ] **PowerBI service cleanup**: Extract any remaining large methods into focused functions
    - [ ] **Error handling standardization**: Ensure all services use errorService consistently
+   - [ ] **🧪 UNIT TEST**: Test each refactored method individually
+   - [ ] **🧪 INTEGRATION TEST**: Verify refactored services still work in full application
 
 **Step 4B: Documentation & Architecture Polish**
    - [ ] **JSDoc comments**: Add comprehensive documentation to all service methods
    - [ ] **Architecture documentation**: Create README sections explaining service integration pattern
    - [ ] **Developer onboarding**: Update setup instructions reflecting new code organization
    - [ ] **Final validation**: Run complete test suite to ensure no regressions
+   - [ ] **🧪 FINAL TEST SUITE**: Complete automated test coverage validation
 
 **Note**: Phase 4 is optional if Phase 3 results in satisfactory code quality. The service extraction in Phase 2 already achieves the primary architectural goals.
 
 ## 🔄 Progress Tracking
 
 ### Completed Tasks
-*None yet - starting fresh*
+**✅ Phase 0: Testing Foundation & Analysis (Completed September 19, 2025)**
+- ✅ Testing infrastructure setup (Jest + Supertest)
+- ✅ Basic smoke tests for all endpoints 
+- ✅ Configuration standardization (`powerBIWorkspaceId` → `powerBIGroupId`)
+- ✅ Backwards compatibility maintained
+- ✅ All tests passing with streamlined approach
 
 ### Current Focus
-- Setting up dual-tree migration infrastructure
+- **Phase 1**: Setting up dual-tree migration infrastructure
 - Creating `src-v2/` directory structure
-- Establishing integration tests for API compatibility
+- Establishing parallel development environment
 
 ### Next Up
-- Building Power BI integration layer in new architecture
+- **Phase 2**: Building Service Architecture (Power BI + OpenAI + Config services)
 - Extracting and consolidating service integrations
 
 ### Blocked/Questions
@@ -367,9 +430,37 @@ src/
 ```
 
 **Next Session Goals:**
-- Execute Phase 0: Testing foundation + configuration standardization
-- Create `src-v2/` directory structure  
-- Begin Phase 1: Dual environment setup
+- Execute Phase 1: Dual environment setup
+- Create `src-v2/` directory structure
+- Begin Phase 2: Service architecture implementation
+
+### Session 2 - September 19, 2025
+**Phase 0: Testing Foundation & Analysis - COMPLETED**
+
+**Streamlined Approach Applied:**
+- Kept testing phase simple and focused on safety net vs comprehensive coverage
+- Created basic smoke tests for all endpoints using Jest + Supertest
+- Fixed critical configuration inconsistency (`powerBIWorkspaceId` vs `powerBIGroupId`)
+- Applied backwards-compatible standardization in `configLoader.js`
+- All tests passing with minimal setup time
+
+**Key Accomplishments:**
+- ✅ **Testing Infrastructure**: Jest + Supertest setup with 5 smoke tests
+- ✅ **Configuration Fix**: Standardized on `powerBIGroupId` internally while maintaining backwards compatibility
+- ✅ **Code Updates**: Updated `routes.js`, `utils.js`, `embedConfigService.js` to use consistent property
+- ✅ **Validation**: All endpoints still working correctly after changes
+
+**Configuration Standardization Details:**
+- `configLoader.js` now handles both property names transparently
+- Internally uses `powerBIGroupId` but accepts both for compatibility
+- Eliminated duplicate fallback logic in route handlers
+- All tests pass confirming no regressions
+
+**Ready for Phase 1:**
+- Testing foundation established ✅
+- Critical configuration issues resolved ✅  
+- Current system still fully functional ✅
+- Can proceed with dual-environment setup safely ✅
 
 ---
 

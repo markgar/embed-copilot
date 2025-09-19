@@ -2,8 +2,8 @@
 const express = require('express');
 const path = require('path');
 const bodyParser = require('body-parser');
-const mountRoutes = require('./routes');
-const telemetry = require('./telemetry');
+const mountRoutes = require('./routes/index'); // Updated path
+const telemetry = require('../src/telemetry'); // Keep pointing to original for now
 
 const app = express();
 

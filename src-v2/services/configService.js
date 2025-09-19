@@ -2,13 +2,16 @@ const fs = require('fs');
 const path = require('path');
 
 // Load environment variables if .env exists
-const envPath = path.join(__dirname, '../.env');
+const envPath = path.join(__dirname, '../../.env');
 if (fs.existsSync(envPath)) {
     require('dotenv').config({ path: envPath });
 }
 
+// Constants (extracted from global usage patterns)
+const METADATA_CACHE_DURATION = 5 * 60 * 1000; // 5 minutes
+
 function loadConfig() {
-    const config = require('../config/config.json');
+    const config = require('../../config/config.json');
     
     // Helper function to get value from config or environment
     const getValue = (configValue, envKey) => {
@@ -43,4 +46,9 @@ function loadConfig() {
     return enhancedConfig;
 }
 
-module.exports = { loadConfig };
+module.exports = { 
+    loadConfig,
+    constants: {
+        METADATA_CACHE_DURATION
+    }
+};
