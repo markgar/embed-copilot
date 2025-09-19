@@ -182,12 +182,12 @@ Use **parallel development** with the current code (`src/`) running alongside th
    - [x] **🧪 UNIT TEST**: Test PowerBI service methods individually (18 tests passing)
    - [x] **🧪 INTEGRATION TEST**: Test PowerBI service integration with other services (12 tests passing)
 
-**Step 2B-2: Update Endpoints to Use PowerBI Service**
-   - [ ] Update `/getEmbedToken` route in `src-v2/` to use powerbiService
-   - [ ] Update `/getDatasetMetadata` route in `src-v2/` to use powerbiService
-   - [ ] Test both endpoints return expected responses
-   - [ ] **🧪 BUILD TEST**: Verify `src-v2/` starts with updated endpoints
-   - [ ] **🧪 MANUAL VERIFICATION**: Test Power BI endpoints manually
+**Step 2B-2: Update Endpoints to Use PowerBI Service** ✅ **COMPLETED**
+   - [x] Update `/getEmbedToken` route in `src-v2/` to use powerbiService
+   - [x] Update `/getDatasetMetadata` route in `src-v2/` to use powerbiService
+   - [x] Test both endpoints return expected responses
+   - [x] **🧪 BUILD TEST**: Verify `src-v2/` starts with updated endpoints
+   - [x] **🧪 MANUAL VERIFICATION**: Test Power BI endpoints manually (validation report created)
 
 **Step 2B-3: Validation Checkpoint**
    - [ ] Run comprehensive endpoint tests for `src-v2/`

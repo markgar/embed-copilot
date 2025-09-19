@@ -11,13 +11,13 @@ describe('API Endpoints - src-v2 Baseline Tests', () => {
     app = require('../src-v2/app.js');
   });
 
-  // Test 1: Basic server health check (src-v2 has different route)
+  // Test 1: Basic server health check (src-v2 now serves chartchat.html)
   test('GET / should return response', async () => {
     const response = await request(app)
       .get('/')
       .expect(200);
     
-    expect(response.text).toContain('src-v2 Server Running');
+    expect(response.text).toContain('Chart Chat');
   });
 
   // Test 2: Health endpoint (new in src-v2)
@@ -30,20 +30,22 @@ describe('API Endpoints - src-v2 Baseline Tests', () => {
     expect(response.body).toHaveProperty('version', 'src-v2');
   });
 
-  // Test 3: Missing endpoints should return 404 (not implemented yet)
-  test('GET /getEmbedToken should return 404 (not implemented)', async () => {
+  // Test 3: Embed token endpoint should be available (may fail due to config)
+  test('GET /getEmbedToken should exist (may return 400/500 if config missing)', async () => {
     const response = await request(app)
       .get('/getEmbedToken');
     
-    expect(response.status).toBe(404);
+    // Should not be 404, but may be 400 (bad config) or 500 (auth error)
+    expect([400, 500]).toContain(response.status);
   });
 
-  // Test 4: Missing metadata endpoint should return 404
-  test('GET /getDatasetMetadata should return 404 (not implemented)', async () => {
+  // Test 4: Metadata endpoint should be available (may fail due to config)
+  test('GET /getDatasetMetadata should exist (may return 400/500 if config missing)', async () => {
     const response = await request(app)
       .get('/getDatasetMetadata');
     
-    expect(response.status).toBe(404);
+    // Should not be 404, but may be 400 (bad config) or 500 (auth error)
+    expect([400, 500]).toContain(response.status);
   });
 
   // Test 5: Missing chat endpoint should return 404
