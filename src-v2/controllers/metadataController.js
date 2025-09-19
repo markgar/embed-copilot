@@ -192,6 +192,49 @@ class MetadataController {
             });
         }
     }
+
+    /**
+     * Get metadata cache debug information
+     * GET /debug/metadata
+     */
+    static async getMetadataDebugInfo(req, res) {
+        try {
+            const cacheService = require('../services/cacheService');
+            const cachedMetadata = cacheService.getCachedMetadata();
+            const lastFetched = cacheService.getMetadataLastFetched();
+            
+            if (!cachedMetadata) {
+                return res.json({ 
+                    status: 'no_cache', 
+                    message: 'No metadata cached yet', 
+                    cacheInfo: { 
+                        lastFetched: lastFetched, 
+                        cacheAge: null 
+                    } 
+                });
+            }
+            
+            const now = Date.now();
+            const cacheAge = lastFetched ? now - lastFetched : null;
+            const METADATA_CACHE_DURATION = 5 * 60 * 1000; // 5 minutes
+            const isStale = cacheAge && cacheAge > METADATA_CACHE_DURATION;
+            
+            res.json({
+                status: 'cached',
+                cacheInfo: { 
+                    lastFetched: new Date(lastFetched).toISOString(), 
+                    cacheAgeMs: cacheAge, 
+                    isStale, 
+                    cacheDurationMs: METADATA_CACHE_DURATION 
+                },
+                dataset: cachedMetadata.dataset
+            });
+            
+        } catch (error) {
+            console.error('[MetadataController] Debug info error:', error);
+            res.status(500).json({ error: 'Failed to get debug metadata' });
+        }
+    }
 }
 
 module.exports = MetadataController;

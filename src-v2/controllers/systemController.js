@@ -215,6 +215,73 @@ class SystemController {
             errorService.sendError(res, 500, 'Failed to get system info', error.message);
         }
     }
+
+    /**
+     * Log client errors
+     * POST /log-error
+     */
+    static logError(req, res) {
+        try {
+            const { error } = req.body;
+            console.error('[CLIENT]', error);
+            res.json({ success: true });
+        } catch (err) {
+            console.error('[SystemController] Log error failed:', err);
+            res.status(500).json({ error: 'Failed to log error' });
+        }
+    }
+
+    /**
+     * Log client console messages
+     * POST /log-console
+     */
+    static logConsole(req, res) {
+        try {
+            const { message } = req.body;
+            console.log('[CLIENT]', message);
+            res.json({ success: true });
+        } catch (err) {
+            console.error('[SystemController] Log console failed:', err);
+            res.status(500).json({ error: 'Failed to log console message' });
+        }
+    }
+
+    /**
+     * Control telemetry settings
+     * POST /telemetry-control
+     */
+    static telemetryControl(req, res) {
+        try {
+            const { action } = req.body;
+            const telemetry = require('../../src/telemetry');
+            
+            if (action === 'enable') {
+                process.env.TELEMETRY_MODE = 'true';
+                process.env.TELEMETRY_CONSOLE = 'true';
+                telemetry.enabled = true;
+                telemetry.console = true;
+                res.json({ success: true, message: 'Telemetry enabled' });
+            } else if (action === 'disable') {
+                process.env.TELEMETRY_MODE = 'false';
+                process.env.TELEMETRY_CONSOLE = 'false';
+                telemetry.enabled = false;
+                telemetry.console = false;
+                res.json({ success: true, message: 'Telemetry disabled' });
+            } else if (action === 'status') {
+                res.json({ 
+                    enabled: telemetry.enabled,
+                    console: telemetry.console,
+                    env_telemetry: process.env.TELEMETRY_MODE,
+                    env_console: process.env.TELEMETRY_CONSOLE
+                });
+            } else {
+                res.status(400).json({ error: 'Invalid action. Use enable, disable, or status' });
+            }
+        } catch (err) {
+            console.error('[SystemController] Telemetry control failed:', err);
+            res.status(500).json({ error: 'Failed to control telemetry' });
+        }
+    }
 }
 
 module.exports = SystemController;
