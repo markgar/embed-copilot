@@ -8,7 +8,7 @@ describe('API Endpoints - Basic Smoke Tests', () => {
   beforeAll(() => {
     // Import the app after setting test environment
     process.env.NODE_ENV = 'test';
-    app = require('../src/app.js');
+    app = require('../src-v2/app.js');
   });
 
   // Test 1: Basic server health check

@@ -6,7 +6,7 @@ describe('API Endpoints - Telemetry-Based Tests', () => {
   
   beforeAll(() => {
     process.env.NODE_ENV = 'test';
-    app = require('../src/app.js');
+    app = require('../src-v2/app.js');
   });
 
   // Test generated from GET /getDatasetMetadata telemetry

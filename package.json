@@ -8,7 +8,6 @@
         "test:watch": "jest --config=test/jest.config.js --watch",
         "dev": "nodemon ./src-v2/server.js",
         "dev:telemetry": "TELEMETRY_MODE=true TELEMETRY_CONSOLE=true nodemon ./src-v2/server.js",
-        "dev:v1": "nodemon ./src/server.js",
         "telemetry": "node tools/telemetry.js",
         "start": "NODE_ENV=production node ./src-v2/server.js",
         "start:debug": "NODE_ENV=production node --inspect=9229 ./src-v2/server.js"

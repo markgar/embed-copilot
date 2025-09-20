@@ -217,7 +217,13 @@ describe('PowerBI Endpoints - Comprehensive Validation', () => {
       expect(response.body).toEqual({
         status: 'ok',
         version: 'src-v2',
-        timestamp: expect.any(String)
+        architecture: 'service-integration',
+        timestamp: expect.any(String),
+        services: {
+          embed: 'use /health/embed for details',
+          metadata: 'use /health/metadata for details',
+          chat: 'use /health/chat for details'
+        }
       });
     });
 

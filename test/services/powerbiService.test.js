@@ -3,7 +3,7 @@
  */
 
 const PowerBIService = require('../../src-v2/services/powerbiService');
-const { configService } = require('../../src-v2/services/configService');
+const configService = require('../../src-v2/services/configService');
 const cacheService = require('../../src-v2/services/cacheService');
 const errorService = require('../../src-v2/services/errorService');
 const msal = require("@azure/msal-node");
@@ -16,9 +16,9 @@ jest.mock('../../src-v2/services/cacheService');
 
 // Mock configService
 jest.mock('../../src-v2/services/configService', () => ({
-    configService: {
-        loadConfig: jest.fn()
-    }
+    loadConfig: jest.fn(),
+    validateConfig: jest.fn(),
+    constants: { METADATA_CACHE_DURATION: 300000 }
 }));
 
 describe('PowerBIService', () => {

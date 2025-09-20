@@ -1,5 +1,6 @@
 const configService = require('./configService');
-const telemetry = require('../../src/telemetry');
+const axios = require('axios');
+const telemetry = require('./telemetryService');
 const fetch = require('node-fetch');
 
 /**
@@ -256,7 +257,7 @@ Always respond with ONLY valid JSON and no extra commentary.`;
                     { role: 'user', content: message }
                 ],
                 max_tokens: 1000,
-                temperature: 0.7
+                temperature: 0.1 // Low temperature for consistent chart logic, minimal text variation
             };
 
             console.log('[OpenAIService] Sending request to Azure OpenAI...');
@@ -375,4 +376,5 @@ Always respond with ONLY valid JSON and no extra commentary.`;
     }
 }
 
-module.exports = OpenAIService;
+// Export a singleton instance
+module.exports = new OpenAIService();

@@ -9,12 +9,14 @@ jest.mock('../../src-v2/services/cacheService');
 
 // Mock configService properly
 jest.mock('../../src-v2/services/configService', () => ({
-    configService: {
-        loadConfig: jest.fn()
+    loadConfig: jest.fn(),
+    validateConfig: jest.fn(),
+    constants: {
+        METADATA_CACHE_DURATION: 300000
     }
 }));
 
-const { configService } = require('../../src-v2/services/configService');
+const configService = require('../../src-v2/services/configService');
 
 describe('MetadataController', () => {
     let req, res;

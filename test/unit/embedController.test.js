@@ -1,12 +1,12 @@
 const EmbedController = require('../../src-v2/controllers/embedController');
 const PowerBIService = require('../../src-v2/services/powerbiService');
 const errorService = require('../../src-v2/services/errorService');
-const utils = require('../../src/utils');
+const utils = require('../../src-v2/utils');
 
 // Mock dependencies
 jest.mock('../../src-v2/services/powerbiService');
 jest.mock('../../src-v2/services/errorService');
-jest.mock('../../src/utils');
+jest.mock('../../src-v2/utils');
 
 describe('EmbedController', () => {
     let req, res;

@@ -30,13 +30,13 @@ describe('API Endpoints - src-v2 Baseline Tests', () => {
     expect(response.body).toHaveProperty('version', 'src-v2');
   });
 
-  // Test 3: Embed token endpoint should be available (may fail due to config)
+  // Test 3: Embed token endpoint should be available (may return 400/500 if config missing)
   test('GET /getEmbedToken should exist (may return 400/500 if config missing)', async () => {
     const response = await request(app)
       .get('/getEmbedToken');
     
-    // Should not be 404, but may be 400 (bad config) or 500 (auth error)
-    expect([400, 500]).toContain(response.status);
+    // Should not be 404, but may be 200 (success), 400 (bad config) or 500 (auth error)
+    expect([200, 400, 500]).toContain(response.status);
   });
 
   // Test 4: Metadata endpoint should be available (may fail due to config)
@@ -44,16 +44,16 @@ describe('API Endpoints - src-v2 Baseline Tests', () => {
     const response = await request(app)
       .get('/getDatasetMetadata');
     
-    // Should not be 404, but may be 400 (bad config) or 500 (auth error)
-    expect([400, 500]).toContain(response.status);
+    // Should not be 404, but may be 200 (success), 400 (bad config) or 500 (auth error)
+    expect([200, 400, 500]).toContain(response.status);
   });
 
-  // Test 5: Missing chat endpoint should return 404
-  test('POST /chat should return 404 (not implemented)', async () => {
+  // Test 5: Chat endpoint should exist but require proper data
+  test('POST /chat should return 400 for missing data (endpoint exists)', async () => {
     const response = await request(app)
       .post('/chat')
       .send({});
     
-    expect(response.status).toBe(404);
+    expect(response.status).toBe(400);
   });
 });

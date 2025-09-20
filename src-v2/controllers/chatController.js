@@ -1,8 +1,8 @@
-const OpenAIService = require('../services/openaiService');
+const openaiService = require('../services/openaiService');
 const PowerBIService = require('../services/powerbiService');
 const configService = require('../services/configService');
 const errorService = require('../services/errorService');
-const telemetry = require('../../src/telemetry');
+const telemetry = require('../services/telemetryService');
 
 /**
  * Chat Controller - Handles AI chat functionality
@@ -80,7 +80,6 @@ class ChatController {
             console.log('[ChatController] Initializing OpenAI service...');
             // Generate response using OpenAI service
             try {
-                const openaiService = new OpenAIService();
                 await openaiService.initialize();
                 console.log('[ChatController] OpenAI service initialized, processing chat...');
                 
@@ -172,7 +171,7 @@ class ChatController {
             // Generate streaming response
             let chunkCount = 0;
             try {
-                const openaiService = new OpenAIService(config);
+                await openaiService.initialize();
                 const responseStream = openaiService.generateStreamingResponse(
                     message,
                     Array.isArray(conversation) ? conversation : [],

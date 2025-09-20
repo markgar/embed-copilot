@@ -1,4 +1,4 @@
-const telemetry = require('../../src/telemetry');
+const telemetry = require('../services/telemetryService');
 const errorService = require('../services/errorService');
 const EmbedController = require('./embedController');
 const MetadataController = require('./metadataController');
@@ -253,7 +253,7 @@ class SystemController {
     static telemetryControl(req, res) {
         try {
             const { action } = req.body;
-            const telemetry = require('../../src/telemetry');
+            const telemetry = require('../services/telemetryService');
             
             if (action === 'enable') {
                 process.env.TELEMETRY_MODE = 'true';

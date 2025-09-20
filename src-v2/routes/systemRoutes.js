@@ -10,6 +10,18 @@ const router = express.Router();
 router.get('/health', systemController.healthCheck);
 
 /**
+ * Detailed status endpoint
+ * GET /status
+ */
+router.get('/status', systemController.detailedHealthCheck);
+
+/**
+ * Get logs endpoint
+ * GET /logs
+ */
+router.get('/logs', systemController.getTelemetryLogs);
+
+/**
  * Client error logging
  * POST /log-error
  */

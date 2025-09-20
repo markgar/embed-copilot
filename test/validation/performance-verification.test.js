@@ -10,17 +10,16 @@ const cacheService = require('../../src-v2/services/cacheService');
 
 // Mock configService
 jest.mock('../../src-v2/services/configService', () => ({
-  configService: {
-    loadConfig: jest.fn(() => ({
-      clientId: 'test-client-id',
-      tenantId: 'test-tenant-id',
-      clientSecret: 'test-client-secret',
-      authorityUrl: 'https://login.microsoftonline.com/',
-      scopeBase: 'https://analysis.windows.net/powerbi/api/.default',
-      powerBIGroupId: 'test-group-id',
-      powerBIReportId: 'test-report-id'
-    }))
-  },
+  loadConfig: jest.fn(() => ({
+    clientId: 'test-client-id',
+    tenantId: 'test-tenant-id',
+    clientSecret: 'test-client-secret',
+    authorityUrl: 'https://login.microsoftonline.com/',
+    scopeBase: 'https://analysis.windows.net/powerbi/api/.default',
+    powerBIGroupId: 'test-group-id',
+    powerBIReportId: 'test-report-id'
+  })),
+  validateConfig: jest.fn(),
   constants: {
     METADATA_CACHE_DURATION: 5 * 60 * 1000 // 5 minutes
   }

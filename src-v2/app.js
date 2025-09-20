@@ -3,7 +3,7 @@ const express = require('express');
 const path = require('path');
 const bodyParser = require('body-parser');
 const mountRoutes = require('./routes/index'); // Updated path
-const telemetry = require('../src/telemetry'); // Keep pointing to original for now
+const telemetry = require('./services/telemetryService');
 
 const app = express();
 

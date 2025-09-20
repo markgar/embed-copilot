@@ -4,10 +4,11 @@ const configService = require('../../src-v2/services/configService');
 const PowerBIService = require('../../src-v2/services/powerbiService');
 
 // Mock only external dependencies, not our services
-jest.mock('../../src/telemetry');
+jest.mock('../../src-v2/services/telemetryService');
 
-// Mock fetch for controlled testing
-global.fetch = jest.fn();
+// Mock node-fetch for controlled testing
+jest.mock('node-fetch');
+const fetch = require('node-fetch');
 
 describe('OpenAI Service Integration Tests', () => {
     const mockConfig = {
@@ -67,7 +68,7 @@ describe('OpenAI Service Integration Tests', () => {
         openaiService.config = null;
         
         // Mock config service with our test config
-        jest.spyOn(configService, 'loadConfig').mockResolvedValue(mockConfig);
+        jest.spyOn(configService, 'loadConfig').mockReturnValue(mockConfig);
         
         // Mock PowerBI service for metadata retrieval (class, not instance)
         jest.spyOn(PowerBIService.prototype, 'getDatasetMetadata').mockResolvedValue(mockDatasetMetadata);
@@ -127,10 +128,10 @@ describe('OpenAI Service Integration Tests', () => {
             
             expect(requestBody.messages).toHaveLength(2);
             expect(requestBody.messages[0].role).toBe('system');
-            expect(requestBody.messages[0].content).toContain('Sales');
-            expect(requestBody.messages[0].content).toContain('Products');
-            expect(requestBody.messages[0].content).toContain('Total Sales = SUM(Sales[SalesAmount])');
-            expect(requestBody.messages[0].content).toContain('Sales.ProductId → Products.ProductId');
+            expect(requestBody.messages[0].content).toContain('Sales.SalesAmount');
+            expect(requestBody.messages[0].content).toContain('Products.ProductName');
+            expect(requestBody.messages[0].content).toContain('SCHEMA (table.column [type])');
+            expect(requestBody.messages[0].content).toContain('specialized Power BI chart creation assistant');
             
             expect(requestBody.messages[1].role).toBe('user');
             expect(requestBody.messages[1].content).toBe('How can I analyze sales by product category?');
@@ -382,7 +383,7 @@ FILTER(
             const configWithoutVersion = { ...mockConfig };
             delete configWithoutVersion.azureOpenAIApiVersion;
 
-            jest.spyOn(configService, 'loadConfig').mockResolvedValue(configWithoutVersion);
+            jest.spyOn(configService, 'loadConfig').mockReturnValue(configWithoutVersion);
 
             await openaiService.initialize();
 
@@ -410,7 +411,7 @@ FILTER(
                 azureOpenAIApiVersion: '2024-02-01-preview'
             };
 
-            jest.spyOn(configService, 'loadConfig').mockResolvedValue(configWithCustomVersion);
+            jest.spyOn(configService, 'loadConfig').mockReturnValue(configWithCustomVersion);
 
             await openaiService.initialize();
 

@@ -1,4 +1,5 @@
 const request = require('supertest');
+const openaiService = require('../../src-v2/services/openaiService');
 
 /**
  * OpenAI Service Baseline Snapshot Tests
@@ -12,11 +13,27 @@ describe('OpenAI Service - Baseline Response Snapshots', () => {
         app = require('../../src-v2/app.js');
     });
 
+    beforeEach(async () => {
+        // Ensure OpenAI service is initialized for consistent behavior
+        // This prevents test interference from other test suites that reset singleton state
+        if (!openaiService.initialized) {
+            await openaiService.initialize();
+        }
+        
+        // Clear any potential state that could affect test isolation
+        // (OpenAI service doesn't store history, but being explicit about fresh state)
+        console.log('[Test Setup] OpenAI service initialized:', openaiService.initialized);
+    });
+
     // Helper to extract and parse response
     const getResponseData = async (message, additionalParams = {}) => {
         const response = await request(app)
             .post('/chat')
-            .send({ message, ...additionalParams });
+            .send({ 
+                message, 
+                chatHistory: [], // Include empty chat history like the frontend does
+                ...additionalParams 
+            });
 
         if (response.status !== 200) {
             throw new Error(`Expected 200, got ${response.status}: ${JSON.stringify(response.body)}`);
@@ -76,11 +93,13 @@ describe('OpenAI Service - Baseline Response Snapshots', () => {
             expect(data.chartAction.xAxis).toBeDefined();
             expect(data.chartAction.chartType).toBeDefined();
 
-            // Verify proper axis assignment (measure on Y, time dimension on X)
+            // STRICT: Verify proper axis assignment (measure on Y, time dimension on X)
             expect(data.chartAction.yAxis).toContain('Sales');
             expect(data.chartAction.xAxis).toContain('Month');
-            // AI chooses lineChart for time-based data (Month) - this is correct per prompt engineering
-            expect(['columnChart', 'lineChart']).toContain(data.chartAction.chartType);
+            // STRICT: AI should choose lineChart for time-based data (Month)
+            expect(data.chartAction.chartType).toBe('lineChart');
+            // FLEXIBLE: Chat response can vary but should mention the chart creation
+            expect(data.chatResponse).toMatch(/line chart|chart/i);
 
             console.log('\n=== BASELINE CAPTURED ===');
             console.log('Query: "show me sales by month"');
@@ -206,12 +225,13 @@ describe('OpenAI Service - Baseline Response Snapshots', () => {
         test('SNAPSHOT: "show me units by district" chart creation', async () => {
             const data = await getResponseData('show me units by district');
 
-            // Should create column chart with TotalUnits by District
+            // STRICT: Chart definition must be correct
             expect(data.chartAction).toBeDefined();
             expect(data.chartAction.yAxis).toBe('Sales.TotalUnits');
             expect(data.chartAction.xAxis).toBe('District.District');
             expect(data.chartAction.chartType).toBe('columnChart');
-            expect(data.chatResponse).toBe("I'll create a column chart showing TotalUnits by District!");
+            // FLEXIBLE: Chat response can vary but should mention units and district
+            expect(data.chatResponse).toMatch(/units.*district|district.*units/i);
             expect(data.hasUsage).toBe(true);
 
             console.log('\n=== BASELINE CAPTURED ===');
@@ -224,34 +244,43 @@ describe('OpenAI Service - Baseline Response Snapshots', () => {
 
     describe('Multi-Turn Context Snapshots', () => {
         test('SNAPSHOT: Two-prompt sequence - "show me sales by month" then "Change that to a column chart"', async () => {
-            // First prompt: establish baseline chart
+            // STEP 1: First prompt with empty chat history (simulating fresh session)
+            console.log('\n=== STEP 1: First prompt (empty history) ===');
             const data1 = await getResponseData('show me sales by month');
+            console.log('First response chart type:', data1.chartAction.chartType);
+            console.log('First response text:', data1.chatResponse);
 
-            // Validate first response
+            // Validate first response - STRICT on chart definition, FLEXIBLE on text
             expect(data1.chartAction).toBeDefined();
             expect(data1.chartAction.yAxis).toBe('Sales.TotalSales');
             expect(data1.chartAction.xAxis).toBe('Time.Month');
             expect(data1.chartAction.chartType).toBe('lineChart');
-            expect(data1.chatResponse).toBe("I'll create a line chart showing TotalSales by Month!");
+            expect(data1.chatResponse).toMatch(/line chart|chart/i); // Flexible text
             expect(data1.hasUsage).toBe(true);
 
-            // Second prompt: context-aware chart modification
+            // STEP 2: Build chat history exactly as frontend does
+            console.log('\n=== STEP 2: Building chat history ===');
             const chatHistory = [
                 { role: 'user', content: 'show me sales by month' },
                 { role: 'assistant', content: data1.chatResponse }
             ];
+            console.log('Chat history for second call:', JSON.stringify(chatHistory, null, 2));
 
+            // STEP 3: Second prompt with context (simulating follow-up in same session)
+            console.log('\n=== STEP 3: Second prompt (with history & currentChart) ===');
             const data2 = await getResponseData('Change that to a column chart', {
                 currentChart: data1.chartAction,
                 chatHistory: chatHistory
             });
+            console.log('Second response chart type:', data2.chartAction.chartType);
+            console.log('Second response text:', data2.chatResponse);
 
-            // Validate second response maintains same data fields but changes chart type
+            // Validate second response - STRICT on chart definition, FLEXIBLE on text
             expect(data2.chartAction).toBeDefined();
             expect(data2.chartAction.yAxis).toBe('Sales.TotalSales'); // Same as first
             expect(data2.chartAction.xAxis).toBe('Time.Month'); // Same as first
             expect(data2.chartAction.chartType).toBe('columnChart'); // Changed
-            expect(data2.chatResponse).toBe("I'll change it to a column chart showing TotalSales by Month!");
+            expect(data2.chatResponse).toMatch(/column chart|chart/i); // Flexible text
             expect(data2.hasUsage).toBe(true);
 
             console.log('\n=== BASELINE CAPTURED ===');

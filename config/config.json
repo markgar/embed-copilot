@@ -15,5 +15,6 @@
     "azureOpenAIEndpoint": "",
     "azureOpenAIApiKey": "",
     "azureOpenAIDeploymentName": "",
-    "azureOpenAIApiVersion": ""
+    "azureOpenAIApiVersion": "",
+    "azureOpenAITemperature": 0.1
 }
