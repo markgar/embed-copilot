@@ -99,6 +99,20 @@ curl http://localhost:5300/health
 curl -X POST http://localhost:5300/chat -H "Content-Type: application/json" -d '{"message":"test"}'
 ```
 
+**Contract Validation:**
+```bash
+# Quick contract validation (ensure server is running first)
+node test/validate-contract.js
+
+# Run comprehensive test suites
+npm test
+
+# Test specific contract components
+npm test -- chat-api-contract.test.js
+npm test -- backend-frontend-contract.test.js
+npm test -- telemetry-contract.test.js
+```
+
 #### ⚠️ **Common Pitfalls to Avoid**
 
 **DON'T:** Run server and tests in the same synchronous session
@@ -136,6 +150,8 @@ If you encounter apparent "server crashes":
    - `^C` in logs might be VS Code terminal management, not crashes
    - Real errors will show stack traces and error messages
 
+📖 **For comprehensive debugging strategies, see [DEBUGGING.md](DEBUGGING.md)**
+
 #### 📁 **Project Structure**
 
 - **src-v2/**: Service Integration Architecture (current)
@@ -152,6 +168,8 @@ If you encounter apparent "server crashes":
 - All secrets should be stored in environment variables or secure config management
 
 ## Troubleshooting
+
+📖 **For comprehensive debugging guide, see [DEBUGGING.md](DEBUGGING.md)**
 
 ### Server Issues
 

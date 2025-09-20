@@ -17,9 +17,11 @@ class ChatController {
     static async chat(req, res) {
         console.log('[ChatController] Chat request received:', req.body);
         try {
-            // Validate request
-            const { message, conversation = [] } = req.body || {};
+            // Validate request - extract all expected parameters from original implementation
+            const { message, currentChart, chatHistory, conversation = [] } = req.body || {};
             console.log('[ChatController] Extracted message:', message);
+            console.log('[ChatController] Extracted currentChart:', currentChart);
+            console.log('[ChatController] Extracted chatHistory:', chatHistory);
             
             if (!message || message.trim() === '') {
                 console.log('[ChatController] Message validation failed');
@@ -85,6 +87,8 @@ class ChatController {
                 const result = await openaiService.processChat(
                     message,
                     context,
+                    currentChart,
+                    chatHistory,
                     { req, res }
                 );
 
@@ -98,7 +102,7 @@ class ChatController {
                     success: true
                 });
 
-                res.json({ message: result.response, usage: result.usage });
+                res.json({ response: result.response, usage: result.usage });
             } catch (openaiError) {
                 console.log('[ChatController] OpenAI error:', openaiError.message);
                 telemetry.recordEvent('chat_response', {

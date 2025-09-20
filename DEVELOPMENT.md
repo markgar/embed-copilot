@@ -133,6 +133,7 @@ const config = configService.loadConfig();
 - **tools/generate-tests.js**: Test generation utilities
 - **tools/telemetry.js**: Telemetry management
 - **test/**: Comprehensive test suite
+- **DEBUGGING.md**: Comprehensive debugging guide using telemetry and console logs
 
 ## Architecture Notes
 

@@ -2,6 +2,8 @@
 
 This directory contains development utilities and scripts for the embed-copilot project.
 
+📖 **For comprehensive debugging strategies using these tools, see [../DEBUGGING.md](../DEBUGGING.md)**
+
 ## Files
 
 ### `debug-server.js`
