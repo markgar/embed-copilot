@@ -1,5 +1,5 @@
 const PowerBIService = require('../services/powerbiService');
-const { configService } = require('../services/configService');
+const configService = require('../services/configService');
 const errorService = require('../services/errorService');
 
 /**

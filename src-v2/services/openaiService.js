@@ -1,5 +1,6 @@
 const configService = require('./configService');
 const telemetry = require('../../src/telemetry');
+const fetch = require('node-fetch');
 
 /**
  * OpenAI Service - Handles all OpenAI/Azure OpenAI interactions
@@ -16,7 +17,7 @@ class OpenAIService {
      */
     async initialize() {
         try {
-            this.config = await configService.loadConfig();
+            this.config = configService.loadConfig();
             this.initialized = true;
         } catch (error) {
             throw new Error(`Failed to initialize OpenAI service: ${error.message}`);
@@ -110,23 +111,31 @@ Always respond in a helpful, professional manner. If you're asked to create DAX 
      * @returns {Object} - Chat completion response
      */
     async processChat(message, metadata = null, telemetryContext = {}) {
+        console.log('[OpenAIService] processChat called with message:', message);
         this._ensureInitialized();
         
         try {
+            console.log('[OpenAIService] Validating configuration...');
             this._validateConfig();
+            console.log('[OpenAIService] Configuration valid');
         } catch (error) {
+            console.log('[OpenAIService] Configuration validation failed:', error.message);
             throw new Error(`Chat completion failed: ${error.message}`);
         }
 
         const startTime = Date.now();
         
         try {
+            console.log('[OpenAIService] Building system prompt...');
             // Build system prompt with dataset context
             const systemPrompt = this.buildSystemPrompt(metadata);
+            console.log('[OpenAIService] System prompt built, length:', systemPrompt.length);
 
             // Prepare Azure OpenAI request
             const apiVersion = this.config.azureOpenAIApiVersion || '2023-12-01-preview';
             const endpoint = `${this.config.azureOpenAIEndpoint}/openai/deployments/${this.config.azureOpenAIDeploymentName}/chat/completions?api-version=${apiVersion}`;
+            console.log('[OpenAIService] Making request to endpoint:', endpoint);
+            console.log('[OpenAIService] Making request to endpoint:', endpoint);
             
             const requestBody = {
                 messages: [
@@ -137,6 +146,7 @@ Always respond in a helpful, professional manner. If you're asked to create DAX 
                 temperature: 0.7
             };
 
+            console.log('[OpenAIService] Sending request to Azure OpenAI...');
             // Make API request
             const response = await fetch(endpoint, {
                 method: 'POST',
@@ -147,19 +157,25 @@ Always respond in a helpful, professional manner. If you're asked to create DAX 
                 body: JSON.stringify(requestBody)
             });
 
+            console.log('[OpenAIService] Received response, status:', response.status);
+            
             if (!response.ok) {
                 const errorText = await response.text();
+                console.log('[OpenAIService] API error response:', errorText);
                 throw new Error(`Azure OpenAI API error (${response.status}): ${errorText}`);
             }
 
             const responseData = await response.json();
+            console.log('[OpenAIService] Response data received:', JSON.stringify(responseData, null, 2));
             
             // Extract response content
             const content = responseData.choices?.[0]?.message?.content || 'No response generated';
+            console.log('[OpenAIService] Extracted content:', content);
             
             // Log telemetry if enabled
             this._logChatTelemetry(message, content, startTime, telemetryContext, null, metadata);
 
+            console.log('[OpenAIService] Returning result...');
             return {
                 success: true,
                 response: content,
@@ -168,6 +184,7 @@ Always respond in a helpful, professional manner. If you're asked to create DAX 
             };
 
         } catch (error) {
+            console.log('[OpenAIService] Error in processChat:', error.message);
             // Log error telemetry
             this._logChatTelemetry(message, null, startTime, telemetryContext, error, metadata);
             
@@ -243,4 +260,4 @@ Always respond in a helpful, professional manner. If you're asked to create DAX 
     }
 }
 
-module.exports = new OpenAIService();
+module.exports = OpenAIService;

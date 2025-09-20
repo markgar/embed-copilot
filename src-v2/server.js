@@ -1,5 +1,19 @@
 // Server entry point for refactored src-v2 architecture
 // Service Integration Architecture: orchestrates Power BI and OpenAI APIs
+
+// Add global error handlers before requiring anything else
+process.on('uncaughtException', (err) => {
+    console.error('🚨 [FATAL] Uncaught Exception:', err);
+    console.error('Stack trace:', err.stack);
+    process.exit(1);
+});
+
+process.on('unhandledRejection', (reason, promise) => {
+    console.error('🚨 [FATAL] Unhandled Rejection at:', promise);
+    console.error('Reason:', reason);
+    process.exit(1);
+});
+
 const app = require('./app');
 const port = process.env.PORT || 5300;
 

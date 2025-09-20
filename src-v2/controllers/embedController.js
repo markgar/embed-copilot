@@ -1,6 +1,6 @@
 const PowerBIService = require('../services/powerbiService');
 const errorService = require('../services/errorService');
-const utils = require('../../src/utils'); // Reuse existing validation utilities
+const utils = require('../utils'); // Use v2 utils with configService
 
 /**
  * Embed Controller - Handles Power BI embed token generation

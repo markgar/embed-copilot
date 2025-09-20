@@ -1,6 +1,6 @@
 const OpenAIService = require('../services/openaiService');
 const PowerBIService = require('../services/powerbiService');
-const { configService } = require('../services/configService');
+const configService = require('../services/configService');
 const errorService = require('../services/errorService');
 const telemetry = require('../../src/telemetry');
 
@@ -15,10 +15,14 @@ class ChatController {
      * Body: { message, conversation? }
      */
     static async chat(req, res) {
+        console.log('[ChatController] Chat request received:', req.body);
         try {
             // Validate request
             const { message, conversation = [] } = req.body || {};
+            console.log('[ChatController] Extracted message:', message);
+            
             if (!message || message.trim() === '') {
+                console.log('[ChatController] Message validation failed');
                 telemetry.recordEvent('chat_response', {
                     message_length: message ? message.length : 0,
                     conversation_length: Array.isArray(conversation) ? conversation.length : 0,
@@ -28,16 +32,15 @@ class ChatController {
                 return errorService.sendError(res, 400, 'Message is required');
             }
 
+            console.log('[ChatController] Loading configuration...');
             // Load configuration
             const config = configService.loadConfig();
-            
-            // Initialize OpenAI service if needed
-            if (!OpenAIService.initialized) {
-                await OpenAIService.initialize();
-            }
+            console.log('[ChatController] Configuration loaded successfully');
+            console.log('[ChatController] Configuration loaded successfully');
             
             // Check OpenAI configuration
             if (!config.openaiApiKey && !config.azureOpenAIApiKey) {
+                console.log('[ChatController] OpenAI configuration missing');
                 telemetry.recordEvent('chat_response', {
                     message_length: message.length,
                     conversation_length: Array.isArray(conversation) ? conversation.length : 0,
@@ -47,6 +50,7 @@ class ChatController {
                 return errorService.sendError(res, 500, 'OpenAI service not configured');
             }
 
+            console.log('[ChatController] Getting metadata context...');
             // Get metadata context
             let context = null;
             try {
@@ -55,9 +59,13 @@ class ChatController {
                 const datasetId = config.powerBIDatasetId;
                 
                 if (groupId && datasetId) {
+                    console.log('[ChatController] Fetching PowerBI metadata context...');
                     context = await powerbiService.getMetadataContext(groupId, datasetId);
+                    console.log('[ChatController] Metadata context retrieved successfully');
                 }
             } catch (contextError) {
+                console.log('[ChatController] Metadata context error:', contextError.message);
+            console.log('[ChatController] Metadata context error:', contextError.message);
                 telemetry.recordEvent('chat_response', {
                     message_length: message.length,
                     conversation_length: Array.isArray(conversation) ? conversation.length : 0,
@@ -67,13 +75,20 @@ class ChatController {
                 return errorService.sendError(res, 500, 'Failed to retrieve data context', contextError.message);
             }
 
+            console.log('[ChatController] Initializing OpenAI service...');
             // Generate response using OpenAI service
             try {
-                const result = await OpenAIService.processChat(
+                const openaiService = new OpenAIService();
+                await openaiService.initialize();
+                console.log('[ChatController] OpenAI service initialized, processing chat...');
+                
+                const result = await openaiService.processChat(
                     message,
                     context,
                     { req, res }
                 );
+
+                console.log('[ChatController] Chat processing complete, result:', result);
 
                 // Record successful telemetry
                 telemetry.recordEvent('chat_response', {
@@ -85,6 +100,7 @@ class ChatController {
 
                 res.json({ message: result.response, usage: result.usage });
             } catch (openaiError) {
+                console.log('[ChatController] OpenAI error:', openaiError.message);
                 telemetry.recordEvent('chat_response', {
                     message_length: message.length,
                     conversation_length: Array.isArray(conversation) ? conversation.length : 0,

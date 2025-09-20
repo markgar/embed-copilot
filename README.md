@@ -74,6 +74,77 @@ The application uses:
 - **Azure OpenAI** for natural language processing
 - **Service Principal authentication** for secure Power BI access
 
+### Architecture
+
+- **src-v2/**: Current production architecture (Service Integration pattern)
+- **src/**: Legacy architecture (maintained for compatibility)
+- **npm run dev**: Runs the v2 architecture by default
+- **npm run dev:v1**: Available to run legacy v1 architecture
+
+### Development Best Practices
+
+#### ✅ **Proper Server Management in VS Code**
+
+**Recommended Method:**
+```bash
+# Use npm scripts with VS Code tasks
+npm run dev
+# This runs nodemon with proper background handling
+```
+
+**Testing Endpoints:**
+```bash
+# Always test in separate terminal commands
+curl http://localhost:5300/health
+curl -X POST http://localhost:5300/chat -H "Content-Type: application/json" -d '{"message":"test"}'
+```
+
+#### ⚠️ **Common Pitfalls to Avoid**
+
+**DON'T:** Run server and tests in the same synchronous session
+```bash
+# This can cause signal handling issues
+node server.js && curl http://localhost:5300/test
+```
+
+**DO:** Use proper background processes
+```bash
+# For debugging, use background processes
+node server.js &
+# Then test separately
+curl http://localhost:5300/test
+```
+
+#### 🔧 **Debugging Server Issues**
+
+If you encounter apparent "server crashes":
+
+1. **Check if it's a real crash or terminal signal handling:**
+   ```bash
+   # Use background process method
+   node src-v2/server.js &
+   ps aux | grep server  # Verify process is running
+   ```
+
+2. **Use the debug server for isolation:**
+   ```bash
+   node tools/debug-server.js
+   # Minimal Express server for testing
+   ```
+
+3. **Look for actual error messages vs terminal signals:**
+   - `^C` in logs might be VS Code terminal management, not crashes
+   - Real errors will show stack traces and error messages
+
+#### 📁 **Project Structure**
+
+- **src-v2/**: Service Integration Architecture (current)
+  - `services/`: Business logic (PowerBI, OpenAI, Config)
+  - `controllers/`: Thin request handlers
+  - `routes/`: Express route definitions
+- **tools/**: Development utilities and debugging scripts
+- **test/**: Comprehensive test suite
+
 ## Security Notes
 
 - The `.env` file is excluded from git to protect your credentials
@@ -82,9 +153,42 @@ The application uses:
 
 ## Troubleshooting
 
+### Server Issues
+
+#### "Server appears to crash on requests"
+**Symptoms:** Server starts fine but seems to crash when receiving HTTP requests, showing `^C` in logs.
+
+**Root Cause:** This is usually VS Code terminal signal handling, not an actual server crash.
+
+**Solution:**
+1. **Use proper background processes:**
+   ```bash
+   # Instead of synchronous terminal commands
+   node server.js &  # Background process
+   ```
+
+2. **Use npm scripts:**
+   ```bash
+   npm run dev  # Uses nodemon with proper process management
+   ```
+
+3. **Test separately:**
+   ```bash
+   # Don't run server and test in same command
+   curl http://localhost:5300/test  # Separate command
+   ```
+
+**Verification:** Check if process is actually running:
+```bash
+ps aux | grep server  # Should show running process
+```
+
+### Common Issues
+
 1. **Server won't start**: Check that all required environment variables are set in your `.env` file
 2. **Power BI embed fails**: Verify your Service Principal has proper permissions in Power BI workspace
 3. **Chat not working**: Confirm your Azure OpenAI endpoint and API key are correct
+4. **"Constructor not found" errors**: Check service exports (should export class, not instance)
 
 ## Contributing
 

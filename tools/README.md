@@ -4,6 +4,28 @@ This directory contains development utilities and scripts for the embed-copilot 
 
 ## Files
 
+### `debug-server.js`
+Minimal Express server for debugging server issues and testing components incrementally.
+
+**Usage:**
+```bash
+node tools/debug-server.js
+# Server will run on port 5301 (or DEBUG_PORT env var)
+```
+
+**Purpose:**
+- Isolate server crashes or connection issues
+- Test Express middleware components one by one
+- Debug terminal/process signal handling problems
+- Created during v2 migration debugging
+
+**Test Endpoints:**
+```bash
+curl http://localhost:5301/test        # GET test
+curl -X POST http://localhost:5301/test -H "Content-Type: application/json" -d '{"test":"data"}'
+curl http://localhost:5301/health      # Health check
+```
+
 ### `telemetry.js`
 CLI tool for managing telemetry data collection.
 

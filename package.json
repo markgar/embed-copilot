@@ -2,15 +2,16 @@
     "name": "embedding-sample",
     "version": "1.0.0",
     "description": "Generate Embed Token, URL and Embed the Report.",
-    "main": "./src/server.js",
+    "main": "./src-v2/server.js",
     "scripts": {
         "test": "jest --config=test/jest.config.js",
         "test:watch": "jest --config=test/jest.config.js --watch",
-        "dev": "nodemon ./src/server.js",
-        "dev:telemetry": "TELEMETRY_MODE=true TELEMETRY_CONSOLE=true nodemon ./src/server.js",
+        "dev": "nodemon ./src-v2/server.js",
+        "dev:telemetry": "TELEMETRY_MODE=true TELEMETRY_CONSOLE=true nodemon ./src-v2/server.js",
+        "dev:v1": "nodemon ./src/server.js",
         "telemetry": "node tools/telemetry.js",
-        "start": "NODE_ENV=production node ./src/server.js",
-        "start:debug": "NODE_ENV=production node --inspect=9229 ./src/server.js"
+        "start": "NODE_ENV=production node ./src-v2/server.js",
+        "start:debug": "NODE_ENV=production node --inspect=9229 ./src-v2/server.js"
     },
     "author": "Mark Garner",
     "license": "MIT",

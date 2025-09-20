@@ -10,7 +10,7 @@
  * errorService for consistent error handling.
  */
 
-const { configService } = require('./configService');
+const configService = require('./configService');
 const cacheService = require('./cacheService');
 const errorService = require('./errorService');
 const msal = require("@azure/msal-node");
@@ -389,6 +389,14 @@ class PowerBIService {
         }
         
         return lines.join('\n');
+    }
+
+    /**
+     * Get metadata context for chat - alias for getDatasetMetadata
+     * This method exists for compatibility with chat controller expectations
+     */
+    async getMetadataContext(groupId, datasetId) {
+        return await this.getDatasetMetadata(groupId, datasetId);
     }
 }
 

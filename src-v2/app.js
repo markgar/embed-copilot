@@ -7,8 +7,12 @@ const telemetry = require('../src/telemetry'); // Keep pointing to original for 
 
 const app = express();
 
-// Telemetry middleware - capture all requests/responses
+app.use(bodyParser.json());
+app.use(bodyParser.urlencoded({ extended: true }));
+
+// Telemetry middleware - capture all requests/responses (AFTER body parsing)
 app.use((req, res, next) => {
+  console.log(`[Express] ${req.method} ${req.path} - Body:`, req.body);
   const startTime = Date.now();
   
   // Skip telemetry for static assets to reduce noise
@@ -44,9 +48,6 @@ app.use('/css', express.static(path.join(__dirname, '../node_modules/bootstrap/d
 app.use('/css', express.static(path.join(__dirname, '../public/css/')));  // Add our custom CSS
 app.use('/js', express.static(path.join(__dirname, '../public/js/')));   // Add our custom JS
 app.use('/public', express.static(path.join(__dirname, '../public/')));
-
-app.use(bodyParser.json());
-app.use(bodyParser.urlencoded({ extended: true }));
 
 // Mount routes
 mountRoutes(app);
