@@ -5,6 +5,15 @@ const MetadataController = require('../../src-v2/controllers/metadataController'
 const ChatController = require('../../src-v2/controllers/chatController');
 const SystemController = require('../../src-v2/controllers/systemController');
 
+// Mock external services for predictable test results
+jest.mock('../../src-v2/services/powerbiService');
+jest.mock('../../src-v2/services/openaiService');
+jest.mock('../../src-v2/services/configService');
+
+const PowerBIService = require('../../src-v2/services/powerbiService');
+const openaiService = require('../../src-v2/services/openaiService');
+const configService = require('../../src-v2/services/configService');
+
 // Create test app with controller routes
 const createTestApp = () => {
     const app = express();
@@ -42,6 +51,42 @@ describe('Controller Integration Tests', () => {
         app = createTestApp();
     });
 
+    beforeEach(() => {
+        // Reset all mocks before each test
+        jest.clearAllMocks();
+        
+        // Set up default successful mocks
+        configService.get = jest.fn().mockReturnValue({
+            powerbi: { tenantId: 'test-tenant', clientId: 'test-client' },
+            openai: { apiKey: 'test-key' }
+        });
+        
+        configService.loadConfig = jest.fn().mockReturnValue({
+            clientId: '12345678-1234-1234-1234-123456789abc',
+            clientSecret: 'test-secret',
+            tenantId: '12345678-1234-1234-1234-123456789abc',
+            authorityUrl: 'https://login.microsoftonline.com/common',
+            powerBIGroupId: '12345678-1234-1234-1234-123456789abc',
+            powerBIDatasetId: '12345678-1234-1234-1234-123456789abc',
+            powerBIReportId: '12345678-1234-1234-1234-123456789abc'
+        });
+        
+        PowerBIService.prototype.getEmbedInfo = jest.fn().mockResolvedValue({
+            status: 200,
+            data: { accessToken: 'test-token' }
+        });
+
+        PowerBIService.prototype.getDatasetMetadata = jest.fn().mockResolvedValue({
+            status: 200,
+            data: { tables: [{ name: 'Sales' }] }
+        });
+
+        openaiService.processMessage = jest.fn().mockResolvedValue({
+            message: 'Test response',
+            chartType: 'bar'
+        });
+    });
+
     describe('EmbedController Integration', () => {
         test('POST /getEmbedToken should handle valid request', async () => {
             const response = await request(app)
@@ -51,18 +96,23 @@ describe('Controller Integration Tests', () => {
                     groupId: 'test-group-id'
                 });
 
-            // Should get a response (either success or error based on actual config)
-            expect(response.status).toBeOneOf([200, 400, 500]);
+            expect(response.status).toBe(200);
             expect(response.body).toBeDefined();
+            expect(response.body.data).toHaveProperty('accessToken');
         });
 
         test('POST /getEmbedToken should validate required fields', async () => {
+            // Mock missing config to trigger validation error
+            configService.loadConfig = jest.fn().mockReturnValue({
+                clientId: 'invalid-guid' // Invalid GUID format
+            });
+
             const response = await request(app)
                 .post('/getEmbedToken')
                 .send({}); // Missing required fields
 
-            // May return 200 (success with config defaults), 400 (validation error), or 500 (auth error)
-            expect([200, 400, 500]).toContain(response.status);
+            expect(response.status).toBe(400);
+            expect(response.body).toHaveProperty('error');
         });
 
         test('GET /embed/health should return health status', async () => {
@@ -85,17 +135,25 @@ describe('Controller Integration Tests', () => {
                     datasetId: 'test-dataset-id'
                 });
 
-            // Should get a response (success or error based on config)
-            expect(response.status).toBeOneOf([200, 400, 500]);
+            expect(response.status).toBe(200);
             expect(response.body).toBeDefined();
+            expect(response.body.data).toHaveProperty('tables');
         });
 
         test('GET /getDatasetMetadata should require groupId', async () => {
+            // Mock config without groupId to test validation
+            configService.loadConfig = jest.fn().mockReturnValue({
+                clientId: '12345678-1234-1234-1234-123456789abc',
+                powerBIDatasetId: '12345678-1234-1234-1234-123456789abc'
+                // Missing powerBIGroupId
+            });
+
             const response = await request(app)
                 .get('/getDatasetMetadata');
 
-            // May return 200 (success with config defaults), 400 (validation error), or 500 (auth error)
-            expect([200, 400, 500]).toContain(response.status);
+            expect(response.status).toBe(400);
+            expect(response.body).toHaveProperty('error');
+            expect(response.body.error).toContain('groupId is required');
         });
 
         test('GET /getSimplifiedMetadata should return text response', async () => {
