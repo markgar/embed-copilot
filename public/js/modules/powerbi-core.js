@@ -22,6 +22,41 @@
     };
 
     /**
+     * Cleanup PowerBI report instance and event listeners
+     */
+    function cleanupPowerBIReport() {
+        if (report) {
+            try {
+                console.log("PowerBI Core: Cleaning up report instance...");
+                
+                // Remove all PowerBI event listeners
+                report.off("loaded");
+                report.off("rendered");
+                report.off("error");
+                report.off("saved");
+                report.off("dataSelected");
+                report.off("pageChanged");
+                
+                // Reset the report container
+                if (reportContainer) {
+                    reportContainer.innerHTML = '';
+                }
+                
+                // Clear the global report reference
+                report = null;
+                
+                // Reset load state
+                reportLoadState.loaded = false;
+                reportLoadState.rendered = false;
+                
+                console.log("✅ PowerBI Core: Cleanup completed");
+            } catch (error) {
+                console.error("PowerBI Core: Error during cleanup:", error);
+            }
+        }
+    }
+
+    /**
      * Initialize PowerBI embedding
      */
     function initializePowerBI() {
@@ -350,7 +385,8 @@
         switchToEditMode,
         switchToViewMode,
         getPages,
-        getActivePage
+        getActivePage,
+        cleanupPowerBIReport
     };
 
     // Auto-initialize when DOM is ready

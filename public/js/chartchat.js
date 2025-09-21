@@ -18,6 +18,84 @@ let currentChartConfig = {
 // Chat history to store the last 4 messages for context
 let chatHistory = [];
 
+// Track event listeners for cleanup
+let registeredEventListeners = [];
+
+// Cleanup functions for memory leak prevention
+function cleanupPowerBIReport() {
+    if (report) {
+        try {
+            console.log("Cleaning up PowerBI report instance...");
+            
+            // Remove all event listeners
+            report.off("loaded");
+            report.off("rendered");
+            report.off("error");
+            report.off("saved");
+            report.off("dataSelected");
+            report.off("pageChanged");
+            
+            // Reset the report container
+            if (reportContainer) {
+                reportContainer.innerHTML = '';
+            }
+            
+            // Clear the global report reference
+            report = null;
+            
+            console.log("✅ PowerBI report cleanup completed");
+        } catch (error) {
+            console.error("Error during PowerBI cleanup:", error);
+        }
+    }
+}
+
+function addEventListenerWithTracking(element, event, handler, options) {
+    // Track event listeners for cleanup
+    const listenerInfo = { element, event, handler, options };
+    registeredEventListeners.push(listenerInfo);
+    
+    // Add the event listener
+    element.addEventListener(event, handler, options);
+    
+    return listenerInfo;
+}
+
+function cleanupEventListeners() {
+    console.log(`Cleaning up ${registeredEventListeners.length} tracked event listeners...`);
+    
+    registeredEventListeners.forEach(({ element, event, handler }) => {
+        try {
+            element.removeEventListener(event, handler);
+        } catch (error) {
+            console.warn("Failed to remove event listener:", error);
+        }
+    });
+    
+    registeredEventListeners = [];
+    console.log("✅ Event listeners cleanup completed");
+}
+
+function performFullCleanup() {
+    console.log("Performing full application cleanup...");
+    cleanupPowerBIReport();
+    cleanupEventListeners();
+    
+    // Clear global state
+    chatHistory = [];
+    currentChartConfig = {
+        yAxis: null,
+        xAxis: null,
+        chartType: null
+    };
+    
+    console.log("✅ Full cleanup completed");
+}
+
+// Register cleanup on page unload
+window.addEventListener('beforeunload', performFullCleanup);
+window.addEventListener('unload', performFullCleanup);
+
 // Global error handlers
 window.addEventListener('error', function(event) {
     logError(event.error || new Error(event.message), `Global Error (${event.filename}:${event.lineno})`);
@@ -1255,7 +1333,7 @@ function initializeTreeView() {
     const reportContainer = document.getElementById('report-container');
     
     if (toggleButton && treeviewPanel) {
-        toggleButton.addEventListener('click', function() {
+        addEventListenerWithTracking(toggleButton, 'click', function() {
             const isCollapsed = treeviewPanel.classList.contains('collapsed');
             
             if (isCollapsed) {
@@ -1277,13 +1355,13 @@ function initializeTreeView() {
     const collapseAllBtn = document.getElementById('collapse-all-btn');
     
     if (expandAllBtn) {
-        expandAllBtn.addEventListener('click', function() {
+        addEventListenerWithTracking(expandAllBtn, 'click', function() {
             expandAllTables();
         });
     }
     
     if (collapseAllBtn) {
-        collapseAllBtn.addEventListener('click', function() {
+        addEventListenerWithTracking(collapseAllBtn, 'click', function() {
             collapseAllTables();
         });
     }
