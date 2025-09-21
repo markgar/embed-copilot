@@ -4,18 +4,43 @@
  * Extracted from chartchat.js as part of modularization effort
  */
 
-(function() {
-    'use strict';
+// Import dependencies
+import { logError } from './utilities.js';
 
-    // Global references
-    let currentTablesData = null;
+// Global references
+let currentTablesData = null;
 
     /**
      * Initialize TreeView functionality
      */
     function initializeTreeView() {
         console.log("Initializing TreeView...");
+        setupEventListeners();
         loadTreeViewData();
+    }
+
+    /**
+     * Set up event listeners for TreeView interactions
+     */
+    function setupEventListeners() {
+        // Use event delegation on the document for dynamically created content
+        document.addEventListener('click', function(event) {
+            const action = event.target.getAttribute('data-action');
+            
+            if (action === 'expand-all') {
+                expandAllTables();
+            } else if (action === 'collapse-all') {
+                collapseAllTables();
+            } else if (action === 'refresh') {
+                refreshTreeView();
+            } else if (action === 'column-click') {
+                const columnName = event.target.getAttribute('data-column-name');
+                const columnType = event.target.getAttribute('data-column-type');
+                if (columnName && columnType) {
+                    handleColumnClick(columnName, columnType);
+                }
+            }
+        });
     }
 
     /**
@@ -48,7 +73,7 @@
                     <div class="tree-error">
                         <p>Error loading schema data</p>
                         <p>${error.message}</p>
-                        <button onclick="window.TreeViewModule.refreshTreeView()">Retry</button>
+                        <button >Retry</button>
                     </div>
                 `;
             }
@@ -77,9 +102,9 @@
         // Add controls
         html += `
             <div class="tree-controls">
-                <button class="tree-control-btn" onclick="window.TreeViewModule.expandAllTables()">Expand All</button>
-                <button class="tree-control-btn" onclick="window.TreeViewModule.collapseAllTables()">Collapse All</button>
-                <button class="tree-control-btn" onclick="window.TreeViewModule.refreshTreeView()">Refresh</button>
+                <button class="tree-control-btn" data-action="expand-all">Expand All</button>
+                <button class="tree-control-btn" data-action="collapse-all">Collapse All</button>
+                <button class="tree-control-btn" >Refresh</button>
             </div>
         `;
 
@@ -157,7 +182,7 @@
         }
 
         return `
-            <div class="tree-column" data-column-name="${column.name}" onclick="window.TreeViewModule.handleColumnClick('${column.name}', '${column.type}')">
+            <div class="tree-column" data-column-name="${column.name}" data-action="column-click" data-column-name="${column.name}" data-column-type="${column.type}">
                 <span class="tree-column-icon">${iconText}</span>
                 <span class="tree-column-name">${column.name}</span>
                 <span class="tree-column-type">${column.type}</span>
@@ -213,18 +238,6 @@
         return currentTablesData;
     }
 
-    // Export public API to window
-    window.TreeViewModule = {
-        initializeTreeView,
-        loadTreeViewData,
-        renderTreeView,
-        refreshTreeView,
-        expandAllTables,
-        collapseAllTables,
-        handleColumnClick,
-        getCurrentTablesData
-    };
-
     // Auto-initialize when DOM is ready
     if (document.readyState === 'loading') {
         document.addEventListener('DOMContentLoaded', initializeTreeView);
@@ -232,4 +245,14 @@
         initializeTreeView();
     }
 
-})();
+// ES6 module exports
+export {
+    initializeTreeView,
+    loadTreeViewData,
+    renderTreeView,
+    refreshTreeView,
+    expandAllTables,
+    collapseAllTables,
+    handleColumnClick,
+    getCurrentTablesData
+};

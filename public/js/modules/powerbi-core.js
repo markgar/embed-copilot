@@ -4,13 +4,13 @@
  * Extracted from chartchat.js as part of modularization effort
  */
 
-(function() {
-    'use strict';
+// ES6 Module imports
+import { logError } from './utilities.js';
 
-    // PowerBI client models and core variables
-    let models = window["powerbi-client"].models;
-    let reportContainer = $("#report-container").get(0);
-    let report = null; // Store the report instance globally
+// PowerBI client models and core variables
+let models = window["powerbi-client"].models;
+let reportContainer = $("#report-container").get(0);
+let report = null; // Store the report instance globally
 
     // Track report loading state
     let reportLoadState = {
@@ -147,11 +147,7 @@
                 const errorMessage = err.responseText || err.statusText || 'Unknown token error';
                 
                 // Use error service if available, otherwise fallback to console
-                if (window.ChartChatUtilities && window.ChartChatUtilities.logError) {
-                    window.ChartChatUtilities.logError(new Error(errorMessage), 'Embed Token Request');
-                } else {
-                    console.error('Embed Token Request Error:', errorMessage);
-                }
+                logError(new Error(errorMessage), 'Embed Token Request');
                 
                 // Show error container
                 showEmbedError(`Error occurred while getting embed token: ${errorMessage}`);
@@ -191,24 +187,15 @@
             // Get initial chart configuration after a short delay to ensure visuals are ready
             setTimeout(async () => {
                 try {
-                    // Use chart operations module if available and report is fully ready
-                    if (window.ChartChatOperations && 
-                        window.ChartChatOperations.getCurrentChartConfig &&
-                        reportLoadState.rendered) {
-                        const config = await window.ChartChatOperations.getCurrentChartConfig();
-                        if (config && window.ChartChatOperations.setCurrentChartConfig) {
-                            window.ChartChatOperations.setCurrentChartConfig(config);
-                            console.log("Initial chart configuration loaded:", config);
-                        } else {
-                            console.log("Chart config not available yet, will retry later");
-                        }
+                    // Notify other modules that report is ready for chart operations
+                    if (reportLoadState.rendered) {
+                        window.dispatchEvent(new CustomEvent('powerbi-report-ready', {
+                            detail: { reportReady: true }
+                        }));
+                        console.log("Report ready event dispatched");
                     }
                 } catch (error) {
-                    if (window.ChartChatUtilities && window.ChartChatUtilities.logError) {
-                        window.ChartChatUtilities.logError(error, 'Initial Chart Config Load');
-                    } else {
-                        console.error('Initial Chart Config Load Error:', error);
-                    }
+                    logError(error, 'Initial Chart Config Load');
                 }
             }, 1000);
         });
@@ -220,11 +207,7 @@
         report.on("error", function (event) {
             let errorMsg = event.detail;
             
-            if (window.ChartChatUtilities && window.ChartChatUtilities.logError) {
-                window.ChartChatUtilities.logError(new Error(errorMsg), 'Power BI Report Embedding');
-            } else {
-                console.error('Power BI Report Embedding Error:', errorMsg);
-            }
+            logError(new Error(errorMsg), 'Power BI Report Embedding');
 
             // Show error container
             showEmbedError(`Error occurred while embedding the report: ${errorMsg}`);
@@ -253,14 +236,18 @@
      * Notify other modules about report state changes
      */
     function notifyReportStateChange() {
-        // Enable/disable chat input based on report ready state
-        if (window.ChartChatInterface) {
-            if (reportLoadState.isReady) {
-                window.ChartChatInterface.enableChatInput();
-                console.log("Report is fully ready - chat input enabled");
-            } else if (reportLoadState.loaded && !reportLoadState.rendered) {
-                window.ChartChatInterface.disableChatInput("Report rendering...");
+        // Dispatch events for other modules to listen to
+        window.dispatchEvent(new CustomEvent('powerbi-chat-state', {
+            detail: {
+                enableChat: reportLoadState.isReady,
+                disableReason: reportLoadState.loaded && !reportLoadState.rendered ? "Report rendering..." : null
             }
+        }));
+
+        if (reportLoadState.isReady) {
+            console.log("Report is fully ready - chat enabled event dispatched");
+        } else if (reportLoadState.loaded && !reportLoadState.rendered) {
+            console.log("Report rendering - chat disabled event dispatched");
         }
 
         // Notify other modules that might be interested in report state
@@ -374,26 +361,24 @@
         return pages.find(page => page.isActive) || pages[0];
     }
 
-    // Export public API to window
-    window.PowerBICore = {
-        initializePowerBI,
-        embedReport,
-        getReport,
-        getReportContainer,
-        getReportLoadState,
-        getModels,
-        switchToEditMode,
-        switchToViewMode,
-        getPages,
-        getActivePage,
-        cleanupPowerBIReport
-    };
-
     // Auto-initialize when DOM is ready
-    if (document.readyState === 'loading') {
-        document.addEventListener('DOMContentLoaded', initializePowerBI);
-    } else {
-        initializePowerBI();
-    }
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initializePowerBI);
+} else {
+    initializePowerBI();
+}
 
-})();
+// ES6 Module exports
+export {
+    initializePowerBI,
+    embedReport,
+    getReport,
+    getReportContainer,
+    getReportLoadState,
+    getModels,
+    switchToEditMode,
+    switchToViewMode,
+    getPages,
+    getActivePage,
+    cleanupPowerBIReport
+};

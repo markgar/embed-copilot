@@ -8,6 +8,10 @@
  * Handles chat UI, messaging, input management, and AI communication
  */
 
+// ES6 Module imports
+import { logError } from './utilities.js';
+import { updateChartFromAI, currentChartConfig } from './chart-operations.js';
+
 // Chat history to store the last 4 messages for context
 let chatHistory = [];
 
@@ -127,7 +131,7 @@ function handleChatInput() {
         // Log the request being sent to server
         console.log("=== FRONTEND REQUEST ===");
         console.log("User message:", message);
-        console.log("Current chart config:", window.ChartChatState?.currentChartConfig);
+        console.log("Current chart config:", currentChartConfig);
         console.log("Chat history:", chatHistory);
         console.log("========================");
         
@@ -139,7 +143,7 @@ function handleChatInput() {
             },
             body: JSON.stringify({ 
                 message: message,
-                currentChart: window.ChartChatState?.currentChartConfig,
+                currentChart: currentChartConfig,
                 chatHistory: chatHistory
             })
         })
@@ -156,7 +160,7 @@ function handleChatInput() {
             
             if (data.error) {
                 const errorMessage = `Server error: ${data.error}. Details: ${data.details || 'No details'}`;
-                window.ChartChatUtilities?.logError(new Error(errorMessage), 'Chat API Response');
+                logError(new Error(errorMessage), 'Chat API Response');
                 addChatMessage(`Error: ${data.error}`, false);
             } else {
                 // Log the raw AI response for debugging
@@ -184,14 +188,14 @@ function handleChatInput() {
                         console.log("Chart action received:", aiResponse.chartAction);
                         console.log("===============================");
                         // Call chart operations module function
-                        if (window.ChartChatOperations?.updateChartFromAI) {
-                            window.ChartChatOperations.updateChartFromAI(aiResponse.chartAction);
+                        if (updateChartFromAI) {
+                            updateChartFromAI(aiResponse.chartAction);
                         }
                     }
                     
                 } catch (parseError) {
                     // If it's not JSON, treat it as a regular text response
-                    window.ChartChatUtilities?.logError(parseError, 'AI Response JSON Parse');
+                    logError(parseError, 'AI Response JSON Parse');
                     console.log("Non-JSON response received, treating as text");
                     addChatMessage(data.response, false);
                 }
@@ -207,7 +211,7 @@ function handleChatInput() {
             // Re-enable input even on error
             enableChatInput();
             
-            window.ChartChatUtilities?.logError(error, 'Chat Request');
+            logError(error, 'Chat Request');
             addChatMessage('Sorry, I encountered an error. Please try again.', false);
         });
     }
@@ -244,18 +248,32 @@ function initializeChatInterface() {
         });
     }
     
+    // Listen for PowerBI state changes
+    window.addEventListener('powerbi-chat-state', function(event) {
+        const { enableChat, disableReason } = event.detail;
+        if (enableChat) {
+            enableChatInput();
+        } else if (disableReason) {
+            disableChatInput(disableReason);
+        }
+    });
+    
+    // Listen for chart operation errors
+    window.addEventListener('chart-error', function(event) {
+        const { message } = event.detail;
+        addChatMessage(message, false);
+    });
+    
     console.log('Chat interface initialized');
 }
 
-// Export functions for use by other modules
-window.ChartChatInterface = {
+// ES6 Module exports
+export {
     disableChatInput,
     enableChatInput,
     addChatMessage,
     handleChatInput,
     autoResizeTextarea,
     initializeChatInterface,
-    // Expose chatHistory for other modules
-    get chatHistory() { return chatHistory; },
-    set chatHistory(value) { chatHistory = value; }
+    chatHistory
 };

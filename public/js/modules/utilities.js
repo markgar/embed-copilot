@@ -116,8 +116,8 @@ function initializeUtilities() {
 // Auto-initialize when this module loads
 initializeUtilities();
 
-// Export functions for use by other modules
-window.ChartChatUtilities = {
+// Export functions for use by other modules (ES6 Module exports)
+export {
     logError,
     initializeErrorHandlers,
     initializeConsoleOverrides,

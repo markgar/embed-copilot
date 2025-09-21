@@ -8,6 +8,10 @@
  * Handles button interactions, measure switching, and dimension controls
  */
 
+// Import dependencies
+import { logError } from './utilities.js';
+import { getReport } from './powerbi-core.js';
+
 // Track current measure state
 let currentMeasure = 'TotalSales';
 
@@ -30,8 +34,8 @@ function updateErrorContainer(errorMessage) {
  * Get the report instance and active page
  * @returns {Object} Object with report and activePage, or null if not available
  */
-async function getReportAndActivePage() {
-    const report = window.ChartChatState?.report;
+async function getReportAndPage() {
+    const report = getReport();
     if (!report) {
         console.error("No report instance available");
         return null;
@@ -108,7 +112,7 @@ async function showTotalSales() {
         console.log("Found active page:", activePage.displayName);
         
         // Find chart visual using the chart operations module
-        const chartVisual = await window.ChartChatOperations?.findChartVisual(activePage);
+        const chartVisual = await ChartChatOperations?.findChartVisual(activePage);
         
         if (!chartVisual) {
             console.error("No suitable chart visual found");
@@ -172,7 +176,7 @@ async function showTotalUnits() {
         console.log("Found active page:", activePage.displayName);
         
         // Find chart visual using the chart operations module
-        const chartVisual = await window.ChartChatOperations?.findChartVisual(activePage);
+        const chartVisual = await ChartChatOperations?.findChartVisual(activePage);
         
         if (!chartVisual) {
             console.error("No suitable chart visual found");
@@ -236,7 +240,7 @@ async function addTotalUnitsToChart() {
         console.log("Found active page:", activePage.displayName);
         
         // Find chart visual using the chart operations module
-        const chartVisual = await window.ChartChatOperations?.findChartVisual(activePage);
+        const chartVisual = await ChartChatOperations?.findChartVisual(activePage);
         
         if (!chartVisual) {
             console.error("No suitable chart visual found");
@@ -293,7 +297,7 @@ async function addMeasureToChart(measureName) {
         console.log("Found active page:", activePage.displayName);
         
         // Find chart visual using the chart operations module
-        const chartVisual = await window.ChartChatOperations?.findChartVisual(activePage);
+        const chartVisual = await ChartChatOperations?.findChartVisual(activePage);
         
         if (!chartVisual) {
             console.error("No suitable chart visual found");
@@ -359,7 +363,7 @@ async function showByMonth() {
         console.log("Found active page:", activePage.displayName);
         
         // Find chart visual using the chart operations module
-        const chartVisual = await window.ChartChatOperations?.findChartVisual(activePage);
+        const chartVisual = await ChartChatOperations?.findChartVisual(activePage);
         
         if (!chartVisual) {
             console.error("No suitable chart visual found");
@@ -419,7 +423,7 @@ async function showByDistrict() {
         console.log("Found active page:", activePage.displayName);
         
         // Find chart visual using the chart operations module
-        const chartVisual = await window.ChartChatOperations?.findChartVisual(activePage);
+        const chartVisual = await ChartChatOperations?.findChartVisual(activePage);
         
         if (!chartVisual) {
             console.error("No suitable chart visual found");
@@ -515,8 +519,34 @@ function initializeDataControls() {
     console.log('Data controls initialized');
 }
 
-// Export functions for use by other modules
-window.ChartChatDataControls = {
+// Accessor functions for currentMeasure
+function getCurrentMeasure() {
+    return currentMeasure;
+}
+
+function setCurrentMeasure(value) {
+    currentMeasure = value;
+}
+
+// ES6 module exports
+export {
+    updateButtonText,
+    toggleMeasure,
+    showTotalSales,
+    showTotalUnits,
+    addTotalUnitsToChart,
+    addMeasureToChart,
+    showByMonth,
+    showByDistrict,
+    removeTotalSalesFromChart,
+    updateErrorContainer,
+    initializeDataControls,
+    getCurrentMeasure,
+    setCurrentMeasure
+};
+
+// Backward compatibility (will be removed after migration)
+const ChartChatDataControls = {
     updateButtonText,
     toggleMeasure,
     showTotalSales,

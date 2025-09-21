@@ -9,153 +9,110 @@
  * This module ties together all the modularized components
  */
 
-(function() {
-    'use strict';
+// Import all dependencies
+import { logError } from './utilities.js';
+import { getReportLoadState } from './powerbi-core.js';
+import { findChartVisual } from './chart-operations.js';
+import { initializeChatInterface } from './chat-interface.js';
+import { initializeDataControls } from './data-controls.js';
+import { initializeTreeView } from './treeview.js';
 
-    /**
-     * Initialize all modules in the correct order
-     */
-    function initializeApplication() {
-        console.log("ChartChat App: Starting initialization...");
+/**
+ * Initialize all modules in the correct order
+ */
+function initializeApplication() {
+    console.log("ChartChat App: Starting initialization...");
 
-        // Ensure all required modules are loaded
-        if (!window.ChartChatUtilities) {
-            console.error("ChartChatUtilities module not loaded");
-            return;
+    try {
+        console.log("✅ All modules loaded, starting initialization...");
+
+        // Initialize Chat Interface
+        if (initializeChatInterface) {
+            initializeChatInterface();
+            console.log("✅ Chat Interface initialized");
+        } else {
+            console.warn("⚠️ Chat Interface initialization function not available");
         }
 
-        if (!window.PowerBICore) {
-            console.error("PowerBICore module not loaded");
-            return;
+        // Initialize Data Controls
+        if (initializeDataControls) {
+            initializeDataControls();
+            console.log("✅ Data Controls initialized");
+        } else {
+            console.warn("⚠️ Data Controls initialization function not available");
         }
 
-        if (!window.ChartChatOperations) {
-            console.error("ChartChatOperations module not loaded");
-            return;
-        }
+        // TreeView initializes itself via DOM ready event
+        console.log("✅ TreeView will auto-initialize");
 
-        if (!window.ChartChatInterface) {
-            console.error("ChartChatInterface module not loaded");
-            return;
-        }
+        console.log("🎉 ChartChat App initialization complete!");
 
-        if (!window.ChartChatDataControls) {
-            console.error("ChartChatDataControls module not loaded");
-            return;
-        }
+        // Set up inter-module communication
+        setupModuleCommunication();
 
-        if (!window.TreeViewModule) {
-            console.error("TreeViewModule module not loaded");
-            return;
-        }
+        // Log initial setup completion
+        console.log("Chart Chat initialized - starting with empty chart");
 
-        console.log("All modules loaded successfully");
-
-        // Initialize modules in dependency order
-        try {
-            // 1. Utilities (no dependencies) - auto-initializes
-            console.log("✓ Utilities module initialized");
-
-            // 2. PowerBI Core (depends on utilities) - auto-initializes
-            console.log("✓ PowerBI Core module initialized");
-
-            // 3. Chart Operations (depends on utilities, powerbi-core) - auto-initializes
-            console.log("✓ Chart Operations module initialized");
-
-            // 4. Chat Interface (depends on utilities, chart-operations)
-            if (window.ChartChatInterface.initializeChatInterface) {
-                window.ChartChatInterface.initializeChatInterface();
-                console.log("✓ Chat Interface module initialized");
-            }
-
-            // 5. Data Controls (depends on utilities, powerbi-core)
-            if (window.ChartChatDataControls.initializeDataControls) {
-                window.ChartChatDataControls.initializeDataControls();
-                console.log("✓ Data Controls module initialized");
-            }
-
-            // 6. TreeView (depends on utilities) - auto-initializes
-            console.log("✓ TreeView module initialized");
-
-            console.log("ChartChat App: All modules initialized successfully!");
-
-            // Set up inter-module communication
-            setupModuleCommunication();
-
-            // Log initial setup completion
-            console.log("Chart Chat initialized - starting with empty chart");
-
-        } catch (error) {
-            console.error("Error during module initialization:", error);
-            if (window.ChartChatUtilities && window.ChartChatUtilities.logError) {
-                window.ChartChatUtilities.logError(error, 'App Initialization');
-            }
+    } catch (error) {
+        console.error("❌ Error during app initialization:", error);
+        if (logError) {
+            logError(error, 'App Initialization');
         }
     }
+}
 
-    /**
-     * Set up communication between modules
-     */
-    function setupModuleCommunication() {
-        // Listen for PowerBI state changes
-        window.addEventListener('powerbi-state-change', function(event) {
-            console.log('PowerBI state changed:', event.detail);
-            
-            // Other modules can react to PowerBI state changes here
-            // For example, enable/disable UI elements based on report ready state
-        });
-
-        // Set up any other cross-module event listeners as needed
-        console.log("Inter-module communication established");
-    }
-
-    /**
-     * Get application status
-     * @returns {Object} Status of all modules
-     */
-    function getApplicationStatus() {
-        return {
-            utilities: !!window.ChartChatUtilities,
-            powerbiCore: !!window.PowerBICore,
-            chartOperations: !!window.ChartChatOperations,
-            chatInterface: !!window.ChartChatInterface,
-            dataControls: !!window.ChartChatDataControls,
-            treeView: !!window.TreeViewModule,
-            powerbiState: window.PowerBICore ? window.PowerBICore.getReportLoadState() : null
-        };
-    }
-
-    /**
-     * Emergency module reload (for debugging)
-     */
-    function reloadModules() {
-        console.log("Attempting to reload modules...");
-        // This could be expanded to reload individual modules if needed
-        location.reload();
-    }
-
-    // Export app-level functions
-    window.ChartChatApp = {
-        initializeApplication,
-        getApplicationStatus,
-        reloadModules
-    };
-
-    // Initialize when DOM is ready
-    if (document.readyState === 'loading') {
-        document.addEventListener('DOMContentLoaded', initializeApplication);
-    } else {
-        // DOM is already ready
-        initializeApplication();
-    }
-
-    // Also initialize with jQuery ready for compatibility
-    $(document).ready(function() {
-        // Double initialization protection
-        if (!window.ChartChatApp._initialized) {
-            window.ChartChatApp._initialized = true;
-            console.log("ChartChat App: jQuery ready initialization");
-        }
+/**
+ * Set up communication between modules
+ */
+function setupModuleCommunication() {
+    // Listen for PowerBI state changes
+    window.addEventListener('powerbi-state-change', function(event) {
+        console.log('PowerBI state changed:', event.detail);
+        
+        // Other modules can react to PowerBI state changes here
+        // For example, enable/disable UI elements based on report ready state
     });
 
-})();
+    // Set up any other cross-module event listeners as needed
+    console.log("Inter-module communication established");
+}
+
+/**
+ * Get application status
+ * @returns {Object} Status of all modules
+ */
+function getApplicationStatus() {
+    return {
+        utilities: true, // Always available via ES6 imports
+        powerbiCore: true,
+        chartOperations: true,
+        chatInterface: true,
+        dataControls: true,
+        treeView: true,
+        powerbiState: getReportLoadState ? getReportLoadState() : null
+    };
+}
+
+/**
+ * Emergency module reload (for debugging)
+ */
+function reloadModules() {
+    console.log("Attempting to reload modules...");
+    // This could be expanded to reload individual modules if needed
+    location.reload();
+}
+
+// ES6 module exports
+export {
+    initializeApplication,
+    getApplicationStatus,
+    reloadModules
+};
+
+// Initialize when DOM is ready
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initializeApplication);
+} else {
+    // DOM is already ready
+    initializeApplication();
+}

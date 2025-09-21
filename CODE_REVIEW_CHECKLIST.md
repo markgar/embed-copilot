@@ -34,9 +34,16 @@ Use this checklist to track improvements to the embed-copilot codebase. Check of
 - [x] Add memory monitoring and alerts
 
 ### 5. Module System Consistency
-- [ ] Standardize on ES6 modules OR CommonJS consistently
-- [ ] Update frontend modules to use consistent import/export syntax
-- [ ] Review and fix mixed module usage patterns
+- [x] **PROOF OF CONCEPT**: Convert utilities.js to ES6 module
+- [x] Create comprehensive migration plan documentation  
+- [ ] Convert powerbi-core.js to ES6 module
+- [ ] Convert chart-operations.js to ES6 module
+- [ ] Convert chat-interface.js to ES6 module
+- [ ] Convert data-controls.js to ES6 module
+- [ ] Convert treeview.js to ES6 module
+- [ ] Convert app.js to ES6 module
+- [ ] Update HTML to use ES6 module loading for all modules
+- [ ] Remove backward compatibility window exports
 - [ ] Update build process to handle chosen module system
 
 ## 🧪 Testing Improvements

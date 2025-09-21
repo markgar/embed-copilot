@@ -5,25 +5,12 @@
 
 /**
  * Chart Operations Module
- * Handles chart manipulation, AI integration, and chart // Export module functions
-window.ChartChatOperations = {
-    updateChartFromAI,
-    clearChartFields,
-    addFieldsFromAI,
-    getCurrentChartConfig,
-    getCurrentChartConfiguration,
-    setCurrentChartConfig,
-    updateCurrentChartConfig,
-    findChartVisual,
-    isSupportedChartType,
-    parseFieldName,
-    initializeChartOperations,
-    SUPPORTED_CHART_TYPES,
-    // Expose currentChartConfig for other modules
-    get currentChartConfig() { return currentChartConfig; },
-    set currentChartConfig(value) { currentChartConfig = value; }
-};acking
+ * Handles chart manipulation, AI integration, and chart creation/update operations
  */
+
+// ES6 Module imports
+import { logError } from './utilities.js';
+import { getReport, getReportLoadState } from './powerbi-core.js';
 
 // Track current chart configuration for partial updates
 let currentChartConfig = {
@@ -104,10 +91,12 @@ async function updateChartFromAI(chartAction) {
         console.log("Starting AI chart update with:", chartAction);
         
         // Get PowerBI report instance from PowerBI Core module
-        const report = window.PowerBICore?.getReport();
+        const report = getReport();
         if (!report) {
             console.error("No report instance available");
-            window.ChartChatInterface?.addChatMessage("Error: No report instance available.", false);
+            window.dispatchEvent(new CustomEvent('chart-error', {
+                detail: { message: "Error: No report instance available." }
+            }));
             return;
         }
         
@@ -117,7 +106,9 @@ async function updateChartFromAI(chartAction) {
         
         if (!activePage) {
             console.error("No active page found");
-            window.ChartChatInterface?.addChatMessage("Error: Could not find an active page to update the chart.", false);
+            window.dispatchEvent(new CustomEvent('chart-error', {
+                detail: { message: "Error: Could not find an active page to update the chart." }
+            }));
             return;
         }
         
@@ -127,7 +118,9 @@ async function updateChartFromAI(chartAction) {
         const chartVisual = await findChartVisual(activePage);
         
         if (!chartVisual) {
-            window.ChartChatInterface?.addChatMessage("Error: Could not find a chart visual to update.", false);
+            window.dispatchEvent(new CustomEvent('chart-error', {
+                detail: { message: "Error: Could not find a chart visual to update." }
+            }));
             return;
         }
         
@@ -150,8 +143,10 @@ async function updateChartFromAI(chartAction) {
         console.log("Chart updated successfully by AI");
         
     } catch (error) {
-        window.ChartChatUtilities?.logError(error, 'Chart Update from AI');
-        window.ChartChatInterface?.addChatMessage(`Error updating chart: ${error.message}`, false);
+        logError(error, 'Chart Update from AI');
+        window.dispatchEvent(new CustomEvent('chart-error', {
+            detail: { message: `Error updating chart: ${error.message}` }
+        }));
     }
 }
 
@@ -234,14 +229,14 @@ async function addFieldsFromAI(chartVisual, chartAction) {
  */
 async function getCurrentChartConfig() {
     try {
-        const report = window.PowerBICore?.getReport();
+        const report = getReport();
         if (!report) {
             console.log("No report instance available for chart config");
             return null;
         }
 
         // Check if report is fully loaded
-        if (!window.PowerBICore?.getReportLoadState()?.rendered) {
+        if (!getReportLoadState()?.rendered) {
             console.log("Report not yet fully rendered, skipping chart config load");
             return null;
         }
@@ -351,8 +346,8 @@ function initializeChartOperations() {
     console.log('Supported chart types:', SUPPORTED_CHART_TYPES);
 }
 
-// Export functions for use by other modules
-window.ChartChatOperations = {
+// ES6 Module exports
+export {
     updateChartFromAI,
     clearChartFields,
     addFieldsFromAI,
@@ -363,7 +358,5 @@ window.ChartChatOperations = {
     parseFieldName,
     initializeChartOperations,
     SUPPORTED_CHART_TYPES,
-    // Expose currentChartConfig for other modules
-    get currentChartConfig() { return currentChartConfig; },
-    set currentChartConfig(value) { currentChartConfig = value; }
+    currentChartConfig
 };
