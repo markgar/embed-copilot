@@ -73,7 +73,18 @@ Licensed under the MIT license. -->
     <script src="/js/powerbi.min.js"></script>
     <script src="https://unpkg.com/powerbi-report-authoring@latest/dist/powerbi-report-authoring.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
-    <script src="/js/chartchat.js"></script>
+    
+    <!-- Modular ChartChat Scripts - Load in dependency order -->
+    <script src="/js/modules/utilities.js"></script>
+    <script src="/js/modules/powerbi-core.js"></script>
+    <script src="/js/modules/chart-operations.js"></script>
+    <script src="/js/modules/chat-interface.js"></script>
+    <script src="/js/modules/data-controls.js"></script>
+    <script src="/js/modules/treeview.js"></script>
+    <script src="/js/modules/app.js"></script>
+    
+    <!-- Backup: Original monolithic file (disabled) -->
+    <!-- <script src="/js/chartchat.js"></script> -->
 </body>
 
 </html>

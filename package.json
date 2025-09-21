@@ -6,6 +6,9 @@
     "scripts": {
         "test": "jest --config=test/jest.config.js",
         "test:watch": "jest --config=test/jest.config.js --watch",
+        "test:e2e": "jest --config=test/jest.config.js --selectProjects=e2e",
+        "test:unit": "jest --config=test/jest.config.js --selectProjects=unit-integration",
+        "test:all": "jest --config=test/jest.config.js --selectProjects=unit-integration,e2e",
         "dev": "nodemon ./src-v2/server.js",
         "dev:telemetry": "TELEMETRY_MODE=true TELEMETRY_CONSOLE=true nodemon ./src-v2/server.js",
         "telemetry": "node tools/telemetry.js",
@@ -31,6 +34,7 @@
     "devDependencies": {
         "jest": "^30.1.3",
         "nodemon": "^2.0.2",
+        "puppeteer": "^24.22.0",
         "supertest": "^7.1.4"
     }
 }
