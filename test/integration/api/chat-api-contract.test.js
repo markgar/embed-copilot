@@ -8,7 +8,7 @@ describe('Chat API Contract Tests', () => {
   beforeAll(() => {
     // Import the src-v2 app
     process.env.NODE_ENV = 'test';
-    app = require('../src-v2/app.js');
+    app = require('../../../src-v2/app.js');
   });
 
   describe('POST /chat - Response Format Validation', () => {
@@ -162,7 +162,7 @@ describe('Chat API Performance', () => {
   
   beforeAll(() => {
     process.env.NODE_ENV = 'test';
-    app = require('../src-v2/app.js');
+    app = require('../../../src-v2/app.js');
   });
 
   // Test 11: Response time validation

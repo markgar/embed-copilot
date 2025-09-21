@@ -2,20 +2,20 @@
  * Unit tests for PowerBI Service
  */
 
-const PowerBIService = require('../../src-v2/services/powerbiService');
-const configService = require('../../src-v2/services/configService');
-const cacheService = require('../../src-v2/services/cacheService');
-const errorService = require('../../src-v2/services/errorService');
+const PowerBIService = require('../../../src-v2/services/powerbiService');
+const configService = require('../../../src-v2/services/configService');
+const cacheService = require('../../../src-v2/services/cacheService');
+const errorService = require('../../../src-v2/services/errorService');
 const msal = require("@azure/msal-node");
 const fetch = require('node-fetch');
 
 // Mock external dependencies
 jest.mock('@azure/msal-node');
 jest.mock('node-fetch');
-jest.mock('../../src-v2/services/cacheService');
+jest.mock('../../../src-v2/services/cacheService');
 
 // Mock configService
-jest.mock('../../src-v2/services/configService', () => ({
+jest.mock('../../../src-v2/services/configService', () => ({
     loadConfig: jest.fn(),
     validateConfig: jest.fn(),
     constants: { METADATA_CACHE_DURATION: 300000 }

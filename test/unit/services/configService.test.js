@@ -3,7 +3,7 @@
  * Tests configuration loading, validation, and constants
  */
 
-const configService = require('../../src-v2/services/configService');
+const configService = require('../../../src-v2/services/configService');
 
 describe('ConfigService', () => {
   describe('loadConfig', () => {

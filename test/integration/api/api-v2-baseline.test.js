@@ -8,7 +8,7 @@ describe('API Endpoints - src-v2 Baseline Tests', () => {
   beforeAll(() => {
     // Import the src-v2 app
     process.env.NODE_ENV = 'test';
-    app = require('../src-v2/app.js');
+    app = require('../../../src-v2/app.js');
   });
 
   // Test 1: Basic server health check (src-v2 now serves chartchat.html)

@@ -3,7 +3,7 @@
  * Tests standardized error response methods
  */
 
-const errorService = require('../../src-v2/services/errorService');
+const errorService = require('../../../src-v2/services/errorService');
 
 describe('ErrorService', () => {
   let mockRes;

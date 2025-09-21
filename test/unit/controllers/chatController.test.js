@@ -1,15 +1,15 @@
-const ChatController = require('../../src-v2/controllers/chatController');
-const PowerBIService = require('../../src-v2/services/powerbiService');
-const errorService = require('../../src-v2/services/errorService');
-const telemetry = require('../../src-v2/services/telemetryService');
+const ChatController = require('../../../src-v2/controllers/chatController');
+const PowerBIService = require('../../../src-v2/services/powerbiService');
+const errorService = require('../../../src-v2/services/errorService');
+const telemetry = require('../../../src-v2/services/telemetryService');
 
 // Mock dependencies
-jest.mock('../../src-v2/services/powerbiService');
-jest.mock('../../src-v2/services/errorService');
-jest.mock('../../src-v2/services/telemetryService');
+jest.mock('../../../src-v2/services/powerbiService');
+jest.mock('../../../src-v2/services/errorService');
+jest.mock('../../../src-v2/services/telemetryService');
 
 // Mock OpenAI service as a singleton instance
-jest.mock('../../src-v2/services/openaiService', () => ({
+jest.mock('../../../src-v2/services/openaiService', () => ({
     initialize: jest.fn(),
     processChat: jest.fn(),
     generateStreamingResponse: jest.fn(),
@@ -18,10 +18,10 @@ jest.mock('../../src-v2/services/openaiService', () => ({
     config: null
 }));
 
-const openaiService = require('../../src-v2/services/openaiService');
+const openaiService = require('../../../src-v2/services/openaiService');
 
 // Mock configService properly
-jest.mock('../../src-v2/services/configService', () => ({
+jest.mock('../../../src-v2/services/configService', () => ({
     loadConfig: jest.fn(),
     validateConfig: jest.fn(),
     constants: {
@@ -29,7 +29,7 @@ jest.mock('../../src-v2/services/configService', () => ({
     }
 }));
 
-const configService = require('../../src-v2/services/configService');
+const configService = require('../../../src-v2/services/configService');
 
 describe('ChatController', () => {
     let req, res;

@@ -1,10 +1,10 @@
-const openaiService = require('../../src-v2/services/openaiService');
-const configService = require('../../src-v2/services/configService');
-const telemetry = require('../../src-v2/services/telemetryService');
+const openaiService = require('../../../src-v2/services/openaiService');
+const configService = require('../../../src-v2/services/configService');
+const telemetry = require('../../../src-v2/services/telemetryService');
 
 // Mock dependencies
-jest.mock('../../src-v2/services/configService');
-jest.mock('../../src-v2/services/telemetryService');
+jest.mock('../../../src-v2/services/configService');
+jest.mock('../../../src-v2/services/telemetryService');
 
 // Mock node-fetch since that's what the service uses
 jest.mock('node-fetch', () => jest.fn());

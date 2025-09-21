@@ -3,7 +3,7 @@
  * Tests shared caching logic and state management
  */
 
-const cacheService = require('../../src-v2/services/cacheService');
+const cacheService = require('../../../src-v2/services/cacheService');
 
 describe('CacheService', () => {
   beforeEach(() => {

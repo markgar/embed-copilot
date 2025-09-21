@@ -1,12 +1,12 @@
-const SystemController = require('../../src-v2/controllers/systemController');
-const errorService = require('../../src-v2/services/errorService');
-const telemetry = require('../../src-v2/services/telemetryService');
+const SystemController = require('../../../src-v2/controllers/systemController');
+const errorService = require('../../../src-v2/services/errorService');
+const telemetry = require('../../../src-v2/services/telemetryService');
 const fs = require('fs').promises;
 const path = require('path');
 
 // Mock dependencies
-jest.mock('../../src-v2/services/errorService');
-jest.mock('../../src-v2/services/telemetryService');
+jest.mock('../../../src-v2/services/errorService');
+jest.mock('../../../src-v2/services/telemetryService');
 jest.mock('fs', () => ({
     promises: {
         readFile: jest.fn(),
@@ -15,13 +15,13 @@ jest.mock('fs', () => ({
 }));
 
 // Mock configService properly
-jest.mock('../../src-v2/services/configService', () => ({
+jest.mock('../../../src-v2/services/configService', () => ({
     configService: {
         loadConfig: jest.fn()
     }
 }));
 
-const { configService } = require('../../src-v2/services/configService');
+const { configService } = require('../../../src-v2/services/configService');
 
 describe('SystemController', () => {
     let req, res;
