@@ -63,6 +63,12 @@ npm test                 # Run tests
 npm run test:e2e         # End-to-end tests
 ```
 
+## Model Performance Testing
+
+Multiple Azure OpenAI models have been tested for optimal performance with this Power BI assistant. **GPT-4.1 Nano**, **GPT-4o Mini**, and **GPT-5 Chat** were evaluated for speed, reliability, and cost efficiency. All models passed comprehensive regression tests with 100% success rates.
+
+📊 **[View Model Performance Report](./modelperformance.md)** - Detailed comparison results and recommendations
+
 ## Project Structure
 
 ```

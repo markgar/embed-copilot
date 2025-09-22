@@ -10,15 +10,13 @@ const fetch = require('node-fetch');
 class OpenAIService {
     constructor() {
         this.initialized = false;
-        this.config = null;
     }
 
     /**
-     * Initialize the service with current configuration
+     * Initialize the service
      */
     async initialize() {
         try {
-            this.config = configService.loadConfig();
             this.initialized = true;
         } catch (error) {
             throw new Error(`Failed to initialize OpenAI service: ${error.message}`);
@@ -37,11 +35,11 @@ class OpenAIService {
     /**
      * Validate Azure OpenAI configuration
      */
-    _validateConfig() {
+    _validateConfig(config) {
         this._ensureInitialized();
         
         const required = ['azureOpenAIEndpoint', 'azureOpenAIApiKey', 'azureOpenAIDeploymentName'];
-        const missing = required.filter(key => !this.config[key]);
+        const missing = required.filter(key => !config[key]);
         
         if (missing.length > 0) {
             throw new Error(`Missing Azure OpenAI configuration: ${missing.join(', ')}`);
@@ -79,20 +77,31 @@ SCOPE AND LIMITATIONS:
 - If a field doesn't exist, the system will show an error and you can suggest alternatives
 - If users ask about non-chart related tasks (like data modeling, report formatting, or other Power BI features), politely decline and redirect them to chart creation
 
-CHART TYPES:
-- Default to columnChart or clusteredColumnChart if the user doesn't specify a chart type
-- If user specifies a chart type, acknowledge their preference
-- Choose lineChart for time-based dimensions and columnChart for categorical dimensions
+CHART TYPE SELECTION RULES (FOLLOW IN ORDER):
+1. If user explicitly specifies a chart type (e.g., "bar chart", "pie chart"), use their preference
+2. AUTOMATIC CHART TYPE SELECTION based on data:
+   - Time-based data (Month, Date, Year, Quarter, etc.): ALWAYS use lineChart
+   - Categorical data (District, Category, Product, etc.): use columnChart or clusteredColumnChart
+   - Examples: "sales by month" = lineChart, "sales by region" = columnChart
+3. Default fallback: columnChart only if no time dimension is present
 - Valid chart types: columnChart, clusteredColumnChart, barChart, lineChart, areaChart, pieChart
 
-AXIS ASSIGNMENT RULES:
+CRITICAL: Time-based dimensions like Month, Date, Quarter MUST use lineChart to show trends over time
+
+AXIS ASSIGNMENT RULES (FOLLOW EXACTLY):
 After deciding on the chart type, always reevaluate the proper axis assignments:
 - Column Charts: Dimensions/categories on X-axis, Measures on Y-axis
-- Bar Charts: Dimensions/categories on Y-axis, Measures on X-axis
+- Bar Charts: Dimensions/categories on Y-axis, Measures on X-axis (THIS IS CRITICAL - BAR CHARTS SWAP AXES)
 - Line Charts: Time dimensions on X-axis (preferred) or other dimensions, Measures on Y-axis
 - Area Charts: Time dimensions on X-axis (preferred) or other dimensions, Measures on Y-axis  
 - Pie Charts: Categories as slices, Measures as values (use xAxis for category, yAxis for measure)
 - When changing chart types, reconsider the optimal axis assignment for the new chart type
+
+FIELD NAMING REQUIREMENTS (CRITICAL):
+- ALWAYS use the full Table.FieldName format (e.g., "Sales.TotalSales", "Time.Month", "District.District")
+- NEVER use short field names without table prefixes (e.g., "TotalSales", "Month", "District")
+- This applies to ALL chartAction responses regardless of context or examples
+- Even if chat history or examples show shorter names, you MUST use the full Table.FieldName format
 
 GENERAL PRINCIPLES:
 - Time-based dimensions (like Month) work best on X-axis for line/area charts
@@ -138,8 +147,8 @@ IMPORTANT: Always determine the chart type first, then assign axes according to 
 
 EXAMPLES:
 - If user says "show me sales": {"chatResponse": "I'll try to create a chart with sales data! Which field should I use for grouping - like by month, district, or category?"}
-- If user says "sales by district": {"chatResponse": "I'll create a column chart showing sales by district!", "chartAction": {"yAxis": "sales", "xAxis": "district", "chartType": "columnChart"}}
-- If user says "bar chart of revenue by month": {"chatResponse": "I'll create a bar chart showing revenue by month!", "chartAction": {"yAxis": "month", "xAxis": "revenue", "chartType": "barChart"}}
+- If user says "sales by district": {"chatResponse": "I'll create a column chart showing sales by district!", "chartAction": {"yAxis": "Sales.TotalSales", "xAxis": "District.District", "chartType": "columnChart"}}
+- If user says "bar chart of revenue by month": {"chatResponse": "I'll create a bar chart showing revenue by month!", "chartAction": {"yAxis": "Time.Month", "xAxis": "Sales.TotalSales", "chartType": "barChart"}}
 - If current chart exists and user says "change to bar chart": {"chatResponse": "I'll change it to a bar chart!", "chartAction": {"yAxis": "[current xAxis]", "xAxis": "[current yAxis]", "chartType": "barChart"}}
 - If field doesn't exist: {"chatResponse": "I'll try that field name. If it doesn't exist in the dataset, you'll see an error and can try a different field name."}
 - If user asks "what tables are available?" or "show me the schema": {"chatResponse": "## Dataset Schema\\n\\nHere are the available tables and their fields:\\n\\n### Sales\\n- \`TotalSales\` - Total sales amount\\n- \`TotalUnits\` - Total units sold\\n\\n### Time\\n- \`Month\` - Month of the year\\n\\n### District\\n- \`District\` - Sales district name\\n\\n### Item\\n- \`Category\` - Product category\\n- \`Segment\` - Product segment"}
@@ -228,9 +237,12 @@ Always respond with ONLY valid JSON and no extra commentary.`;
         console.log('[OpenAIService] chatHistory:', chatHistory);
         this._ensureInitialized();
         
+        // Get fresh configuration - simple and reliable
+        const config = configService.loadConfig();
+        
         try {
             console.log('[OpenAIService] Validating configuration...');
-            this._validateConfig();
+            this._validateConfig(config);
             console.log('[OpenAIService] Configuration valid');
         } catch (error) {
             console.log('[OpenAIService] Configuration validation failed:', error.message);
@@ -246,8 +258,8 @@ Always respond with ONLY valid JSON and no extra commentary.`;
             console.log('[OpenAIService] System prompt built, length:', systemPrompt.length);
 
             // Prepare Azure OpenAI request
-            const apiVersion = this.config.azureOpenAIApiVersion || '2023-12-01-preview';
-            const endpoint = `${this.config.azureOpenAIEndpoint}/openai/deployments/${this.config.azureOpenAIDeploymentName}/chat/completions?api-version=${apiVersion}`;
+            const apiVersion = config.azureOpenAIApiVersion || '2023-12-01-preview';
+            const endpoint = `${config.azureOpenAIEndpoint}/openai/deployments/${config.azureOpenAIDeploymentName}/chat/completions?api-version=${apiVersion}`;
             console.log('[OpenAIService] Making request to endpoint:', endpoint);
             console.log('[OpenAIService] Making request to endpoint:', endpoint);
             
@@ -266,7 +278,7 @@ Always respond with ONLY valid JSON and no extra commentary.`;
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
-                    'api-key': this.config.azureOpenAIApiKey
+                    'api-key': config.azureOpenAIApiKey
                 },
                 body: JSON.stringify(requestBody)
             });

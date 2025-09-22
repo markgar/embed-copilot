@@ -1,49 +1,39 @@
-const fs = require('fs');
-const path = require('path');
+// Load environment variables once at startup
+require('dotenv').config();
 
-// Load environment variables if .env exists
-const envPath = path.join(__dirname, '../../.env');
-if (fs.existsSync(envPath)) {
-    require('dotenv').config({ path: envPath });
-}
-
-// Constants (extracted from global usage patterns)
+// Constants
 const METADATA_CACHE_DURATION = 5 * 60 * 1000; // 5 minutes
 
+// Simple, clean configuration - loaded once, no complex caching
+const config = {
+    // PowerBI Configuration
+    tenantId: process.env.TENANT_ID,
+    clientId: process.env.CLIENT_ID,
+    clientSecret: process.env.CLIENT_SECRET,
+    
+    // Support both property names for backwards compatibility
+    powerBIGroupId: process.env.POWERBI_GROUP_ID || process.env.POWERBI_WORKSPACE_ID,
+    powerBIWorkspaceId: process.env.POWERBI_WORKSPACE_ID || process.env.POWERBI_GROUP_ID,
+    powerBIReportId: process.env.POWERBI_REPORT_ID,
+    powerBIDatasetId: process.env.POWERBI_DATASET_ID,
+    
+    // Azure OpenAI Configuration
+    azureOpenAIEndpoint: process.env.AZURE_OPENAI_ENDPOINT,
+    azureOpenAIApiKey: process.env.AZURE_OPENAI_API_KEY,
+    azureOpenAIDeploymentName: process.env.AZURE_OPENAI_DEPLOYMENT_NAME,
+    azureOpenAIApiVersion: process.env.AZURE_OPENAI_API_VERSION || '2023-12-01-preview',
+    
+    // Other configuration
+    authorityUrl: "https://login.microsoftonline.com/",
+    scopeBase: "https://analysis.windows.net/powerbi/api/.default",
+    powerBiApiUrl: "https://api.powerbi.com/",
+    
+    // Server configuration
+    port: process.env.PORT || 5300
+};
+
 function loadConfig() {
-    const config = require('../../config/config.json');
-    
-    // Helper function to get value from config or environment
-    const getValue = (configValue, envKey) => {
-        return configValue && configValue.trim() !== '' ? configValue : process.env[envKey] || '';
-    };
-    
-    // Get group ID from either property name (standardize on powerBIGroupId)
-    const groupId = getValue(config.powerBIGroupId, 'POWERBI_GROUP_ID') || 
-                   getValue(config.powerBIWorkspaceId, 'POWERBI_WORKSPACE_ID');
-    
-    // Create enhanced config with environment fallbacks
-    const enhancedConfig = {
-        ...config,
-        tenantId: getValue(config.tenantId, 'TENANT_ID'),
-        clientId: getValue(config.clientId, 'CLIENT_ID'),
-        clientSecret: getValue(config.clientSecret, 'CLIENT_SECRET'),
-        
-        // Standardize on powerBIGroupId for internal use
-        powerBIGroupId: groupId,
-        powerBIReportId: getValue(config.powerBIReportId, 'POWERBI_REPORT_ID'),
-        powerBIDatasetId: getValue(config.powerBIDatasetId, 'POWERBI_DATASET_ID'),
-        
-        azureOpenAIEndpoint: getValue(config.azureOpenAIEndpoint, 'AZURE_OPENAI_ENDPOINT'),
-        azureOpenAIApiKey: getValue(config.azureOpenAIApiKey, 'AZURE_OPENAI_API_KEY'),
-        azureOpenAIDeploymentName: getValue(config.azureOpenAIDeploymentName, 'AZURE_OPENAI_DEPLOYMENT_NAME'),
-        azureOpenAIApiVersion: getValue(config.azureOpenAIApiVersion, 'AZURE_OPENAI_API_VERSION')
-    };
-    
-    // Keep powerBIWorkspaceId for backwards compatibility but make it reference the same value
-    enhancedConfig.powerBIWorkspaceId = groupId;
-    
-    return enhancedConfig;
+    return config;
 }
 
 /**
