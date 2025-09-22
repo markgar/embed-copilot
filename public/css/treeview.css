@@ -140,15 +140,22 @@ Licensed under the MIT license. */
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
-.tree-table-icon {
+.tree-expand-icon {
     margin-right: 6px;
     font-size: 12px;
     width: 12px;
     text-align: center;
+    transition: transform 0.2s ease;
 }
 
 .tree-table-name {
     flex: 1;
+}
+
+.tree-column-count {
+    font-size: 11px;
+    color: #6c757d;
+    font-weight: normal;
 }
 
 .tree-table-type {
@@ -171,7 +178,7 @@ Licensed under the MIT license. */
     display: block;
 }
 
-.tree-table.expanded .tree-table-icon {
+.tree-table.expanded .tree-expand-icon {
     transform: rotate(90deg);
 }
 

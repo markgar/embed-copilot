@@ -132,8 +132,7 @@ let currentTablesData = null;
         let html = `
             <div class="tree-table" data-table-name="${table.name}">
                 <div class="tree-table-header" onclick="this.parentElement.classList.toggle('expanded')">
-                    <span class="tree-expand-icon">▶</span>
-                    <span class="tree-table-icon">📊</span>
+                    <span class="tree-expand-icon">></span>
                     <span class="tree-table-name">${table.name}</span>
                     <span class="tree-column-count">(${table.columns ? table.columns.length : 0})</span>
                 </div>
