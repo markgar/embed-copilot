@@ -20,10 +20,13 @@ Licensed under the MIT license. -->
 
 <body>
     <!-- TreeView Panel -->
-    <div class="treeview-panel" id="treeview-panel">
+    <div class="treeview-panel collapsed" id="treeview-panel">
         <div class="treeview-header">
-            <span class="treeview-title">Dataset Schema</span>
-            <button id="treeview-toggle" class="treeview-toggle" title="Toggle Schema Panel">◀</button>
+            <span class="treeview-title" id="treeview-title" title="Toggle Schema Panel">Dataset Schema</span>
+            <button id="treeview-toggle" class="treeview-toggle" title="Toggle Schema Panel">
+                <span class="toggle-open">≡</span>
+                <span class="toggle-close"><</span>
+            </button>
         </div>
         <div class="treeview-controls">
             <button id="expand-all-btn" class="treeview-control-btn" title="Expand All Tables">Expand All</button>
@@ -43,7 +46,7 @@ Licensed under the MIT license. -->
         <button id="add-district-btn" class="data-control-btn" style="position: fixed; top: 170px; left: 10px; z-index: 1000; background: #0078d4; color: white; border: none; padding: 10px 15px; border-radius: 4px; cursor: pointer; font-size: 14px; width: auto; white-space: nowrap; display: none;">Show by District</button>
 
         <!-- Full-screen report container -->
-        <section id="report-container">
+        <section id="report-container" class="treeview-collapsed">
         </section>
 
         <!-- Used to display report embed error messages -->

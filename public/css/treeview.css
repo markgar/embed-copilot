@@ -27,8 +27,20 @@ Licensed under the MIT license. */
     visibility: hidden;
 }
 
-.treeview-panel.collapsed .treeview-toggle {
-    transform: rotate(180deg);
+.treeview-panel .toggle-open {
+    display: none;
+}
+
+.treeview-panel .toggle-close {
+    display: inline;
+}
+
+.treeview-panel.collapsed .toggle-open {
+    display: inline;
+}
+
+.treeview-panel.collapsed .toggle-close {
+    display: none;
 }
 
 .treeview-header {
@@ -44,6 +56,12 @@ Licensed under the MIT license. */
 
 .treeview-title {
     font-size: 14px;
+    cursor: pointer;
+    user-select: none;
+}
+
+.treeview-title:hover {
+    opacity: 0.8;
 }
 
 .treeview-toggle {

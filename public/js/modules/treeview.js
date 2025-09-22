@@ -27,6 +27,7 @@ let currentTablesData = null;
         const expandAllBtn = document.getElementById('expand-all-btn');
         const collapseAllBtn = document.getElementById('collapse-all-btn');
         const toggleBtn = document.getElementById('treeview-toggle');
+        const titleBtn = document.getElementById('treeview-title');
         
         if (expandAllBtn) {
             expandAllBtn.addEventListener('click', expandAllTables);
@@ -38,6 +39,10 @@ let currentTablesData = null;
         
         if (toggleBtn) {
             toggleBtn.addEventListener('click', toggleTreeViewPanel);
+        }
+        
+        if (titleBtn) {
+            titleBtn.addEventListener('click', toggleTreeViewPanel);
         }
 
         // Use event delegation for dynamically created content (table interactions)
