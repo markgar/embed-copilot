@@ -1,0 +1,19 @@
+/* Copyright (c) Microsoft Corporation.
+Licensed under the MIT license. */
+
+/* PowerBI Container Styles */
+
+#report-container {
+    position: fixed;
+    left: 300px; /* Offset by treeview width */
+    right: 525px;
+    top: 0;
+    bottom: 0;
+    width: auto;
+    height: 100vh;
+    transition: left 0.3s ease;
+}
+
+#report-container.treeview-collapsed {
+    left: 50px; /* Reduced offset when collapsed */
+}
