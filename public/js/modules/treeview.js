@@ -26,6 +26,7 @@ let currentTablesData = null;
         // Hook into existing HTML buttons
         const expandAllBtn = document.getElementById('expand-all-btn');
         const collapseAllBtn = document.getElementById('collapse-all-btn');
+        const toggleBtn = document.getElementById('treeview-toggle');
         
         if (expandAllBtn) {
             expandAllBtn.addEventListener('click', expandAllTables);
@@ -33,6 +34,10 @@ let currentTablesData = null;
         
         if (collapseAllBtn) {
             collapseAllBtn.addEventListener('click', collapseAllTables);
+        }
+        
+        if (toggleBtn) {
+            toggleBtn.addEventListener('click', toggleTreeViewPanel);
         }
 
         // Use event delegation for dynamically created content (table interactions)
@@ -237,6 +242,24 @@ let currentTablesData = null;
         return currentTablesData;
     }
 
+    /**
+     * Toggle the TreeView panel collapsed state
+     */
+    function toggleTreeViewPanel() {
+        const panel = document.getElementById('treeview-panel');
+        const reportContainer = document.getElementById('report-container');
+        
+        if (panel && reportContainer) {
+            // Toggle the collapsed class on both elements
+            panel.classList.toggle('collapsed');
+            reportContainer.classList.toggle('treeview-collapsed');
+            
+            console.log("TreeView panel toggled:", panel.classList.contains('collapsed') ? 'collapsed' : 'expanded');
+        } else {
+            console.error("TreeView panel or report container not found");
+        }
+    }
+
     // Auto-initialize when DOM is ready
     if (document.readyState === 'loading') {
         document.addEventListener('DOMContentLoaded', initializeTreeView);
@@ -253,5 +276,6 @@ export {
     expandAllTables,
     collapseAllTables,
     handleColumnClick,
-    getCurrentTablesData
+    getCurrentTablesData,
+    toggleTreeViewPanel
 };
