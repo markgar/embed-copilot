@@ -23,15 +23,23 @@ let currentTablesData = null;
      * Set up event listeners for TreeView interactions
      */
     function setupEventListeners() {
-        // Use event delegation on the document for dynamically created content
+        // Hook into existing HTML buttons
+        const expandAllBtn = document.getElementById('expand-all-btn');
+        const collapseAllBtn = document.getElementById('collapse-all-btn');
+        
+        if (expandAllBtn) {
+            expandAllBtn.addEventListener('click', expandAllTables);
+        }
+        
+        if (collapseAllBtn) {
+            collapseAllBtn.addEventListener('click', collapseAllTables);
+        }
+
+        // Use event delegation for dynamically created content (table interactions)
         document.addEventListener('click', function(event) {
             const action = event.target.getAttribute('data-action');
             
-            if (action === 'expand-all') {
-                expandAllTables();
-            } else if (action === 'collapse-all') {
-                collapseAllTables();
-            } else if (action === 'refresh') {
+            if (action === 'refresh') {
                 refreshTreeView();
             } else if (action === 'column-click') {
                 const columnName = event.target.getAttribute('data-column-name');
@@ -50,8 +58,8 @@ let currentTablesData = null;
         try {
             console.log("Loading TreeView data...");
             
-            // Make API call to get tables metadata
-            const response = await fetch('/api/metadata/tables');
+            // Make API call to get dataset metadata (matches working endpoint)
+            const response = await fetch('/getDatasetMetadata');
             
             if (!response.ok) {
                 throw new Error(`HTTP error! status: ${response.status}`);
@@ -67,13 +75,13 @@ let currentTablesData = null;
             console.error("Error loading TreeView data:", error);
             
             // Show error in TreeView container
-            const container = document.getElementById('tree-view-container');
+            const container = document.getElementById('treeview-content');
             if (container) {
                 container.innerHTML = `
                     <div class="tree-error">
                         <p>Error loading schema data</p>
                         <p>${error.message}</p>
-                        <button >Retry</button>
+                        <button data-action="refresh">Retry</button>
                     </div>
                 `;
             }
@@ -85,7 +93,7 @@ let currentTablesData = null;
      * @param {Object} data - The tables data to render
      */
     function renderTreeView(data) {
-        const container = document.getElementById('tree-view-container');
+        const container = document.getElementById('treeview-content');
         if (!container) {
             console.error("TreeView container not found");
             return;
@@ -98,17 +106,8 @@ let currentTablesData = null;
 
         // Create TreeView HTML structure
         let html = '<div class="tree-view">';
-        
-        // Add controls
-        html += `
-            <div class="tree-controls">
-                <button class="tree-control-btn" data-action="expand-all">Expand All</button>
-                <button class="tree-control-btn" data-action="collapse-all">Collapse All</button>
-                <button class="tree-control-btn" >Refresh</button>
-            </div>
-        `;
 
-        // Add tables
+        // Add tables (no duplicate controls - use existing HTML buttons)
         data.tables.forEach(table => {
             html += createTableElement(table);
         });
