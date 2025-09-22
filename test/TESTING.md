@@ -6,49 +6,45 @@ This document explains the comprehensive test suite for the embed-copilot applic
 
 Our test suite follows modern testing best practices with a clear separation of concerns and the testing pyramid principle. We have **324 tests** across multiple categories, achieving **79.45% statement coverage**.
 
-## Directory Structure
+# Testing
 
-```
-test/
-├── unit/                           # Fast, isolated unit tests
-│   ├── controllers/                # Controller unit tests
-│   │   ├── chatController.test.js
-│   │   ├── embedController.test.js
-│   │   ├── metadataController.test.js
-│   │   └── systemController.test.js
-│   └── services/                   # Service unit tests
-│       ├── cacheService.test.js
-│       ├── configService.test.js
-│       ├── errorService.test.js
-│       ├── openaiService.test.js
-│       └── powerbiService.test.js
-├── integration/                    # Component interaction tests
-│   ├── api/                        # API integration tests
-│   │   ├── api.test.js
-│   │   ├── api-v2-baseline.test.js
-│   │   ├── api-telemetry.test.js
-│   │   └── chat-api-contract.test.js
-│   ├── backend-frontend-contract.test.js
-│   ├── controllers.test.js
-│   ├── openai-service-integration.test.js
-│   ├── openaiService.liveCapture.test.js
-│   ├── powerbi-integration.test.js
-│   ├── routes.test.js
-│   └── service-integration.test.js
-├── services/                       # Service-focused integration tests
-│   ├── cacheService.integration.test.js
-│   ├── errorService.integration.test.js
-│   └── openaiService.regression.test.js
-├── validation/                     # End-to-end validation tests
-│   ├── caching-behavior.test.js
-│   ├── performance-verification.test.js
-│   ├── powerbi-endpoint-comprehensive.test.js
-│   └── telemetry-contract.test.js
-├── regression/                     # Baseline/snapshot tests
-│   └── openaiService.baseline.test.js
-├── jest.config.js                  # Jest configuration
-├── setup.js                       # Test setup and utilities
-└── README.md                      # This file
+Test suite organization for the embed-copilot application.
+
+## Test Categories
+
+**`unit/`** - Unit tests for individual components and services  
+**`integration/`** - Integration tests for API endpoints and service interactions  
+**`e2e/`** - End-to-end tests for complete application workflows  
+**`services/`** - Service-specific integration tests  
+**`validation/`** - Contract validation and performance verification  
+**`regression/`** - Regression tests to prevent known issues
+
+### E2E Test Files
+
+**`e2e/chartchat-frontend.test.js`** - Complete ChartChat application flow validation  
+**`e2e/chartchat-quick.test.js`** - Essential functionality quick tests  
+**`e2e/powerbi-integration-bug.test.js`** - Power BI integration bug regression tests
+
+## Configuration
+
+**`jest.config.js`** - Jest test configuration  
+**`setup.js`** - Test environment setup
+
+## Validation Scripts
+
+**`validate-contract.js`** - API contract validation  
+**`validate-openai-service.js`** - OpenAI service validation
+
+## Reports
+
+Various validation and compatibility reports documenting test results and system checks.
+
+## Running Tests
+
+```bash
+npm test              # Run all tests
+npm run test:unit     # Unit tests only
+npm run test:e2e      # End-to-end tests only
 ```
 
 ## Test Categories
