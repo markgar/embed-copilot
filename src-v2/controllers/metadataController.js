@@ -200,35 +200,21 @@ class MetadataController {
     static async getMetadataDebugInfo(req, res) {
         try {
             const cacheService = require('../services/cacheService');
+            const cacheInfo = cacheService.getCacheInfo();
             const cachedMetadata = cacheService.getCachedMetadata();
-            const lastFetched = cacheService.getMetadataLastFetched();
             
-            if (!cachedMetadata) {
-                return res.json({ 
-                    status: 'no_cache', 
-                    message: 'No metadata cached yet', 
-                    cacheInfo: { 
-                        lastFetched: lastFetched, 
-                        cacheAge: null 
-                    } 
-                });
+            // Use the cache service's built-in cache info functionality
+            const response = {
+                ...cacheInfo,
+                timestamp: new Date().toISOString()
+            };
+            
+            // If we have cached metadata, include the dataset info
+            if (cachedMetadata && cachedMetadata.dataset) {
+                response.dataset = cachedMetadata.dataset;
             }
             
-            const now = Date.now();
-            const cacheAge = lastFetched ? now - lastFetched : null;
-            const METADATA_CACHE_DURATION = 5 * 60 * 1000; // 5 minutes
-            const isStale = cacheAge && cacheAge > METADATA_CACHE_DURATION;
-            
-            res.json({
-                status: 'cached',
-                cacheInfo: { 
-                    lastFetched: new Date(lastFetched).toISOString(), 
-                    cacheAgeMs: cacheAge, 
-                    isStale, 
-                    cacheDurationMs: METADATA_CACHE_DURATION 
-                },
-                dataset: cachedMetadata.dataset
-            });
+            res.json(response);
             
         } catch (error) {
             console.error('[MetadataController] Debug info error:', error);

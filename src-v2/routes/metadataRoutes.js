@@ -10,6 +10,12 @@ const router = express.Router();
 router.get('/getDatasetMetadata', metadataController.getDatasetMetadata);
 
 /**
+ * Health check for metadata functionality
+ * GET /metadata/health
+ */
+router.get('/metadata/health', metadataController.healthCheck);
+
+/**
  * Debug endpoint for metadata cache status
  * GET /debug/metadata
  */
