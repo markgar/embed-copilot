@@ -53,7 +53,7 @@ describe('Critical Bug: PowerBI Report Instance Integration', () => {
     // Navigate to the application
     await page.goto(APP_URL, { 
       waitUntil: 'networkidle2',
-      timeout: 30000 
+      timeout: 10000  // Reduced from 20000
     });
     
     // Wait for modules to load
@@ -68,7 +68,7 @@ describe('Critical Bug: PowerBI Report Instance Integration', () => {
     await page.waitForFunction(() => {
       const status = window.PowerBICore?.getReportLoadState();
       return status && status.loaded && status.rendered;
-    }, { timeout: 60000 });
+    }, { timeout: 5000 }); // Reduced from 60000 to 5000
     
     // Verify PowerBI Core has a report instance
     const hasReportInstance = await page.evaluate(() => {
@@ -96,11 +96,11 @@ describe('Critical Bug: PowerBI Report Instance Integration', () => {
     await page.waitForFunction(() => {
       const input = document.getElementById('chat-input');
       return input && !input.disabled;
-    }, { timeout: 30000 });
+    }, { timeout: 5000 }); // Reduced from 15000 to 5000
     
     // Test the problematic interaction
     await page.focus('#chat-input');
-    await page.type('#chat-input', 'Show me sales by month');
+    await page.type('#chat-input', 'Show me sales by month', { delay: 20 }); // Added typing delay
     
     const initialMessageCount = await page.$$eval('.message', messages => messages.length);
     
@@ -113,7 +113,7 @@ describe('Critical Bug: PowerBI Report Instance Integration', () => {
       await page.waitForFunction((initialCount) => {
         const messages = document.querySelectorAll('.message');
         return messages.length >= initialCount + 2;
-      }, { timeout: 35000 }, initialMessageCount);
+      }, { timeout: 5000 }, initialMessageCount); // Reduced from 20000 to 5000
     } catch (timeoutError) {
       console.log('⏰ Chat response timed out, checking for errors...');
     }

@@ -1,6 +1,6 @@
 module.exports = {
   testEnvironment: 'node',
-  testTimeout: 30000, // Increased for E2E tests
+  testTimeout: 20000, // Reduced from 30000
   setupFilesAfterEnv: ['<rootDir>/setup.js'],
   
   // Test patterns
@@ -24,7 +24,7 @@ module.exports = {
     {
       displayName: 'e2e',
       testMatch: ['<rootDir>/e2e/**/*.test.js'],
-      testTimeout: 90000, // E2E tests need more time
+      testTimeout: 30000, // Reduced from 60000
       setupFilesAfterEnv: ['<rootDir>/setup.js']
     }
   ]

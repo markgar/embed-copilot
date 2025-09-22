@@ -42,7 +42,7 @@ describe('ChartChat E2E - Quick Validation', () => {
     // Navigate to the application
     await page.goto(APP_URL, { 
       waitUntil: 'networkidle2',
-      timeout: 30000 
+      timeout: 10000  // Reduced from 20000
     });
     
     // Verify page loaded
@@ -66,7 +66,7 @@ describe('ChartChat E2E - Quick Validation', () => {
     await page.waitForFunction(() => {
       const status = window.PowerBICore?.getReportLoadState();
       return status && status.loaded && status.rendered;
-    }, { timeout: 60000 });
+    }, { timeout: 5000 }); // Reduced from 60000 to 5000
     
     console.log('✅ PowerBI ready');
     
@@ -74,11 +74,11 @@ describe('ChartChat E2E - Quick Validation', () => {
     await page.waitForFunction(() => {
       const input = document.getElementById('chat-input');
       return input && !input.disabled;
-    }, { timeout: 30000 });
+    }, { timeout: 5000 }); // Reduced from 15000 to 5000
     
     // Test chat interaction
     await page.focus('#chat-input');
-    await page.type('#chat-input', 'Show me sales by month');
+    await page.type('#chat-input', 'Show me sales by month', { delay: 20 }); // Added typing delay
     
     const initialMessageCount = await page.$$eval('.message', messages => messages.length);
     
@@ -90,7 +90,7 @@ describe('ChartChat E2E - Quick Validation', () => {
     await page.waitForFunction((initialCount) => {
       const messages = document.querySelectorAll('.message');
       return messages.length >= initialCount + 2;
-    }, { timeout: 30000 }, initialMessageCount);
+    }, { timeout: 5000 }, initialMessageCount); // Reduced from 15000 to 5000
     
     // Verify we got a response
     const finalMessageCount = await page.$$eval('.message', messages => messages.length);

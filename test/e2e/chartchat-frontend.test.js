@@ -8,7 +8,7 @@ describe('ChartChat E2E - Modular Architecture Validation', () => {
   let page;
   let app;
   const APP_URL = 'http://localhost:5300';
-  const CHAT_TIMEOUT = 30000; // 30 seconds for AI responses
+  const CHAT_TIMEOUT = 5000; // 5 seconds for AI responses (reduced from 15)
 
   beforeAll(async () => {
     // Start the Express server
@@ -18,7 +18,7 @@ describe('ChartChat E2E - Modular Architecture Validation', () => {
     // Launch browser in non-headless mode for debugging (change to true for CI)
     browser = await puppeteer.launch({
       headless: false, // Set to true for CI/automated runs
-      slowMo: 100, // Slow down operations for visibility
+      slowMo: 50, // Reduced delay for faster operations (was 100)
       args: ['--no-sandbox', '--disable-setuid-sandbox'],
       defaultViewport: { width: 1280, height: 720 }
     });
@@ -40,13 +40,12 @@ describe('ChartChat E2E - Modular Architecture Validation', () => {
   });
 
   describe('Application Loading and Module Validation', () => {
-    test('should load the application and initialize all modules', async () => {
-      console.log('🚀 Loading ChartChat application...');
+    test('should load the app and initialize PowerBI report', async () => {
+      console.log('🌐 Navigating to ChartChat app...');
       
-      // Navigate to the application
       await page.goto(APP_URL, { 
-        waitUntil: 'networkidle2',
-        timeout: 30000 
+        waitUntil: 'networkidle2', 
+        timeout: 10000  // Reduced from 20000
       });
       
       // Verify page loaded
@@ -139,7 +138,7 @@ describe('ChartChat E2E - Modular Architecture Validation', () => {
       await page.waitForFunction(() => {
         const status = window.PowerBICore?.getReportLoadState();
         return status && status.loaded && status.rendered;
-      }, { timeout: 60000 }); // PowerBI can take time to load
+      }, { timeout: 5000 }); // Reduced from 60000 to 5000
       
       // Verify report container exists and has content
       const reportContainer = await page.$('#report-container');
@@ -150,7 +149,7 @@ describe('ChartChat E2E - Modular Architecture Validation', () => {
       expect(powerbiIframe).toBeTruthy();
       
       console.log('✅ PowerBI report loaded and ready');
-    }, 70000);
+    }, 10000); // Reduced from 70000 to 10000
   });
 
   describe('Chat Interaction Flow - "Show me sales by month"', () => {
@@ -161,14 +160,14 @@ describe('ChartChat E2E - Modular Architecture Validation', () => {
       await page.waitForFunction(() => {
         const input = document.getElementById('chat-input');
         return input && !input.disabled;
-      }, { timeout: 30000 });
+      }, { timeout: 5000 }); // Reduced from 15000 to 5000
       
       // Focus on chat input
       await page.focus('#chat-input');
       
-      // Type the test message
+      // Type the test message faster
       const testMessage = 'Show me sales by month';
-      await page.type('#chat-input', testMessage);
+      await page.type('#chat-input', testMessage, { delay: 20 }); // Added typing delay of 20ms
       
       // Get initial message count
       const initialMessageCount = await page.$$eval('.message', messages => messages.length);
@@ -197,13 +196,13 @@ describe('ChartChat E2E - Modular Architecture Validation', () => {
       
       console.log('📥 AI Response received:', aiResponse.substring(0, 100) + '...');
       console.log('✅ Chat interaction successful');
-    }, CHAT_TIMEOUT + 10000);
+    }, CHAT_TIMEOUT + 2000); // Reduced additional timeout from 5000 to 2000
 
     test('should update chart based on AI response', async () => {
       console.log('📊 Checking for chart updates...');
       
       // Wait a moment for any chart updates to process
-      await new Promise(resolve => setTimeout(resolve, 3000));
+      await new Promise(resolve => setTimeout(resolve, 500)); // Reduced from 1500
       
       // Check if chart configuration was updated
       const chartConfig = await page.evaluate(() => {
