@@ -1,4 +1,4 @@
-name: Copilot Assignment POC - Hello Test
+name: 'Copilot Mention POC - Hello Test'ame: Copilot Assignment POC - Hello Test
 
 # This workflow can be triggered manually to test Copilot issue assignment
 on:
@@ -41,11 +41,11 @@ jobs:
               
               @github-copilot Hello! 👋
               
-              This is a simple proof of concept to test if you can respond to assigned issues.
+              This is a simple proof of concept to test if you can respond to issues with mentions.
               
               **Please respond with:**
               1. A simple "Hello" greeting back as a **comment on this issue**
-              2. Confirmation that you received this assignment
+              2. Confirmation that you can see this mention
               3. Any brief comment about this test
               
               That's it! Just add a comment to this issue saying hello - no need to create a PR or make any code changes.
@@ -54,10 +54,8 @@ jobs:
               
               **Test Details:**
               - Repository: ${context.repo.owner}/${context.repo.repo}
-              - Workflow: Copilot Assignment POC
-              - Purpose: Validate issue assignment to github-copilot[bot]`,
-              
-              assignees: ['github-copilot[bot]'],
+              - Workflow: Copilot Mention POC (Assignment not supported)
+              - Purpose: Validate issue mention to @github-copilot`,
               
               labels: [
                 'test',
@@ -69,7 +67,7 @@ jobs:
             
             console.log(`✅ Created test issue #${issue.data.number} for Copilot`);
             console.log(`🔗 Issue URL: ${issue.data.html_url}`);
-            console.log(`🤖 Assigned to: github-copilot[bot]`);
+            console.log(`🤖 Mentioned: @github-copilot (assignment not supported)`);
             console.log(`⏰ Created at: ${currentTime}`);
             
             // Output the issue URL for easy access
