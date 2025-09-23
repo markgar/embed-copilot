@@ -3,8 +3,14 @@ name: Run Tests
 on:
   push:
     branches: [ main ]
+    paths-ignore:
+      - '.github/workflows/**'
+      - '!.github/workflows/test.yml'
   pull_request:
     branches: [ main ]
+    paths-ignore:
+      - '.github/workflows/**'
+      - '!.github/workflows/test.yml'
 
 jobs:
   test:
