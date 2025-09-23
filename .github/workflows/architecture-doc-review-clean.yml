@@ -1,0 +1,123 @@
+name: Architecture Review POC - Copilot Analysis
+
+# This workflow creates an issue asking Copilot to review architecture documentation against code
+on:
+  workflow_dispatch:
+    inputs:
+      message:
+        description: Custom context or focus area for the review (optional)
+        required: false
+        default: General architecture alignment review
+        type: string
+
+permissions:
+  contents: read
+  issues: write
+
+jobs:
+  test-architecture-review:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Create Architecture Review Issue for Copilot
+        id: create-issue
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const currentTime = new Date().toLocaleString();
+            const reviewId = currentTime.replace(/[^0-9]/g, '');
+            
+            const issueBody = [
+              "## 📋 Architecture Documentation Review Request",
+              "",
+              `**Triggered at**: ${currentTime}`,
+              `**Workflow run**: ${{ github.run_id }}`,
+              `**Focus area**: ${{ inputs.message }}`,
+              "",
+              "---",
+              "",
+              "@github-copilot Hello! 👋",
+              "",
+              "I need you to review the current **ARCHITECTURE.md** documentation against the actual codebase in this repository to identify any discrepancies or needed updates.",
+              "",
+              "## 📋 **Your Task:**",
+              "",
+              "1. **Read the ARCHITECTURE.md file** in the repository root",
+              "2. **Analyze the current codebase structure** (especially the `src-v2/` directory)",
+              "3. **Compare the documentation against the actual code**",
+              "4. **Identify any gaps, inaccuracies, or needed updates**",
+              "",
+              "## 🎯 **What to look for:**",
+              "",
+              "- **File paths and structure** - Are the documented paths correct?",
+              "- **Service/controller methods** - Do the documented methods exist?", 
+              "- **Dependencies and integrations** - Are external APIs and libraries accurate?",
+              "- **Architecture patterns** - Does the actual code match the documented architecture?",
+              "- **Missing components** - Are there new files/services not documented?",
+              "",
+              "## 📝 **Expected Output:**",
+              "",
+              "Please create a PR with either:",
+              "",
+              "**Option A:** If changes are needed:",
+              "- Update the ARCHITECTURE.md file with corrections",
+              "- Document any new components or changes", 
+              "- Explain what was outdated and how you fixed it",
+              "",
+              "**Option B:** If no changes are needed:",
+              `- Create a simple ARCHITECTURE_REVIEW_${reviewId}.md file`,
+              "- Document that you reviewed the architecture",
+              "- Confirm alignment between docs and code",
+              "- Note the review date and any observations",
+              "",
+              "---",
+              "",
+              "**Repository Context:**",
+              "- Main backend code: `src-v2/` directory",
+              "- Frontend code: `public/js/modules/` directory",
+              "- Configuration: `config/` directory", 
+              "- This is a Node.js app with PowerBI integration and OpenAI chat",
+              "",
+              "**Goal:** Keep our architecture documentation accurate and up-to-date!"
+            ].join("\n");
+            
+            const issue = await github.rest.issues.create({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              title: `📋 Architecture Documentation Review - ${currentTime}`,
+              body: issueBody,
+              labels: [
+                'documentation',
+                'architecture',
+                'copilot-review',
+                'automated-analysis'
+              ]
+            });
+
+            console.log(`✅ Created architecture review issue #${issue.data.number}`);
+            console.log(`🔗 Issue URL: ${issue.data.html_url}`);
+            console.log(`🤖 Next: Manually assign this issue to Copilot via GitHub UI`);
+            console.log(`⏰ Created at: ${currentTime}`);
+
+            core.setOutput('issue-url', issue.data.html_url);
+            core.setOutput('issue-number', issue.data.number);
+            
+      - name: Display Results
+        run: |
+          echo "🎉 Architecture Review Issue Created!"
+          echo "📋 Issue Number: ${{ steps.create-issue.outputs.issue-number }}"
+          echo "🔗 Issue URL: ${{ steps.create-issue.outputs.issue-url }}"
+          echo ""
+          echo "✋ MANUAL STEP REQUIRED:"
+          echo "1. Visit the issue URL above"
+          echo "2. Click on 'Assignees' in the right sidebar" 
+          echo "3. Assign the issue to 'Copilot' from the dropdown"
+          echo ""
+          echo "🔍 What Copilot will do:"
+          echo "1. Acknowledge with 👀 emoji"
+          echo "2. Read ARCHITECTURE.md and analyze the codebase"
+          echo "3. Create a PR with updates or confirmation report"
+          echo "4. Compare documented vs actual file structure"
+          echo ""
+          echo "📝 This tests Copilot's code analysis and documentation skills!"
