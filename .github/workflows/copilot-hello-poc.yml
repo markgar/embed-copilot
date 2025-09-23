@@ -1,13 +1,30 @@
-name: 'Create Issue for Copilot - Hello Test'
+name: 'Architecture Review POC - Copilot Analysis'
 
-# This workflow can be triggered manually to create an issue for Copilot testing
+# This workflow creates an issue asking Copilot       - name: Display Results
+        run: |
+          echo "🎉 Architecture Review Issue Created!"
+          echo "📋 Issue Number: ${{ steps.test-architecture-review.outputs.issue-number }}"
+          echo "🔗 Issue URL: ${{ steps.test-architecture-review.outputs.issue-url }}"
+          echo ""
+          echo "✋ MANUAL STEP REQUIRED:"
+          echo "1. Visit the issue URL above"
+          echo "2. Click on 'Assignees' in the right sidebar"
+          echo "3. Assign the issue to 'Copilot' from the dropdown"
+          echo ""
+          echo "🔍 What Copilot will do:"
+          echo "1. Acknowledge with 👀 emoji"
+          echo "2. Read ARCHITECTURE.md and analyze the codebase"
+          echo "3. Create a PR with updates or confirmation report"
+          echo "4. Compare documented vs actual file structure"
+          echo ""
+          echo "📝 This tests Copilot's code analysis and documentation skills!"cture documentation
 on:
   workflow_dispatch:
     inputs:
       message:
-        description: 'Custom message to include in the issue'
+        description: 'Custom context or focus area for the review (optional)'
         required: false
-        default: 'Hello from the manual test workflow!'
+        default: 'General architecture alignment review'
         type: string
 
 # Grant permissions needed to create and assign issues
@@ -16,11 +33,11 @@ permissions:
   issues: write
 
 jobs:
-  test-copilot-assignment:
+  test-architecture-review:
     runs-on: ubuntu-latest
     
     steps:
-      - name: Create Hello Issue for Copilot
+      - name: Create Architecture Review Issue for Copilot
         uses: actions/github-script@v7
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
@@ -30,51 +47,75 @@ jobs:
             const issue = await github.rest.issues.create({
               owner: context.repo.owner,
               repo: context.repo.repo,
-              title: `🤖 Copilot Hello Test - ${currentTime}`,
-              body: `## 👋 Hello Copilot Test
-              
+              title: `📋 Architecture Documentation Review - ${currentTime}`,
+              body: `## � Architecture Documentation Review Request
+
               **Triggered at**: ${currentTime}
               **Workflow run**: ${{ github.run_id }}
-              **Custom message**: ${{ inputs.message }}
+              **Focus area**: ${{ inputs.message }}
               
               ---
               
               @github-copilot Hello! 👋
               
-              This is a simple proof of concept to test if you can respond to issues.
+              I need you to review the current **ARCHITECTURE.md** documentation against the actual codebase in this repository to identify any discrepancies or needed updates.
               
-              **Please respond with:**
-              1. A simple "Hello" greeting back as a **comment on this issue**
-              2. Confirmation that you can see this mention
-              3. Any brief comment about this test
+              ## 📋 **Your Task:**
               
-              That's it! Just add a comment to this issue saying hello - no need to create a PR or make any code changes.
+              1. **Read the ARCHITECTURE.md file** in the repository root
+              2. **Analyze the current codebase structure** (especially the \`src-v2/\` directory)
+              3. **Compare the documentation against the actual code** 
+              4. **Identify any gaps, inaccuracies, or needed updates**
+              
+              ## 🎯 **What to look for:**
+              
+              - **File paths and structure** - Are the documented paths correct?
+              - **Service/controller methods** - Do the documented methods exist?
+              - **Dependencies and integrations** - Are external APIs and libraries accurate?
+              - **Architecture patterns** - Does the actual code match the documented architecture?
+              - **Missing components** - Are there new files/services not documented?
+              
+              ## 📝 **Expected Output:**
+              
+              Please create a PR with either:
+              
+              **Option A:** If changes are needed:
+              - Update the ARCHITECTURE.md file with corrections
+              - Document any new components or changes
+              - Explain what was outdated and how you fixed it
+              
+              **Option B:** If no changes are needed:
+              - Create a simple \`ARCHITECTURE_REVIEW_${currentTime.replace(/[^0-9]/g, '')}.md\` file
+              - Document that you reviewed the architecture
+              - Confirm alignment between docs and code
+              - Note the review date and any observations
               
               ---
               
-              **Test Details:**
-              - Repository: ${context.repo.owner}/${context.repo.repo}
-              - Workflow: Create Issue for Manual Copilot Assignment
-              - Purpose: Test issue creation, then manually assign to Copilot`,
+              **Repository Context:**
+              - Main backend code: \`src-v2/\` directory
+              - Frontend code: \`public/js/modules/\` directory  
+              - Configuration: \`config/\` directory
+              - This is a Node.js app with PowerBI integration and OpenAI chat
+              
+              **Goal:** Keep our architecture documentation accurate and up-to-date!`,
               
               labels: [
-                'test',
-                'copilot-poc', 
-                'automated-issue',
-                'hello-world'
+                'documentation',
+                'architecture',
+                'copilot-review',
+                'automated-analysis'
               ]
             });
-            
-            console.log(`✅ Created test issue #${issue.data.number} for manual Copilot assignment`);
-            console.log(`🔗 Issue URL: ${issue.data.html_url}`);
-            console.log(`🤖 Next: Manually assign this issue to Copilot via GitHub UI`);
-            console.log(`⏰ Created at: ${currentTime}`);
-            
+
+            console.log(\`✅ Created architecture review issue #\${issue.data.number}\`);
+            console.log(\`🔗 Issue URL: \${issue.data.html_url}\`);
+            console.log(\`🤖 Next: Manually assign this issue to Copilot via GitHub UI\`);
+            console.log(\`⏰ Created at: \${currentTime}\`);
+
             // Output the issue URL for easy access
             core.setOutput('issue-url', issue.data.html_url);
-            core.setOutput('issue-number', issue.data.number);
-            
-      - name: Display Results
+            core.setOutput('issue-number', issue.data.number);      - name: Display Results
         run: |
           echo "🎉 Issue Created Successfully!"
           echo "📋 Issue Number: ${{ steps.test-copilot-assignment.outputs.issue-number }}"
