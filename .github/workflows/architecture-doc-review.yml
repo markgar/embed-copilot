@@ -1,6 +1,6 @@
 name: 'Architecture Review POC - Copilot Analysis'
 
-# This workflow creates an issue asking Copilot to review architecture documentation
+# This workflow creates an issue asking Copilot to review architecture documentation against code
 on:
   workflow_dispatch:
     inputs:
