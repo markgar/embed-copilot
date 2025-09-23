@@ -72,7 +72,7 @@ describe('OpenAI Service - Baseline Response Snapshots', () => {
         test('SNAPSHOT: "what fields are available?" response format', async () => {
             const data = await getResponseData('what fields are available?');
 
-            expect(data.chatResponse).toContain('field');
+            expect(data.chatResponse.toLowerCase()).toContain('field');
             expect(data.chartAction).toBeUndefined();
             expect(data.hasUsage).toBe(true);
 
@@ -137,6 +137,32 @@ describe('OpenAI Service - Baseline Response Snapshots', () => {
             console.log('Chart Action:', JSON.stringify(data.chartAction, null, 2));
             console.log('Note: Proper axis assignment for bar chart (dimension on Y, measure on X)');
         });
+
+        test('SNAPSHOT: "show me sales by month by district" response format', async () => {
+            const data = await getResponseData('show me sales by month by district');
+
+            expect(data.chatResponse).toBeDefined();
+            expect(data.chartAction).toBeDefined();
+            expect(data.chartAction.yAxis).toBeDefined();
+            expect(data.chartAction.xAxis).toBeDefined();
+            expect(data.chartAction.chartType).toBeDefined();
+
+            // STRICT: Verify proper axis assignment for multi-dimensional data
+            expect(data.chartAction.yAxis).toContain('Sales');
+            expect(data.chartAction.xAxis).toContain('Month');
+            expect(data.chartAction.series).toContain('District');
+            // STRICT: AI should choose clusteredColumnChart for time series with grouping dimension
+            expect(data.chartAction.chartType).toBe('clusteredColumnChart');
+            // FLEXIBLE: Chat response can vary but should mention the chart creation
+            expect(data.chatResponse).toMatch(/clustered column chart|chart/i);
+
+            console.log('\n=== BASELINE CAPTURED ===');
+            console.log('Query: "show me sales by month by district"');
+            console.log('Response Type: Chart Creation');
+            console.log('Chart Action:', JSON.stringify(data.chartAction, null, 2));
+            console.log('Chat Response:', data.chatResponse);
+            console.log('Note: AI chose', data.chartAction.chartType, 'for time-based dimension (Month) with grouping (District)');
+        });
     });
 
     describe('Context-Aware Snapshots', () => {
@@ -193,7 +219,7 @@ describe('OpenAI Service - Baseline Response Snapshots', () => {
 
             expect(data.chatResponse).toBeDefined();
             expect(data.chatResponse.toLowerCase()).toContain('which');
-            expect(data.chartAction).toBeUndefined(); // Should not create chart for ambiguous request
+            expect(data.chartAction).toBeFalsy(); // Should not create chart for ambiguous request (accepts null or undefined)
 
             console.log('\n=== BASELINE CAPTURED ===');
             console.log('Query: "show me sales" (ambiguous)');

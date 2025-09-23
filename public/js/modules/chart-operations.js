@@ -16,7 +16,8 @@ import { getReport, getReportLoadState } from './powerbi-core.js';
 let currentChartConfig = {
     yAxis: null,
     xAxis: null,
-    chartType: null
+    chartType: null,
+    series: null
 };
 
 // Supported chart types in Power BI
@@ -132,6 +133,16 @@ async function updateChartFromAI(chartAction) {
             console.log(`Changing chart type from ${chartVisual.type} to ${chartAction.chartType}...`);
             await chartVisual.changeType(chartAction.chartType);
             console.log(`Chart type changed to ${chartAction.chartType} successfully`);
+            
+            // Debug: After changing to clustered column, let's see what data roles are available
+            if (chartAction.chartType === 'clusteredColumnChart') {
+                try {
+                    const dataRoles = await chartVisual.getDataRoles();
+                    console.log('Available data roles for clusteredColumnChart:', dataRoles);
+                } catch (roleError) {
+                    console.log('Could not get data roles after chart type change:', roleError.message);
+                }
+            }
         }
         
         // Add the new fields based on AI response
@@ -175,6 +186,33 @@ async function clearChartFields(chartVisual) {
                 console.log(`Removed Category axis field at index ${i}`);
             }
         }
+
+        // Clear Legend fields (for series/grouping)
+        try {
+            const legendFields = await chartVisual.getDataFields('Legend');
+            if (legendFields && legendFields.length > 0) {
+                console.log("Clearing Legend fields...");
+                for (let i = legendFields.length - 1; i >= 0; i--) {
+                    await chartVisual.removeDataField('Legend', i);
+                    console.log(`Removed Legend field at index ${i}`);
+                }
+            }
+        } catch (legendError) {
+            console.log("Could not clear Legend fields (may not exist):", legendError.message);
+            // Try alternative data role names
+            try {
+                const seriesFields = await chartVisual.getDataFields('Series');
+                if (seriesFields && seriesFields.length > 0) {
+                    console.log("Clearing Series fields...");
+                    for (let i = seriesFields.length - 1; i >= 0; i--) {
+                        await chartVisual.removeDataField('Series', i);
+                        console.log(`Removed Series field at index ${i}`);
+                    }
+                }
+            } catch (seriesError) {
+                console.log("Could not clear Series fields either:", seriesError.message);
+            }
+        }
     } catch (error) {
         console.log("Could not clear existing fields (may not exist):", error.message);
     }
@@ -187,6 +225,16 @@ async function clearChartFields(chartVisual) {
  */
 async function addFieldsFromAI(chartVisual, chartAction) {
     try {
+        console.log('DEBUG: addFieldsFromAI called with chartAction:', chartAction);
+        
+        // Debug: Let's see what data roles are available
+        try {
+            const dataRoles = await chartVisual.getDataRoles();
+            console.log('Available data roles:', dataRoles);
+        } catch (roleError) {
+            console.log('Could not get data roles:', roleError.message);
+        }
+        
         // Add Y-axis field (measures)
         if (chartAction.yAxis) {
             const { table, field } = parseFieldName(chartAction.yAxis);
@@ -214,8 +262,45 @@ async function addFieldsFromAI(chartVisual, chartAction) {
             await chartVisual.addDataField('Category', target);
             console.log(`${chartAction.xAxis} added to Category data role successfully`);
         }
+
+        // Add series field (for clustered charts) - goes to Legend data role
+        if (chartAction.series) {
+            const { table, field } = parseFieldName(chartAction.series);
+            const target = {
+                $schema: "http://powerbi.com/product/schema#column",
+                table: table,
+                column: field
+            };
+            console.log(`Adding ${chartAction.series} (series) to Legend data role...`);
+            console.log('Target object:', JSON.stringify(target, null, 2));
+            
+            try {
+                await chartVisual.addDataField('Legend', target);
+                console.log(`${chartAction.series} added to Legend data role successfully`);
+            } catch (legendError) {
+                console.log(`Failed to add to Legend data role, trying Series: ${legendError.message}`);
+                try {
+                    await chartVisual.addDataField('Series', target);
+                    console.log(`${chartAction.series} added to Series data role successfully`);
+                } catch (seriesError) {
+                    console.log(`Failed to add to Series data role, trying Column Series: ${seriesError.message}`);
+                    try {
+                        await chartVisual.addDataField('ColumnSeries', target);
+                        console.log(`${chartAction.series} added to ColumnSeries data role successfully`);
+                    } catch (finalError) {
+                        console.error(`Failed to add series field to any data role: ${finalError.message}`);
+                        // Don't throw - continue with other fields
+                    }
+                }
+            }
+        }
         
-        console.log(`Chart configured with ${chartAction.yAxis} by ${chartAction.xAxis} as ${chartAction.chartType}`);
+        const configuredFields = [];
+        if (chartAction.yAxis) configuredFields.push(`Y: ${chartAction.yAxis}`);
+        if (chartAction.xAxis) configuredFields.push(`X: ${chartAction.xAxis}`);
+        if (chartAction.series) configuredFields.push(`Series: ${chartAction.series}`);
+        
+        console.log(`Chart configured as ${chartAction.chartType} with fields: ${configuredFields.join(', ')}`);
         
     } catch (error) {
         console.error("Error adding fields from AI:", error);
@@ -259,11 +344,24 @@ async function getCurrentChartConfig() {
         // Get current data fields
         const yAxisFields = await chartVisual.getDataFields('Y');
         const xAxisFields = await chartVisual.getDataFields('Category');
+        
+        let legendFields = null;
+        try {
+            legendFields = await chartVisual.getDataFields('Legend');
+        } catch (legendError) {
+            console.log("Legend data role not available, trying Series:", legendError.message);
+            try {
+                legendFields = await chartVisual.getDataFields('Series');
+            } catch (seriesError) {
+                console.log("Series data role not available either:", seriesError.message);
+            }
+        }
 
         const config = {
             chartType: chartVisual.type,
             yAxis: null,
-            xAxis: null
+            xAxis: null,
+            series: null
         };
 
         // Determine Y-axis measure
@@ -290,6 +388,20 @@ async function getCurrentChartConfig() {
             }
         }
 
+        // Determine series/legend dimension (for clustered charts)
+        if (legendFields && legendFields.length > 0) {
+            const legendField = legendFields[0];
+            if (legendField.column === 'District') {
+                config.series = 'District.District';
+            } else if (legendField.column === 'Month') {
+                config.series = 'Time.Month';
+            } else if (legendField.column) {
+                // Try to build full table.column name
+                const tableName = legendField.table || 'Unknown';
+                config.series = `${tableName}.${legendField.column}`;
+            }
+        }
+
         console.log("Current chart config:", config);
         return config;
 
@@ -308,10 +420,11 @@ function updateCurrentChartConfig(chartAction) {
     const newConfig = {
         yAxis: chartAction.yAxis || currentChartConfig.yAxis,
         xAxis: chartAction.xAxis || currentChartConfig.xAxis,
-        chartType: chartAction.chartType || currentChartConfig.chartType
+        chartType: chartAction.chartType || currentChartConfig.chartType,
+        series: chartAction.series || currentChartConfig.series
     };
     
-    // Only update if we have valid values
+    // Only update if we have valid core values
     if (newConfig.yAxis && newConfig.xAxis && newConfig.chartType) {
         currentChartConfig = newConfig;
         console.log("Updated current chart config:", currentChartConfig);
