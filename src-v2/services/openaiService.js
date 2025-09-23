@@ -10,6 +10,7 @@ const fetch = require('node-fetch');
 class OpenAIService {
     constructor() {
         this.initialized = false;
+        this.config = null;
     }
 
     /**
@@ -17,6 +18,7 @@ class OpenAIService {
      */
     async initialize() {
         try {
+            this.config = configService.loadConfig();
             this.initialized = true;
         } catch (error) {
             throw new Error(`Failed to initialize OpenAI service: ${error.message}`);
@@ -35,11 +37,18 @@ class OpenAIService {
     /**
      * Validate Azure OpenAI configuration
      */
-    _validateConfig(config) {
+    _validateConfig(config = null) {
         this._ensureInitialized();
         
+        // Use provided config or stored config
+        const configToValidate = config || this.config;
+        
+        if (!configToValidate) {
+            throw new Error('Configuration object is required');
+        }
+        
         const required = ['azureOpenAIEndpoint', 'azureOpenAIApiKey', 'azureOpenAIDeploymentName'];
-        const missing = required.filter(key => !config[key]);
+        const missing = required.filter(key => !configToValidate[key]);
         
         if (missing.length > 0) {
             throw new Error(`Missing Azure OpenAI configuration: ${missing.join(', ')}`);
@@ -77,7 +86,7 @@ SCOPE AND LIMITATIONS:
 - If a field doesn't exist, the system will show an error and you can suggest alternatives
 - If users ask about non-chart related tasks (like data modeling, report formatting, or other Power BI features), politely decline and redirect them to chart creation
 
-CHART TYPE SELECTION RULES (FOLLOW IN ORDER):
+CHART TYPES:
 1. If user explicitly specifies a chart type (e.g., "bar chart", "pie chart"), use their preference
 2. AUTOMATIC CHART TYPE SELECTION based on data:
    - MULTI-DIMENSIONAL with time + categorical: "sales by month by district" = clusteredColumnChart (time on x-axis, categorical as series)
@@ -270,17 +279,17 @@ Always respond with ONLY valid JSON and no extra commentary.`;
         console.log('[OpenAIService] chatHistory:', chatHistory);
         this._ensureInitialized();
         
-        // Get fresh configuration - simple and reliable
-        const config = configService.loadConfig();
-        
+        // Use stored configuration and validate it
         try {
             console.log('[OpenAIService] Validating configuration...');
-            this._validateConfig(config);
+            this._validateConfig();
             console.log('[OpenAIService] Configuration valid');
         } catch (error) {
             console.log('[OpenAIService] Configuration validation failed:', error.message);
             throw new Error(`Chat completion failed: ${error.message}`);
         }
+
+        const config = this.config;
 
         const startTime = Date.now();
         
