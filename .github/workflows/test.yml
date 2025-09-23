@@ -44,7 +44,7 @@ jobs:
         }' > config/config.json
         
     - name: Run unit and integration tests
-      run: npm run test:no-e2e
+      run: npm run test:no-e2e -- --runInBand
       env:
         NODE_ENV: test
         POWERBI_GROUP_ID: ${{ secrets.POWERBI_GROUP_ID }}
@@ -58,7 +58,7 @@ jobs:
         AZURE_OPENAI_DEPLOYMENT_NAME: ${{ secrets.AZURE_OPENAI_DEPLOYMENT_NAME }}
         
     - name: Run tests with coverage
-      run: npm run test:coverage
+      run: npm run test:coverage -- --runInBand
       env:
         NODE_ENV: test
         POWERBI_GROUP_ID: ${{ secrets.POWERBI_GROUP_ID }}
