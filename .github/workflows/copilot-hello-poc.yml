@@ -1,0 +1,88 @@
+name: Copilot Assignment POC - Hello Test
+
+# This workflow can be triggered manually to test Copilot issue assignment
+on:
+  workflow_dispatch:
+    inputs:
+      message:
+        description: 'Custom message to include in the issue'
+        required: false
+        default: 'Hello from the POC workflow!'
+        type: string
+
+jobs:
+  test-copilot-assignment:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Create Hello Issue for Copilot
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const currentTime = new Date().toLocaleString();
+            
+            const issue = await github.rest.issues.create({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              title: `🤖 Copilot Hello Test - ${currentTime}`,
+              body: `## 👋 Hello Copilot Test
+              
+              **Triggered at**: ${currentTime}
+              **Workflow run**: ${{ github.run_id }}
+              **Custom message**: ${{ inputs.message }}
+              
+              ---
+              
+              @github-copilot Hello! 👋
+              
+              This is a simple proof of concept to test if you can respond to assigned issues.
+              
+              **Please respond with:**
+              1. A simple "Hello" greeting back as a **comment on this issue**
+              2. Confirmation that you received this assignment
+              3. Any brief comment about this test
+              
+              That's it! Just add a comment to this issue saying hello - no need to create a PR or make any code changes.
+              
+              ---
+              
+              **Test Details:**
+              - Repository: ${context.repo.owner}/${context.repo.repo}
+              - Workflow: Copilot Assignment POC
+              - Purpose: Validate issue assignment to github-copilot[bot]`,
+              
+              assignees: ['github-copilot[bot]'],
+              
+              labels: [
+                'test',
+                'copilot-poc', 
+                'automated-issue',
+                'hello-world'
+              ]
+            });
+            
+            console.log(`✅ Created test issue #${issue.data.number} for Copilot`);
+            console.log(`🔗 Issue URL: ${issue.data.html_url}`);
+            console.log(`🤖 Assigned to: github-copilot[bot]`);
+            console.log(`⏰ Created at: ${currentTime}`);
+            
+            // Output the issue URL for easy access
+            core.setOutput('issue-url', issue.data.html_url);
+            core.setOutput('issue-number', issue.data.number);
+            
+      - name: Display Results
+        run: |
+          echo "🎉 POC Issue Created Successfully!"
+          echo "📋 Issue Number: ${{ steps.test-copilot-assignment.outputs.issue-number }}"
+          echo "🔗 Issue URL: ${{ steps.test-copilot-assignment.outputs.issue-url }}"
+          echo ""
+          echo "🔍 What to look for:"
+          echo "1. Check if Copilot responds with 👀 emoji"
+          echo "2. Wait 2-3 minutes for Copilot to add a comment to the issue"
+          echo "3. Look for a comment from github-copilot[bot] saying hello"
+          echo ""
+          echo "📝 Next steps:"
+          echo "- Visit the issue URL above"
+          echo "- Monitor for Copilot comment activity"
+          echo "- If successful, we can build the full architecture workflow!"
