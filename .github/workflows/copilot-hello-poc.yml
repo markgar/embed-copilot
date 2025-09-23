@@ -1,13 +1,13 @@
-name: 'Copilot Mention POC - Hello Test'ame: Copilot Assignment POC - Hello Test
+name: 'Create Issue for Copilot - Hello Test'
 
-# This workflow can be triggered manually to test Copilot issue assignment
+# This workflow can be triggered manually to create an issue for Copilot testing
 on:
   workflow_dispatch:
     inputs:
       message:
         description: 'Custom message to include in the issue'
         required: false
-        default: 'Hello from the POC workflow!'
+        default: 'Hello from the manual test workflow!'
         type: string
 
 # Grant permissions needed to create and assign issues
@@ -41,7 +41,7 @@ jobs:
               
               @github-copilot Hello! 👋
               
-              This is a simple proof of concept to test if you can respond to issues with mentions.
+              This is a simple proof of concept to test if you can respond to issues.
               
               **Please respond with:**
               1. A simple "Hello" greeting back as a **comment on this issue**
@@ -54,8 +54,8 @@ jobs:
               
               **Test Details:**
               - Repository: ${context.repo.owner}/${context.repo.repo}
-              - Workflow: Copilot Mention POC (Assignment not supported)
-              - Purpose: Validate issue mention to @github-copilot`,
+              - Workflow: Create Issue for Manual Copilot Assignment
+              - Purpose: Test issue creation, then manually assign to Copilot`,
               
               labels: [
                 'test',
@@ -65,9 +65,9 @@ jobs:
               ]
             });
             
-            console.log(`✅ Created test issue #${issue.data.number} for Copilot`);
+            console.log(`✅ Created test issue #${issue.data.number} for manual Copilot assignment`);
             console.log(`🔗 Issue URL: ${issue.data.html_url}`);
-            console.log(`🤖 Mentioned: @github-copilot (assignment not supported)`);
+            console.log(`🤖 Next: Manually assign this issue to Copilot via GitHub UI`);
             console.log(`⏰ Created at: ${currentTime}`);
             
             // Output the issue URL for easy access
@@ -76,16 +76,18 @@ jobs:
             
       - name: Display Results
         run: |
-          echo "🎉 POC Issue Created Successfully!"
+          echo "🎉 Issue Created Successfully!"
           echo "📋 Issue Number: ${{ steps.test-copilot-assignment.outputs.issue-number }}"
           echo "🔗 Issue URL: ${{ steps.test-copilot-assignment.outputs.issue-url }}"
           echo ""
-          echo "🔍 What to look for:"
-          echo "1. Check if Copilot responds with 👀 emoji"
-          echo "2. Wait 2-3 minutes for Copilot to add a comment to the issue"
-          echo "3. Look for a comment from github-copilot[bot] saying hello"
+          echo "✋ MANUAL STEP REQUIRED:"
+          echo "1. Visit the issue URL above"
+          echo "2. Click on 'Assignees' in the right sidebar"
+          echo "3. Assign the issue to 'Copilot' from the dropdown"
           echo ""
-          echo "📝 Next steps:"
-          echo "- Visit the issue URL above"
-          echo "- Monitor for Copilot comment activity"
-          echo "- If successful, we can build the full architecture workflow!"
+          echo "� What to look for after assignment:"
+          echo "1. Copilot should respond with 👀 emoji within seconds"
+          echo "2. Copilot should create a draft pull request"
+          echo "3. Watch for Copilot to add comments or start working"
+          echo ""
+          echo "📝 This tests the full Copilot coding agent workflow!"
