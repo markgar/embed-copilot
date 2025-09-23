@@ -7,7 +7,7 @@ graph TB
     subgraph Browser["🌐 Browser (Client-Side JavaScript)"]
         UI["Chat Interface<br/>📁 public/js/modules/chat-interface.js"]
         Chart["PowerBI Embed Container<br/>📁 public/js/modules/chart-operations.js<br/>📁 public/js/modules/powerbi-core.js"]
-        ClientJS["Frontend Modules<br/>📁 public/js/modules/<br/>• app.js<br/>• data-controls.js<br/>• treeview.js"]
+        ClientJS["Frontend Modules<br/>📁 public/js/modules/<br/>• app.js<br/>• data-controls.js<br/>• treeview.js<br/>• utilities.js"]
     end
 
     subgraph NodeServer["🖥️ Node.js Server (Backend)"]
@@ -22,14 +22,14 @@ graph TB
             ChatRoutes["Chat Routes<br/>📁 src-v2/routes/chatRoutes.js<br/>• POST /chat<br/>• POST /chat/stream"]
             EmbedRoutes["Embed Routes<br/>📁 src-v2/routes/embedRoutes.js<br/>• GET /getEmbedToken"]
             MetaRoutes["Metadata Routes<br/>📁 src-v2/routes/metadataRoutes.js<br/>• GET /getDatasetMetadata<br/>• GET /metadata/health<br/>• GET /debug/metadata"]
-            SysRoutes["System Routes<br/>📁 src-v2/routes/systemRoutes.js<br/>• GET /health<br/>• GET /status<br/>• GET /logs<br/>• POST /log-error"]
+            SysRoutes["System Routes<br/>📁 src-v2/routes/systemRoutes.js<br/>• GET /health<br/>• GET /status<br/>• GET /logs<br/>• POST /log-error<br/>• POST /log-console<br/>• POST /telemetry-control"]
         end
 
         subgraph "Controller Layer"
             ChatCtrl["Chat Controller<br/>📁 src-v2/controllers/chatController.js<br/>• chat method<br/>• chatStream method<br/>• healthCheck method"]
             EmbedCtrl["Embed Controller<br/>📁 src-v2/controllers/embedController.js<br/>• getEmbedToken method<br/>• healthCheck method"]
             MetaCtrl["Metadata Controller<br/>📁 src-v2/controllers/metadataController.js<br/>• getDatasetMetadata method<br/>• getMetadataDebugInfo method<br/>• healthCheck method"]
-            SysCtrl["System Controller<br/>📁 src-v2/controllers/systemController.js<br/>• healthCheck method<br/>• detailedHealthCheck method<br/>• getTelemetryLogs method"]
+            SysCtrl["System Controller<br/>📁 src-v2/controllers/systemController.js<br/>• healthCheck method<br/>• detailedHealthCheck method<br/>• getTelemetryLogs method<br/>• logError method<br/>• logConsole method<br/>• telemetryControl method"]
         end
 
         subgraph "Service Layer"
