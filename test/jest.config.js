@@ -3,6 +3,17 @@ module.exports = {
   testTimeout: 20000, // Reduced from 30000
   setupFilesAfterEnv: ['<rootDir>/setup.js'],
   
+  // Coverage configuration
+  collectCoverage: false, // Enable only when explicitly requested
+  coverageDirectory: '<rootDir>/coverage',
+  coverageReporters: ['text', 'lcov', 'html'],
+  collectCoverageFrom: [
+    '<rootDir>/../src-v2/**/*.js',
+    '!<rootDir>/../src-v2/**/*.test.js',
+    '!<rootDir>/../src-v2/app.js', // Exclude main app file
+    '!<rootDir>/../node_modules/**'
+  ],
+  
   // Test patterns
   testMatch: [
     '<rootDir>/**/*.test.js'

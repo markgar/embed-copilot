@@ -57,7 +57,21 @@ jobs:
         AZURE_OPENAI_API_KEY: ${{ secrets.AZURE_OPENAI_API_KEY }}
         AZURE_OPENAI_DEPLOYMENT: ${{ secrets.AZURE_OPENAI_DEPLOYMENT }}
         
-    - name: Upload test results
+    - name: Run tests with coverage
+      run: npm run test:coverage
+      env:
+        NODE_ENV: test
+        POWERBI_GROUP_ID: ${{ secrets.POWERBI_GROUP_ID }}
+        POWERBI_REPORT_ID: ${{ secrets.POWERBI_REPORT_ID }}
+        POWERBI_DATASET_ID: ${{ secrets.POWERBI_DATASET_ID }}
+        POWERBI_CLIENT_ID: ${{ secrets.POWERBI_CLIENT_ID }}
+        POWERBI_CLIENT_SECRET: ${{ secrets.POWERBI_CLIENT_SECRET }}
+        POWERBI_TENANT_ID: ${{ secrets.POWERBI_TENANT_ID }}
+        AZURE_OPENAI_ENDPOINT: ${{ secrets.AZURE_OPENAI_ENDPOINT }}
+        AZURE_OPENAI_API_KEY: ${{ secrets.AZURE_OPENAI_API_KEY }}
+        AZURE_OPENAI_DEPLOYMENT: ${{ secrets.AZURE_OPENAI_DEPLOYMENT }}
+        
+    - name: Upload test results and coverage
       uses: actions/upload-artifact@v4
       if: always()
       with:

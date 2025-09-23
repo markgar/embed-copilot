@@ -9,6 +9,7 @@
         "test:e2e": "jest --config=test/jest.config.js --selectProjects=e2e",
         "test:unit": "jest --config=test/jest.config.js --selectProjects=unit-integration",
         "test:no-e2e": "jest --config=test/jest.config.js --selectProjects=unit-integration",
+        "test:coverage": "jest --config=test/jest.config.js --selectProjects=unit-integration --coverage",
         "test:all": "jest --config=test/jest.config.js --selectProjects=unit-integration,e2e",
         "dev": "nodemon ./src-v2/server.js",
         "dev:telemetry": "TELEMETRY_MODE=true TELEMETRY_CONSOLE=true nodemon ./src-v2/server.js",
