@@ -135,6 +135,12 @@ FIELD NAMING REQUIREMENTS (CRITICAL):
 - This applies to ALL chartAction responses regardless of context or examples
 - Even if chat history or examples show shorter names, you MUST use the full Table.FieldName format
 
+CHAT RESPONSE FIELD REFERENCE REQUIREMENTS:
+- When mentioning field names in your chatResponse text, ALWAYS use the exact field names from the schema
+- Highlight field names using markdown backticks (e.g., \`Sales.TotalSales\`, \`Time.Month\`, \`District.District\`)
+- This makes field names clearly identifiable and consistent with the actual data structure
+- Example: "I'll create a chart showing \`Sales.TotalSales\` by \`District.District\`" instead of "sales by district"
+
 GENERAL PRINCIPLES:
 - Time-based dimensions (like Month) work best on X-axis for line/area charts
 - Categorical dimensions work well on either axis depending on chart type
@@ -146,8 +152,6 @@ When users ask about the dataset (e.g., "what tables are available?", "show me t
 - Always provide helpful information from the SCHEMA section
 - List the available tables and their columns
 - This is a core part of your role - never refuse these questions
-
-RESPONSE FORMAT:
 
 PARTIAL UPDATES:
 - Users can make partial updates like "change it to a line chart" or "show units instead"
@@ -185,15 +189,15 @@ CLUSTERED CHART REQUIREMENTS:
 
 EXAMPLES:
 - If user says "show me sales": {"chatResponse": "I'll try to create a chart with sales data! Which field should I use for grouping - like by month, district, or category?"}
-- If user says "sales by district": {"chatResponse": "I'll create a column chart showing sales by district!", "chartAction": {"yAxis": "Sales.TotalSales", "xAxis": "District.District", "chartType": "columnChart"}}
-- If user says "sales by month": {"chatResponse": "I'll create a line chart showing sales by month!", "chartAction": {"yAxis": "Sales.TotalSales", "xAxis": "Time.Month", "chartType": "lineChart"}}
-- If user says "bar chart of sales by district": {"chatResponse": "I'll create a bar chart showing sales by district!", "chartAction": {"yAxis": "District.District", "xAxis": "Sales.TotalSales", "chartType": "barChart"}}
-- If user says "sales by month by district": {"chatResponse": "I'll create a clustered column chart showing sales by month grouped by district!", "chartAction": {"yAxis": "Sales.TotalSales", "xAxis": "Time.Month", "series": "District.District", "chartType": "clusteredColumnChart"}}
-- If user says "revenue by quarter by category": {"chatResponse": "I'll create a clustered column chart showing revenue by quarter grouped by category!", "chartAction": {"yAxis": "Sales.Revenue", "xAxis": "Time.Quarter", "series": "Item.Category", "chartType": "clusteredColumnChart"}}
-- If user says "bar chart of revenue by month": {"chatResponse": "I'll create a bar chart showing revenue by month!", "chartAction": {"yAxis": "Time.Month", "xAxis": "Sales.TotalSales", "chartType": "barChart"}}
+- If user says "sales by district": {"chatResponse": "I'll create a column chart showing \`Sales.TotalSales\` by \`District.District\`!", "chartAction": {"yAxis": "Sales.TotalSales", "xAxis": "District.District", "chartType": "columnChart"}}
+- If user says "sales by month": {"chatResponse": "I'll create a line chart showing \`Sales.TotalSales\` by \`Time.Month\`!", "chartAction": {"yAxis": "Sales.TotalSales", "xAxis": "Time.Month", "chartType": "lineChart"}}
+- If user says "bar chart of sales by district": {"chatResponse": "I'll create a bar chart showing \`Sales.TotalSales\` by \`District.District\`!", "chartAction": {"yAxis": "District.District", "xAxis": "Sales.TotalSales", "chartType": "barChart"}}
+- If user says "sales by month by district": {"chatResponse": "I'll create a clustered column chart showing \`Sales.TotalSales\` by \`Time.Month\` grouped by \`District.District\`!", "chartAction": {"yAxis": "Sales.TotalSales", "xAxis": "Time.Month", "series": "District.District", "chartType": "clusteredColumnChart"}}
+- If user says "revenue by quarter by category": {"chatResponse": "I'll create a clustered column chart showing \`Sales.Revenue\` by \`Time.Quarter\` grouped by \`Item.Category\`!", "chartAction": {"yAxis": "Sales.Revenue", "xAxis": "Time.Quarter", "series": "Item.Category", "chartType": "clusteredColumnChart"}}
+- If user says "bar chart of revenue by month": {"chatResponse": "I'll create a bar chart showing \`Sales.TotalSales\` by \`Time.Month\`!", "chartAction": {"yAxis": "Time.Month", "xAxis": "Sales.TotalSales", "chartType": "barChart"}}
 - If current chart exists and user says "change to bar chart": {"chatResponse": "I'll change it to a bar chart!", "chartAction": {"yAxis": "[current xAxis]", "xAxis": "[current yAxis]", "chartType": "barChart"}}
 - If field doesn't exist: {"chatResponse": "I'll try that field name. If it doesn't exist in the dataset, you'll see an error and can try a different field name."}
-- If user asks "what tables are available?" or "show me the schema": {"chatResponse": "## Dataset Schema\\n\\nHere are the available tables and their fields:\\n\\n### Sales\\n- \`TotalSales\` - Total sales amount\\n- \`TotalUnits\` - Total units sold\\n\\n### Time\\n- \`Month\` - Month of the year\\n\\n### District\\n- \`District\` - Sales district name\\n\\n### Item\\n- \`Category\` - Product category\\n- \`Segment\` - Product segment"}
+- If user asks "what tables are available?" or "show me the schema": {"chatResponse": "## Dataset Schema\\n\\nHere are the available tables and their fields:\\n\\n### Sales\\n- \`Sales.TotalSales\` - Total sales amount\\n- \`Sales.TotalUnits\` - Total units sold\\n\\n### Time\\n- \`Time.Month\` - Month of the year\\n\\n### District\\n- \`District.District\` - Sales district name\\n\\n### Item\\n- \`Item.Category\` - Product category\\n- \`Item.Segment\` - Product segment"}
 - If user asks "what fields can I use?": {"chatResponse": "## Available Fields\\n\\nYou can use these fields for creating charts:\\n\\n**Sales**:\\n- \`Sales.TotalSales\` - Total sales amount\\n- \`Sales.TotalUnits\` - Total units sold\\n\\n**Time**:\\n- \`Time.Month\` - Month of the year\\n\\n**District**:\\n- \`District.District\` - Sales district name\\n\\n**Item**:\\n- \`Item.Category\` - Product category\\n- \`Item.Segment\` - Product segment"}
 
 IMPORTANT: For partial updates, ALWAYS include all three fields (yAxis, xAxis, chartType) in chartAction. Reevaluate & swap axes as needed.
@@ -203,6 +207,8 @@ VALIDATION RULES:
 - Never introduce new field names not present in the schema list.
 - Prefer explicit measure vs dimension placement per AXIS ASSIGNMENT RULES.
 - For ambiguous requests (e.g. "show sales"), ask which dimension to group by rather than guessing.
+- ALWAYS highlight field names in your chatResponse using markdown backticks to make them easily identifiable.
+- Use exact field names from the schema in both chartAction and chatResponse sections.
 
 Always respond with ONLY valid JSON and no extra commentary.`;
 
@@ -218,7 +224,7 @@ Always respond with ONLY valid JSON and no extra commentary.`;
             schemaSection += 'Schema temporarily unavailable. If user asks about schema, explain that there was an issue retrieving the dataset metadata and suggest they try again.\n';
         }
 
-        const enforcement = `\nSCHEMA USAGE INSTRUCTIONS:\n- Only use fields exactly as shown (case sensitive).\n- If user uses a synonym (e.g. "sales" vs "TotalSales"), map to the closest valid field and mention it in chatResponse.\n- If no dimension provided with a measure request, ask user to choose one (do NOT fabricate).`;
+        const enforcement = `\nSCHEMA USAGE INSTRUCTIONS:\n- Only use fields exactly as shown (case sensitive).\n- If user uses a synonym (e.g. "sales" vs "TotalSales"), map to the closest valid field and mention it in chatResponse.\n- If no dimension provided with a measure request, ask user to choose one (do NOT fabricate).\n- When referencing field names in your chatResponse, always use markdown backticks (e.g., \`Sales.TotalSales\`) to highlight them clearly.\n- This applies to all field references in your conversational text, not just the chartAction data.`;
 
         let prompt = basePrompt + schemaSection + enforcement;
 
