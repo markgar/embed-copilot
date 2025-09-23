@@ -10,6 +10,11 @@ on:
         default: 'Hello from the POC workflow!'
         type: string
 
+# Grant permissions needed to create and assign issues
+permissions:
+  contents: read
+  issues: write
+
 jobs:
   test-copilot-assignment:
     runs-on: ubuntu-latest
