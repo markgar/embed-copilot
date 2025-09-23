@@ -40,7 +40,7 @@ jobs:
           "authorityUrl": "https://login.microsoftonline.com/${{ secrets.POWERBI_TENANT_ID }}",
           "azureOpenAIEndpoint": "${{ secrets.AZURE_OPENAI_ENDPOINT }}",
           "azureOpenAIApiKey": "${{ secrets.AZURE_OPENAI_API_KEY }}",
-          "azureOpenAIDeploymentName": "${{ secrets.AZURE_OPENAI_DEPLOYMENT }}"
+          "azureOpenAIDeploymentName": "${{ secrets.AZURE_OPENAI_DEPLOYMENT_NAME }}"
         }' > config/config.json
         
     - name: Run unit and integration tests
@@ -55,7 +55,7 @@ jobs:
         POWERBI_TENANT_ID: ${{ secrets.POWERBI_TENANT_ID }}
         AZURE_OPENAI_ENDPOINT: ${{ secrets.AZURE_OPENAI_ENDPOINT }}
         AZURE_OPENAI_API_KEY: ${{ secrets.AZURE_OPENAI_API_KEY }}
-        AZURE_OPENAI_DEPLOYMENT: ${{ secrets.AZURE_OPENAI_DEPLOYMENT }}
+        AZURE_OPENAI_DEPLOYMENT_NAME: ${{ secrets.AZURE_OPENAI_DEPLOYMENT_NAME }}
         
     - name: Run tests with coverage
       run: npm run test:coverage
@@ -69,7 +69,7 @@ jobs:
         POWERBI_TENANT_ID: ${{ secrets.POWERBI_TENANT_ID }}
         AZURE_OPENAI_ENDPOINT: ${{ secrets.AZURE_OPENAI_ENDPOINT }}
         AZURE_OPENAI_API_KEY: ${{ secrets.AZURE_OPENAI_API_KEY }}
-        AZURE_OPENAI_DEPLOYMENT: ${{ secrets.AZURE_OPENAI_DEPLOYMENT }}
+        AZURE_OPENAI_DEPLOYMENT_NAME: ${{ secrets.AZURE_OPENAI_DEPLOYMENT_NAME }}
         
     - name: Upload test results and coverage
       uses: actions/upload-artifact@v4
