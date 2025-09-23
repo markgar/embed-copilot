@@ -43,20 +43,6 @@ jobs:
           "azureOpenAIDeploymentName": "${{ secrets.AZURE_OPENAI_DEPLOYMENT_NAME }}"
         }' > config/config.json
         
-    - name: Run unit and integration tests
-      run: npm run test:no-e2e -- --runInBand
-      env:
-        NODE_ENV: test
-        POWERBI_GROUP_ID: ${{ secrets.POWERBI_GROUP_ID }}
-        POWERBI_REPORT_ID: ${{ secrets.POWERBI_REPORT_ID }}
-        POWERBI_DATASET_ID: ${{ secrets.POWERBI_DATASET_ID }}
-        POWERBI_CLIENT_ID: ${{ secrets.POWERBI_CLIENT_ID }}
-        POWERBI_CLIENT_SECRET: ${{ secrets.POWERBI_CLIENT_SECRET }}
-        POWERBI_TENANT_ID: ${{ secrets.POWERBI_TENANT_ID }}
-        AZURE_OPENAI_ENDPOINT: ${{ secrets.AZURE_OPENAI_ENDPOINT }}
-        AZURE_OPENAI_API_KEY: ${{ secrets.AZURE_OPENAI_API_KEY }}
-        AZURE_OPENAI_DEPLOYMENT_NAME: ${{ secrets.AZURE_OPENAI_DEPLOYMENT_NAME }}
-        
     - name: Run tests with coverage
       run: npm run test:coverage -- --runInBand
       env:
