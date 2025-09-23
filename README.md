@@ -54,6 +54,120 @@ Ask the AI assistant questions like:
 - "Show me top 5 performing products"
 - "Change this to a line chart"
 
+## Architecture
+
+### Chat Message Flow
+
+The following sequence diagram shows how a chat message flows through all software layers:
+
+```mermaid
+sequenceDiagram
+    participant User
+    participant Frontend as Frontend (chat-interface.js)
+    participant Express as Express App
+    participant ChatRoute as Chat Routes
+    participant ChatController as Chat Controller
+    participant PowerBIService as PowerBI Service
+    participant OpenAIService as OpenAI Service
+    participant AzureOpenAI as Azure OpenAI API
+    participant ChartOps as Chart Operations
+    participant PowerBIEmbed as PowerBI Embedded
+
+    User->>Frontend: Types message and presses Enter
+    
+    Note over Frontend: handleChatInput() called
+    Frontend->>Frontend: Disable input, show "Processing..."
+    Frontend->>Frontend: Add user message to chat UI
+    Frontend->>Frontend: Clear input, show typing indicator
+    Frontend->>Frontend: Prepare request with message, currentChartConfig, chatHistory
+
+    Frontend->>Express: POST /chat with JSON payload
+    Note over Express: Express middleware logs request
+    Express->>ChatRoute: Route to chat endpoint
+    ChatRoute->>ChatController: Call ChatController.chat()
+
+    Note over ChatController: Validate request parameters
+    ChatController->>ChatController: Extract message, currentChart, chatHistory
+    ChatController->>ChatController: Validate message (not empty)
+    ChatController->>ChatController: Load configuration
+
+    Note over ChatController: Get PowerBI metadata context
+    ChatController->>PowerBIService: new PowerBIService(config)
+    ChatController->>PowerBIService: getMetadataContext(groupId, datasetId)
+    
+    Note over PowerBIService: Authenticate and fetch metadata
+    PowerBIService->>PowerBIService: getAccessToken() (Service Principal)
+    PowerBIService->>PowerBIService: getRequestHeader()
+    PowerBIService->>PowerBIService: Cache check for metadata
+    PowerBIService-->>ChatController: Return metadata context
+
+    Note over ChatController: Process chat with AI
+    ChatController->>OpenAIService: initialize()
+    ChatController->>OpenAIService: processChat(message, context, currentChart, chatHistory)
+
+    Note over OpenAIService: Build system prompt with context
+    OpenAIService->>OpenAIService: buildSystemPrompt(metadata, currentChart, chatHistory)
+    OpenAIService->>OpenAIService: Validate Azure OpenAI config
+    OpenAIService->>OpenAIService: Prepare request with system prompt + user message
+
+    OpenAIService->>AzureOpenAI: POST to chat/completions endpoint
+    AzureOpenAI-->>OpenAIService: Return AI response with usage stats
+    
+    Note over OpenAIService: Log telemetry and return
+    OpenAIService->>OpenAIService: _logChatTelemetry()
+    OpenAIService-->>ChatController: Return {response, usage, duration}
+
+    Note over ChatController: Send response back
+    ChatController->>ChatController: Record telemetry event
+    ChatController-->>Express: res.json({response, usage})
+    Express-->>Frontend: HTTP 200 with JSON response
+
+    Note over Frontend: Process AI response
+    Frontend->>Frontend: Clear typing indicator, enable input
+    Frontend->>Frontend: Parse JSON response
+    Frontend->>Frontend: Extract chatResponse and chartAction
+    Frontend->>Frontend: Add chatResponse to chat UI and history
+
+    alt Chart Action Present
+        Frontend->>ChartOps: updateChartFromAI(chartAction)
+        
+        Note over ChartOps: Update PowerBI chart
+        ChartOps->>ChartOps: Get PowerBI report instance
+        ChartOps->>PowerBIEmbed: getPages(), find active page
+        ChartOps->>PowerBIEmbed: findChartVisual()
+        ChartOps->>PowerBIEmbed: clearChartFields()
+        
+        alt Chart Type Change
+            ChartOps->>PowerBIEmbed: changeType(chartAction.chartType)
+        end
+        
+        ChartOps->>PowerBIEmbed: addFieldsFromAI() - add new axes/fields
+        ChartOps->>ChartOps: Update currentChartConfig
+        ChartOps-->>Frontend: Chart updated successfully
+        
+    else Error in Chart Update
+        ChartOps->>Frontend: Dispatch 'chart-error' event
+        Frontend->>Frontend: Add error message to chat
+    end
+
+    Note over Frontend: Ready for next user input
+    Frontend->>Frontend: Focus returns to input field
+
+    Note over User: Sees AI response and updated chart
+```
+
+### Key Software Layers
+
+1. **Frontend Layer** - User interface and chat management (`chat-interface.js`)
+2. **Express Application** - HTTP routing and middleware (`app.js`, `routes/`)
+3. **Controller Layer** - Request orchestration (`chatController.js`)
+4. **Service Layer** - Business logic (PowerBI, OpenAI, Config services)
+5. **External APIs** - Azure OpenAI and PowerBI REST APIs
+6. **Chart Operations** - PowerBI visualization updates (`chart-operations.js`)
+7. **PowerBI Embedded** - Report rendering and manipulation
+
+The system maintains context through chat history, current chart configuration, and dataset metadata to provide intelligent, contextual responses.
+
 ## Development
 
 ```bash
