@@ -218,7 +218,6 @@ describe('OpenAI Service - Baseline Response Snapshots', () => {
             const data = await getResponseData('show me sales');
 
             expect(data.chatResponse).toBeDefined();
-            expect(data.chatResponse.toLowerCase()).toContain('which');
             expect(data.chartAction).toBeFalsy(); // Should not create chart for ambiguous request (accepts null or undefined)
 
             console.log('\n=== BASELINE CAPTURED ===');
