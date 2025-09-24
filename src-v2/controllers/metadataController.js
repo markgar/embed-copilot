@@ -129,29 +129,6 @@ class MetadataController {
   }
 
   /**
-     * Clear metadata cache
-     * POST /clearMetadataCache
-     */
-  static async clearCache(req, res) {
-    try {
-      // Access cache service through PowerBI service for consistency
-      const cacheService = require('../services/cacheService');
-            
-      cacheService.clearCache();
-            
-      res.json({
-        status: 'success',
-        message: 'Metadata cache cleared',
-        timestamp: new Date().toISOString()
-      });
-            
-    } catch (error) {
-      console.error('[MetadataController] Cache clear error:', error);
-      errorService.sendError(res, 500, 'Failed to clear cache', error.message);
-    }
-  }
-
-  /**
      * Health check for metadata functionality
      */
   static async healthCheck(req, res) {
@@ -174,10 +151,6 @@ class MetadataController {
         status: 'ok',
         service: 'metadata',
         message: 'Metadata service ready',
-        cache: {
-          enabled: true,
-          hasCachedData: !!require('../services/cacheService').getCachedMetadata()
-        },
         timestamp: new Date().toISOString()
       });
             
@@ -192,34 +165,7 @@ class MetadataController {
     }
   }
 
-  /**
-     * Get metadata cache debug information
-     * GET /debug/metadata
-     */
-  static async getMetadataDebugInfo(req, res) {
-    try {
-      const cacheService = require('../services/cacheService');
-      const cacheInfo = cacheService.getCacheInfo();
-      const cachedMetadata = cacheService.getCachedMetadata();
-            
-      // Use the cache service's built-in cache info functionality
-      const response = {
-        ...cacheInfo,
-        timestamp: new Date().toISOString()
-      };
-            
-      // If we have cached metadata, include the dataset info
-      if (cachedMetadata && cachedMetadata.dataset) {
-        response.dataset = cachedMetadata.dataset;
-      }
-            
-      res.json(response);
-            
-    } catch (error) {
-      console.error('[MetadataController] Debug info error:', error);
-      res.status(500).json({ error: 'Failed to get debug metadata' });
-    }
-  }
+
 }
 
 module.exports = MetadataController;

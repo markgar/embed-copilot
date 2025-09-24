@@ -14,11 +14,11 @@ The cache service (`src-v2/services/cacheService.js`) is marked as deprecated an
 - [x] Verify no other services have hard dependencies on cache service
 
 ### Phase 2: Controller Updates  
-- [ ] Update `metadataController.js`:
-  - [ ] Remove `clearCache()` method (lines ~133-150)
-  - [ ] Remove cache status from `healthCheck()` method (line ~179)  
-  - [ ] Remove `getMetadataDebugInfo()` method (lines ~201-210)
-  - [ ] Remove all `require('../services/cacheService')` statements
+- [x] Update `metadataController.js`:
+  - [x] Remove `clearCache()` method (lines ~133-150)
+  - [x] Remove cache status from `healthCheck()` method (line ~179)  
+  - [x] Remove `getMetadataDebugInfo()` method (lines ~201-210)
+  - [x] Remove all `require('../services/cacheService')` statements
 
 ### Phase 3: Route Updates
 - [ ] Update `/src-v2/routes/metadataRoutes.js`:
