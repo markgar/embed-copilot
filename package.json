@@ -14,6 +14,9 @@
         "dev": "nodemon ./src-v2/server.js",
         "dev:telemetry": "TELEMETRY_MODE=true TELEMETRY_CONSOLE=true nodemon ./src-v2/server.js",
         "telemetry": "node tools/telemetry.js",
+        "lint": "eslint src-v2/ --format=json --output-file=eslint-report.json || eslint src-v2/",
+        "lint:fix": "eslint src-v2/ --fix",
+        "lint:check": "eslint src-v2/",
         "start": "NODE_ENV=production node ./src-v2/server.js",
         "start:debug": "NODE_ENV=production node --inspect=9229 ./src-v2/server.js"
     },
@@ -34,6 +37,7 @@
         "powerbi-report-authoring": "^2.0.0"
     },
     "devDependencies": {
+        "eslint": "^9.36.0",
         "jest": "^30.1.3",
         "nodemon": "^3.1.10",
         "puppeteer": "^24.22.0",

@@ -116,4 +116,4 @@ logs/
 telemetry.jsonl
 telemetry_data.json
 clean_telemetry.json
-*_telemetry.json
+*_telemetry.jsoneslint-report.json
