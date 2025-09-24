@@ -1,5 +1,4 @@
 const configService = require('./configService');
-const axios = require('axios');
 const telemetry = require('./telemetryService');
 const fetch = require('node-fetch');
 
@@ -8,54 +7,54 @@ const fetch = require('node-fetch');
  * Consolidates chat completion, system prompt building, and telemetry logging
  */
 class OpenAIService {
-    constructor() {
-        this.initialized = false;
-        this.config = null;
-    }
+  constructor() {
+    this.initialized = false;
+    this.config = null;
+  }
 
-    /**
+  /**
      * Initialize the service
      */
-    async initialize() {
-        try {
-            this.config = configService.loadConfig();
-            this.initialized = true;
-        } catch (error) {
-            throw new Error(`Failed to initialize OpenAI service: ${error.message}`);
-        }
+  async initialize() {
+    try {
+      this.config = configService.loadConfig();
+      this.initialized = true;
+    } catch (error) {
+      throw new Error(`Failed to initialize OpenAI service: ${error.message}`);
     }
+  }
 
-    /**
+  /**
      * Ensure service is initialized before operations
      */
-    _ensureInitialized() {
-        if (!this.initialized) {
-            throw new Error('OpenAI service not initialized. Call initialize() first.');
-        }
+  _ensureInitialized() {
+    if (!this.initialized) {
+      throw new Error('OpenAI service not initialized. Call initialize() first.');
     }
+  }
 
-    /**
+  /**
      * Validate Azure OpenAI configuration
      */
-    _validateConfig(config = null) {
-        this._ensureInitialized();
+  _validateConfig(config = null) {
+    this._ensureInitialized();
         
-        // Use provided config or stored config
-        const configToValidate = config || this.config;
+    // Use provided config or stored config
+    const configToValidate = config || this.config;
         
-        if (!configToValidate) {
-            throw new Error('Configuration object is required');
-        }
-        
-        const required = ['azureOpenAIEndpoint', 'azureOpenAIApiKey', 'azureOpenAIDeploymentName'];
-        const missing = required.filter(key => !configToValidate[key]);
-        
-        if (missing.length > 0) {
-            throw new Error(`Missing Azure OpenAI configuration: ${missing.join(', ')}`);
-        }
+    if (!configToValidate) {
+      throw new Error('Configuration object is required');
     }
+        
+    const required = ['azureOpenAIEndpoint', 'azureOpenAIApiKey', 'azureOpenAIDeploymentName'];
+    const missing = required.filter(key => !configToValidate[key]);
+        
+    if (missing.length > 0) {
+      throw new Error(`Missing Azure OpenAI configuration: ${missing.join(', ')}`);
+    }
+  }
 
-    /**
+  /**
      * Build dynamic system prompt based on dataset metadata
      * EXACT COPY from /src/agent.js buildDynamicSystemPrompt()
      * 
@@ -64,10 +63,10 @@ class OpenAIService {
      * @param {Array} chatHistory - Chat history for context
      * @returns {string} - Constructed system prompt
      */
-    buildSystemPrompt(metadata = null, currentChart = null, chatHistory = null) {
-        this._ensureInitialized();
+  buildSystemPrompt(metadata = null, currentChart = null, chatHistory = null) {
+    this._ensureInitialized();
 
-        const basePrompt = `You are a specialized Power BI chart creation assistant. Use ONLY the fields explicitly listed in the schema section. Never invent or guess field names.
+    const basePrompt = `You are a specialized Power BI chart creation assistant. Use ONLY the fields explicitly listed in the schema section. Never invent or guess field names.
 
 CORE RESPONSIBILITIES:
 1. Create and modify charts using available dataset fields
@@ -212,63 +211,63 @@ VALIDATION RULES:
 
 Always respond with ONLY valid JSON and no extra commentary.`;
 
-        let schemaSection = '\nSCHEMA (table.column [type]):\n';
-        if (metadata && metadata.tables) {
-            for (const t of metadata.tables) {
-                if (!t.columns) continue;
-                for (const c of t.columns) {
-                    schemaSection += `${t.name}.${c.name} [${c.type}]\n`;
-                }
-            }
-        } else {
-            schemaSection += 'Schema temporarily unavailable. If user asks about schema, explain that there was an issue retrieving the dataset metadata and suggest they try again.\n';
+    let schemaSection = '\nSCHEMA (table.column [type]):\n';
+    if (metadata && metadata.tables) {
+      for (const t of metadata.tables) {
+        if (!t.columns) continue;
+        for (const c of t.columns) {
+          schemaSection += `${t.name}.${c.name} [${c.type}]\n`;
         }
+      }
+    } else {
+      schemaSection += 'Schema temporarily unavailable. If user asks about schema, explain that there was an issue retrieving the dataset metadata and suggest they try again.\n';
+    }
 
-        const enforcement = `\nSCHEMA USAGE INSTRUCTIONS:\n- Only use fields exactly as shown (case sensitive).\n- If user uses a synonym (e.g. "sales" vs "TotalSales"), map to the closest valid field and mention it in chatResponse.\n- If no dimension provided with a measure request, ask user to choose one (do NOT fabricate).\n- When referencing field names in your chatResponse, always use markdown backticks (e.g., \`Sales.TotalSales\`) to highlight them clearly.\n- This applies to all field references in your conversational text, not just the chartAction data.`;
+    const enforcement = '\nSCHEMA USAGE INSTRUCTIONS:\n- Only use fields exactly as shown (case sensitive).\n- If user uses a synonym (e.g. "sales" vs "TotalSales"), map to the closest valid field and mention it in chatResponse.\n- If no dimension provided with a measure request, ask user to choose one (do NOT fabricate).\n- When referencing field names in your chatResponse, always use markdown backticks (e.g., `Sales.TotalSales`) to highlight them clearly.\n- This applies to all field references in your conversational text, not just the chartAction data.';
 
-        let prompt = basePrompt + schemaSection + enforcement;
+    let prompt = basePrompt + schemaSection + enforcement;
 
-        if (currentChart && (currentChart.yAxis || currentChart.xAxis || currentChart.chartType)) {
-            prompt += `\n\nCURRENT CHART CONTEXT:\n` +
-                `The user currently has a chart with:\n` +
+    if (currentChart && (currentChart.yAxis || currentChart.xAxis || currentChart.chartType)) {
+      prompt += '\n\nCURRENT CHART CONTEXT:\n' +
+                'The user currently has a chart with:\n' +
                 `- Y-axis: ${currentChart.yAxis || 'none'}\n` +
                 `- X-axis: ${currentChart.xAxis || 'none'}\n` +
                 `- Chart Type: ${currentChart.chartType || 'unknown'}\n` +
-                `\nWhen the user makes partial update requests (like "change it to a bar chart"), you MUST:\n` +
-                `1. First determine the new chart type\n` +
-                `2. Then reevaluate the proper axis assignments according to the AXIS ASSIGNMENT RULES above\n` +
-                `3. For chart type changes, DO NOT preserve axes if they need to be swapped (e.g., column to bar chart)\n` +
-                `4. Always include ALL THREE fields (yAxis, xAxis, chartType) in your chartAction response with the correct axis assignments for the new chart type`;
-        }
-
-        // Add chat history for context if available
-        if (chatHistory && Array.isArray(chatHistory) && chatHistory.length > 0) {
-            prompt += `\n\nCONVERSATION HISTORY FOR CONTEXT:\n` +
-                `The following is the recent conversation history (up to last 4 messages) to provide context for the current request. ` +
-                `Use this history to understand references like "it", "that chart", "change the previous one", etc. ` +
-                `Only look as far back as needed to understand the current request - you don't need to process all historical messages.\n\n` +
-                `IMPORTANT - CLARIFICATION FOLLOW-UP HANDLING:\n` +
-                `If your most recent message (Assistant) was asking for clarification about field names, chart types, or other specifics, ` +
-                `and the current user message appears to be answering that question (even if brief like "District" or "yes"), ` +
-                `then piece together the original request with the user's clarification response to complete the full action.\n\n` +
-                `Examples:\n` +
-                `- If you asked "Do you want me to show Sales.TotalSales by District.District instead?" and user responds "District" or "yes" → create the chart\n` +
-                `- If you asked "Which chart type would you prefer?" and user responds "bar chart" → apply that chart type to the previous request\n` +
-                `- If you asked "Which field should I use for grouping?" and user responds "month" → combine with the original measure request\n\n` +
-                `If the user's response doesn't clearly answer your clarification question, proceed with your best interpretation and move forward.\n\n`;
-            
-            chatHistory.forEach((msg, index) => {
-                const speaker = msg.role === 'user' ? 'User' : 'Assistant';
-                prompt += `${speaker}: ${msg.content}\n`;
-            });
-            
-            prompt += `\nCurrent user message follows below this context section.`;
-        }
-
-        return prompt;
+                '\nWhen the user makes partial update requests (like "change it to a bar chart"), you MUST:\n' +
+                '1. First determine the new chart type\n' +
+                '2. Then reevaluate the proper axis assignments according to the AXIS ASSIGNMENT RULES above\n' +
+                '3. For chart type changes, DO NOT preserve axes if they need to be swapped (e.g., column to bar chart)\n' +
+                '4. Always include ALL THREE fields (yAxis, xAxis, chartType) in your chartAction response with the correct axis assignments for the new chart type';
     }
 
-    /**
+    // Add chat history for context if available
+    if (chatHistory && Array.isArray(chatHistory) && chatHistory.length > 0) {
+      prompt += '\n\nCONVERSATION HISTORY FOR CONTEXT:\n' +
+                'The following is the recent conversation history (up to last 4 messages) to provide context for the current request. ' +
+                'Use this history to understand references like "it", "that chart", "change the previous one", etc. ' +
+                'Only look as far back as needed to understand the current request - you don\'t need to process all historical messages.\n\n' +
+                'IMPORTANT - CLARIFICATION FOLLOW-UP HANDLING:\n' +
+                'If your most recent message (Assistant) was asking for clarification about field names, chart types, or other specifics, ' +
+                'and the current user message appears to be answering that question (even if brief like "District" or "yes"), ' +
+                'then piece together the original request with the user\'s clarification response to complete the full action.\n\n' +
+                'Examples:\n' +
+                '- If you asked "Do you want me to show Sales.TotalSales by District.District instead?" and user responds "District" or "yes" → create the chart\n' +
+                '- If you asked "Which chart type would you prefer?" and user responds "bar chart" → apply that chart type to the previous request\n' +
+                '- If you asked "Which field should I use for grouping?" and user responds "month" → combine with the original measure request\n\n' +
+                'If the user\'s response doesn\'t clearly answer your clarification question, proceed with your best interpretation and move forward.\n\n';
+            
+      chatHistory.forEach((msg) => {
+        const speaker = msg.role === 'user' ? 'User' : 'Assistant';
+        prompt += `${speaker}: ${msg.content}\n`;
+      });
+            
+      prompt += '\nCurrent user message follows below this context section.';
+    }
+
+    return prompt;
+  }
+
+  /**
      * Process chat completion request
      * Migrated from /src/routes.js chat endpoint logic
      * 
@@ -279,94 +278,94 @@ Always respond with ONLY valid JSON and no extra commentary.`;
      * @param {Object} telemetryContext - Request context for telemetry
      * @returns {Object} - Chat completion response
      */
-    async processChat(message, metadata = null, currentChart = null, chatHistory = null, telemetryContext = {}) {
-        console.log('[OpenAIService] processChat called with message:', message);
-        console.log('[OpenAIService] currentChart:', currentChart);
-        console.log('[OpenAIService] chatHistory:', chatHistory);
-        this._ensureInitialized();
+  async processChat(message, metadata = null, currentChart = null, chatHistory = null, telemetryContext = {}) {
+    console.log('[OpenAIService] processChat called with message:', message);
+    console.log('[OpenAIService] currentChart:', currentChart);
+    console.log('[OpenAIService] chatHistory:', chatHistory);
+    this._ensureInitialized();
         
-        // Use stored configuration and validate it
-        try {
-            console.log('[OpenAIService] Validating configuration...');
-            this._validateConfig();
-            console.log('[OpenAIService] Configuration valid');
-        } catch (error) {
-            console.log('[OpenAIService] Configuration validation failed:', error.message);
-            throw new Error(`Chat completion failed: ${error.message}`);
-        }
-
-        const config = this.config;
-
-        const startTime = Date.now();
-        
-        try {
-            console.log('[OpenAIService] Building system prompt...');
-            // Build system prompt with dataset context - using exact original parameters
-            const systemPrompt = this.buildSystemPrompt(metadata, currentChart, chatHistory);
-            console.log('[OpenAIService] System prompt built, length:', systemPrompt.length);
-
-            // Prepare Azure OpenAI request
-            const apiVersion = config.azureOpenAIApiVersion || '2023-12-01-preview';
-            const endpoint = `${config.azureOpenAIEndpoint}/openai/deployments/${config.azureOpenAIDeploymentName}/chat/completions?api-version=${apiVersion}`;
-            console.log('[OpenAIService] Making request to endpoint:', endpoint);
-            console.log('[OpenAIService] Making request to endpoint:', endpoint);
-            
-            const requestBody = {
-                messages: [
-                    { role: 'system', content: systemPrompt },
-                    { role: 'user', content: message }
-                ],
-                max_tokens: 1000,
-                temperature: 0.1 // Low temperature for consistent chart logic, minimal text variation
-            };
-
-            console.log('[OpenAIService] Sending request to Azure OpenAI...');
-            // Make API request
-            const response = await fetch(endpoint, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'api-key': config.azureOpenAIApiKey
-                },
-                body: JSON.stringify(requestBody)
-            });
-
-            console.log('[OpenAIService] Received response, status:', response.status);
-            
-            if (!response.ok) {
-                const errorText = await response.text();
-                console.log('[OpenAIService] API error response:', errorText);
-                throw new Error(`Azure OpenAI API error (${response.status}): ${errorText}`);
-            }
-
-            const responseData = await response.json();
-            console.log('[OpenAIService] Response data received:', JSON.stringify(responseData, null, 2));
-            
-            // Extract response content
-            const content = responseData.choices?.[0]?.message?.content || 'No response generated';
-            console.log('[OpenAIService] Extracted content:', content);
-            
-            // Log telemetry if enabled
-            this._logChatTelemetry(message, content, startTime, telemetryContext, null, metadata, currentChart);
-
-            console.log('[OpenAIService] Returning result...');
-            return {
-                success: true,
-                response: content,
-                usage: responseData.usage || null,
-                duration: Date.now() - startTime
-            };
-
-        } catch (error) {
-            console.log('[OpenAIService] Error in processChat:', error.message);
-            // Log error telemetry
-            this._logChatTelemetry(message, null, startTime, telemetryContext, error, metadata, currentChart);
-            
-            throw new Error(`Chat completion failed: ${error.message}`);
-        }
+    // Use stored configuration and validate it
+    try {
+      console.log('[OpenAIService] Validating configuration...');
+      this._validateConfig();
+      console.log('[OpenAIService] Configuration valid');
+    } catch (error) {
+      console.log('[OpenAIService] Configuration validation failed:', error.message);
+      throw new Error(`Chat completion failed: ${error.message}`);
     }
 
-    /**
+    const config = this.config;
+
+    const startTime = Date.now();
+        
+    try {
+      console.log('[OpenAIService] Building system prompt...');
+      // Build system prompt with dataset context - using exact original parameters
+      const systemPrompt = this.buildSystemPrompt(metadata, currentChart, chatHistory);
+      console.log('[OpenAIService] System prompt built, length:', systemPrompt.length);
+
+      // Prepare Azure OpenAI request
+      const apiVersion = config.azureOpenAIApiVersion || '2023-12-01-preview';
+      const endpoint = `${config.azureOpenAIEndpoint}/openai/deployments/${config.azureOpenAIDeploymentName}/chat/completions?api-version=${apiVersion}`;
+      console.log('[OpenAIService] Making request to endpoint:', endpoint);
+      console.log('[OpenAIService] Making request to endpoint:', endpoint);
+            
+      const requestBody = {
+        messages: [
+          { role: 'system', content: systemPrompt },
+          { role: 'user', content: message }
+        ],
+        max_tokens: 1000,
+        temperature: 0.1 // Low temperature for consistent chart logic, minimal text variation
+      };
+
+      console.log('[OpenAIService] Sending request to Azure OpenAI...');
+      // Make API request
+      const response = await fetch(endpoint, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'api-key': config.azureOpenAIApiKey
+        },
+        body: JSON.stringify(requestBody)
+      });
+
+      console.log('[OpenAIService] Received response, status:', response.status);
+            
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.log('[OpenAIService] API error response:', errorText);
+        throw new Error(`Azure OpenAI API error (${response.status}): ${errorText}`);
+      }
+
+      const responseData = await response.json();
+      console.log('[OpenAIService] Response data received:', JSON.stringify(responseData, null, 2));
+            
+      // Extract response content
+      const content = responseData.choices?.[0]?.message?.content || 'No response generated';
+      console.log('[OpenAIService] Extracted content:', content);
+            
+      // Log telemetry if enabled
+      this._logChatTelemetry(message, content, startTime, telemetryContext, null, metadata, currentChart);
+
+      console.log('[OpenAIService] Returning result...');
+      return {
+        success: true,
+        response: content,
+        usage: responseData.usage || null,
+        duration: Date.now() - startTime
+      };
+
+    } catch (error) {
+      console.log('[OpenAIService] Error in processChat:', error.message);
+      // Log error telemetry
+      this._logChatTelemetry(message, null, startTime, telemetryContext, error, metadata, currentChart);
+            
+      throw new Error(`Chat completion failed: ${error.message}`);
+    }
+  }
+
+  /**
      * Log chat interaction telemetry
      * 
      * @param {string} message - User message
@@ -377,63 +376,63 @@ Always respond with ONLY valid JSON and no extra commentary.`;
      * @param {Object|null} metadata - Dataset metadata
      * @param {Object|null} currentChart - Current chart context
      */
-    _logChatTelemetry(message, response, startTime, context = {}, error = null, metadata = null, currentChart = null) {
-        try {
-            const telemetryData = {
-                type: 'chat_completion',
-                timestamp: new Date().toISOString(),
-                duration: Date.now() - startTime,
-                request: {
-                    message: message,
-                    hasMetadata: !!metadata,
-                    currentChart: telemetry.sanitizeObject(currentChart)
-                },
-                response: error ? null : {
-                    generated: !!response,
-                    length: response ? response.length : 0
-                },
-                error: error ? {
-                    message: error.message,
-                    type: error.constructor.name
-                } : null,
-                context: {
-                    endpoint: '/chat',
-                    service: 'openai',
-                    ...context
-                }
-            };
-
-            // Use existing telemetry system for consistent logging
-            if (context.req && context.res) {
-                telemetry.logRequest(context.req, context.res, telemetryData, startTime);
-            }
-        } catch (telemetryError) {
-            console.error('[OpenAI Service] Telemetry logging failed:', telemetryError.message);
+  _logChatTelemetry(message, response, startTime, context = {}, error = null, metadata = null, currentChart = null) {
+    try {
+      const telemetryData = {
+        type: 'chat_completion',
+        timestamp: new Date().toISOString(),
+        duration: Date.now() - startTime,
+        request: {
+          message: message,
+          hasMetadata: !!metadata,
+          currentChart: telemetry.sanitizeObject(currentChart)
+        },
+        response: error ? null : {
+          generated: !!response,
+          length: response ? response.length : 0
+        },
+        error: error ? {
+          message: error.message,
+          type: error.constructor.name
+        } : null,
+        context: {
+          endpoint: '/chat',
+          service: 'openai',
+          ...context
         }
-    }
+      };
 
-    /**
+      // Use existing telemetry system for consistent logging
+      if (context.req && context.res) {
+        telemetry.logRequest(context.req, context.res, telemetryData, startTime);
+      }
+    } catch (telemetryError) {
+      console.error('[OpenAI Service] Telemetry logging failed:', telemetryError.message);
+    }
+  }
+
+  /**
      * Get service status and configuration summary
      */
-    getStatus() {
-        return {
-            initialized: this.initialized,
-            hasConfig: !!this.config,
-            configValid: this.initialized ? this._isConfigValid() : false
-        };
-    }
+  getStatus() {
+    return {
+      initialized: this.initialized,
+      hasConfig: !!this.config,
+      configValid: this.initialized ? this._isConfigValid() : false
+    };
+  }
 
-    /**
+  /**
      * Check if current configuration is valid
      */
-    _isConfigValid() {
-        try {
-            this._validateConfig();
-            return true;
-        } catch (error) {
-            return false;
-        }
+  _isConfigValid() {
+    try {
+      this._validateConfig();
+      return true;
+    } catch {
+      return false;
     }
+  }
 }
 
 // Export a singleton instance

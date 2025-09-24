@@ -26,9 +26,9 @@ class TelemetryLogger {
       }
       // URL patterns (may contain sensitive workspace IDs)
       if (key.toLowerCase().includes('url') && value.includes('powerbi.com')) {
-        return value.replace(/\/groups\/[^\/]+/g, '/groups/[GUID]')
-                   .replace(/\/reports\/[^\/]+/g, '/reports/[GUID]')
-                   .replace(/\/datasets\/[^\/]+/g, '/datasets/[GUID]');
+        return value.replace(/\/groups\/[^/]+/g, '/groups/[GUID]')
+          .replace(/\/reports\/[^/]+/g, '/reports/[GUID]')
+          .replace(/\/datasets\/[^/]+/g, '/datasets/[GUID]');
       }
     }
     return value;

@@ -11,7 +11,7 @@ const { constants } = require('./configService');
  * In-memory cache storage
  * This replaces the global variables that were previously in routes.js
  */
-let cacheStorage = {
+const cacheStorage = {
   metadata: {
     data: null,
     lastFetched: null
