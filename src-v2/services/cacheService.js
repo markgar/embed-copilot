@@ -1,7 +1,12 @@
 /**
  * Cache Service - Shared caching logic to eliminate global state
  * 
- * Provides centralized caching functionality that can be used across
+ * @deprecated This service is being deprecated as part of simplifying the demo application.
+ * Caching adds complexity that isn't necessary for a demo/prototype application.
+ * 
+ * DO NOT USE in new code. This service will be removed in future versions.
+ * 
+ * Previous functionality: Provided centralized caching functionality that could be used across
  * multiple endpoints and services, replacing module-level global variables.
  */
 
@@ -21,9 +26,11 @@ const cacheStorage = {
 
 /**
  * Get cached metadata if it exists and is not stale
+ * @deprecated This function is deprecated. Do not use in new code.
  * @returns {Object|null} Cached metadata or null if not available/stale
  */
 function getCachedMetadata() {
+  console.warn('[DEPRECATED] getCachedMetadata() is deprecated and will be removed. Do not use in new code.');
   const cached = cacheStorage.metadata;
   
   if (!cached.data || !cached.lastFetched) {
@@ -42,18 +49,22 @@ function getCachedMetadata() {
 
 /**
  * Store metadata in cache with current timestamp
+ * @deprecated This function is deprecated. Do not use in new code.
  * @param {Object} metadata - Metadata to cache
  */
 function setCachedMetadata(metadata) {
+  console.warn('[DEPRECATED] setCachedMetadata() is deprecated and will be removed. Do not use in new code.');
   cacheStorage.metadata.data = metadata;
   cacheStorage.metadata.lastFetched = Date.now();
 }
 
 /**
  * Check if cached metadata exists but is stale
+ * @deprecated This function is deprecated. Do not use in new code.
  * @returns {boolean} True if cache exists but is stale
  */
 function isCacheStale() {
+  console.warn('[DEPRECATED] isCacheStale() is deprecated and will be removed. Do not use in new code.');
   const cached = cacheStorage.metadata;
   
   if (!cached.data || !cached.lastFetched) {
@@ -68,9 +79,11 @@ function isCacheStale() {
 
 /**
  * Get cache information for debugging/status endpoints
+ * @deprecated This function is deprecated. Do not use in new code.
  * @returns {Object} Cache status information
  */
 function getCacheInfo() {
+  console.warn('[DEPRECATED] getCacheInfo() is deprecated and will be removed. Do not use in new code.');
   const cached = cacheStorage.metadata;
   
   if (!cached.data || !cached.lastFetched) {
@@ -101,17 +114,21 @@ function getCacheInfo() {
 
 /**
  * Clear all cached data (useful for testing or manual cache invalidation)
+ * @deprecated This function is deprecated. Do not use in new code.
  */
 function clearCache() {
+  console.warn('[DEPRECATED] clearCache() is deprecated and will be removed. Do not use in new code.');
   cacheStorage.metadata.data = null;
   cacheStorage.metadata.lastFetched = null;
 }
 
 /**
  * Get raw cache storage for testing purposes
+ * @deprecated This function is deprecated. Do not use in new code.
  * @returns {Object} Internal cache storage object
  */
 function _getCacheStorage() {
+  console.warn('[DEPRECATED] _getCacheStorage() is deprecated and will be removed. Do not use in new code.');
   return cacheStorage;
 }
 
