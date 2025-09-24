@@ -1,5 +1,4 @@
 const fs = require('fs');
-const path = require('path');
 
 class TelemetryParser {
   constructor(telemetryFilePath) {
@@ -144,13 +143,13 @@ describe('API Endpoints - Telemetry-Based Tests', () => {
     const response = await request(app)
       .${testCase.method.toLowerCase()}('${testCase.path}')`;
 
-    // Add request body if it's a POST request with body
-    if (testCase.method === 'POST' && testCase.sampleRequest.body && Object.keys(testCase.sampleRequest.body).length > 0) {
-      testContent += `
+      // Add request body if it's a POST request with body
+      if (testCase.method === 'POST' && testCase.sampleRequest.body && Object.keys(testCase.sampleRequest.body).length > 0) {
+        testContent += `
       .send(${JSON.stringify(testCase.sampleRequest.body, null, 6)})`;
-    }
+      }
 
-    testContent += `;
+      testContent += `;
     
     const responseTime = Date.now() - startTime;
     
@@ -159,9 +158,9 @@ describe('API Endpoints - Telemetry-Based Tests', () => {
     
     // Response structure validation
     ${testCase.expectedStructure.length > 0 ? 
-      testCase.expectedStructure.map(key => `expect(response.body).toHaveProperty('${key}');`).join('\n    ') :
-      '// No specific structure validation needed'
-    }
+    testCase.expectedStructure.map(key => `expect(response.body).toHaveProperty('${key}');`).join('\n    ') :
+    '// No specific structure validation needed'
+}
     
     // Performance baseline (with tolerance)
     expect(responseTime).toBeLessThan(${testCase.performanceBaseline.tolerance});

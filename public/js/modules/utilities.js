@@ -11,10 +11,10 @@
 // Store original console methods
 const originalConsoleLog = console.log;
 const originalConsole = {
-    log: console.log,
-    error: console.error,
-    warn: console.warn,
-    info: console.info
+  log: console.log,
+  error: console.error,
+  warn: console.warn,
+  info: console.info
 };
 
 /**
@@ -24,26 +24,26 @@ const originalConsole = {
  * @param {string} context - Context where the error occurred
  */
 function logError(error, context = 'Unknown') {
-    const errorDetails = {
-        message: error.message || error,
-        stack: error.stack || 'No stack trace',
-        name: error.name || 'Unknown error type'
-    };
+  const errorDetails = {
+    message: error.message || error,
+    stack: error.stack || 'No stack trace',
+    name: error.name || 'Unknown error type'
+  };
     
-    // Send to backend for logging
-    fetch('/log-error', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-            error: errorDetails,
-            context: context,
-            timestamp: new Date().toISOString()
-        })
-    }).catch(backendError => {
-        console.error('Failed to send error to backend:', backendError);
-    });
+  // Send to backend for logging
+  fetch('/log-error', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({
+      error: errorDetails,
+      context: context,
+      timestamp: new Date().toISOString()
+    })
+  }).catch(backendError => {
+    console.error('Failed to send error to backend:', backendError);
+  });
 }
 
 /**
@@ -51,14 +51,14 @@ function logError(error, context = 'Unknown') {
  * Sets up window-level error and promise rejection handlers
  */
 function initializeErrorHandlers() {
-    // Global error handlers
-    window.addEventListener('error', function(event) {
-        logError(event.error || new Error(event.message), `Global Error (${event.filename}:${event.lineno})`);
-    });
+  // Global error handlers
+  window.addEventListener('error', function(event) {
+    logError(event.error || new Error(event.message), `Global Error (${event.filename}:${event.lineno})`);
+  });
 
-    window.addEventListener('unhandledrejection', function(event) {
-        logError(event.reason || new Error('Unhandled Promise Rejection'), 'Unhandled Promise');
-    });
+  window.addEventListener('unhandledrejection', function(event) {
+    logError(event.reason || new Error('Unhandled Promise Rejection'), 'Unhandled Promise');
+  });
 }
 
 /**
@@ -66,41 +66,41 @@ function initializeErrorHandlers() {
  * Enhances console logging with backend integration
  */
 function initializeConsoleOverrides() {
-    // Override console.log to also send to backend
-    console.log = function(...args) {
-        // Call original console.log
-        originalConsoleLog.apply(console, args);
+  // Override console.log to also send to backend
+  console.log = function(...args) {
+    // Call original console.log
+    originalConsoleLog.apply(console, args);
         
-        // Send to backend
-        const message = args.map(arg => 
-            typeof arg === 'object' ? JSON.stringify(arg, null, 2) : String(arg)
-        ).join(' ');
+    // Send to backend
+    const message = args.map(arg => 
+      typeof arg === 'object' ? JSON.stringify(arg, null, 2) : String(arg)
+    ).join(' ');
         
-        fetch('/log-console', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({
-                message: message,
-                type: 'log',
-                timestamp: new Date().toISOString()
-            })
-        }).catch(() => {}); // Silent fail to avoid recursion
-    };
+    fetch('/log-console', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        message: message,
+        type: 'log',
+        timestamp: new Date().toISOString()
+      })
+    }).catch(() => {}); // Silent fail to avoid recursion
+  };
 
-    // Override other console methods (currently just pass through to original)
-    console.error = function(...args) {
-        originalConsole.error.apply(console, args);
-    };
+  // Override other console methods (currently just pass through to original)
+  console.error = function(...args) {
+    originalConsole.error.apply(console, args);
+  };
 
-    console.warn = function(...args) {
-        originalConsole.warn.apply(console, args);
-    };
+  console.warn = function(...args) {
+    originalConsole.warn.apply(console, args);
+  };
 
-    console.info = function(...args) {
-        originalConsole.info.apply(console, args);
-    };
+  console.info = function(...args) {
+    originalConsole.info.apply(console, args);
+  };
 }
 
 /**
@@ -108,9 +108,9 @@ function initializeConsoleOverrides() {
  * Call this function to set up error handling and console overrides
  */
 function initializeUtilities() {
-    initializeErrorHandlers();
-    initializeConsoleOverrides();
-    console.log('Utilities module initialized');
+  initializeErrorHandlers();
+  initializeConsoleOverrides();
+  console.log('Utilities module initialized');
 }
 
 // Auto-initialize when this module loads
@@ -118,9 +118,9 @@ initializeUtilities();
 
 // Export functions for use by other modules (ES6 Module exports)
 export {
-    logError,
-    initializeErrorHandlers,
-    initializeConsoleOverrides,
-    initializeUtilities,
-    originalConsole
+  logError,
+  initializeErrorHandlers,
+  initializeConsoleOverrides,
+  initializeUtilities,
+  originalConsole
 };

@@ -2,7 +2,9 @@ import js from '@eslint/js';
 
 export default [
   js.configs.recommended,
+  // Node.js server code and configuration files
   {
+    files: ['src-v2/**/*.js', 'tools/**/*.js', 'models/**/*.js'],
     languageOptions: {
       ecmaVersion: 'latest',
       sourceType: 'module',
@@ -29,13 +31,9 @@ export default [
         jest: 'readonly'
       }
     },
-    files: ['src-v2/**/*.js'],
     rules: {
       // Core quality rules  
-      'no-unused-vars': ['error', { 
-        'argsIgnorePattern': '^_',
-        'varsIgnorePattern': '^_'
-      }],
+      'no-unused-vars': 'error',
       'no-undef': 'error',
       'no-unreachable': 'error',
       'no-console': 'off',
@@ -44,20 +42,58 @@ export default [
       'indent': ['error', 2],
       'quotes': ['error', 'single'],
       'semi': ['error', 'always'],
+      'no-mixed-spaces-and-tabs': 'error',
       
       // Function-specific rules
       'no-unused-expressions': 'error',
       'prefer-const': 'error'
     }
   },
+  // Browser client code
   {
-    // Ignore patterns
-    ignores: [
-      'test/**/*',
-      'tools/**/*', 
-      'public/**/*',
-      'models/**/*',
-      'node_modules/**/*'
-    ]
-  }
+    files: ['public/**/*.js'],
+    languageOptions: {
+      ecmaVersion: 'latest',
+      sourceType: 'module',
+      globals: {
+        // Browser globals
+        window: 'readonly',
+        document: 'readonly',
+        fetch: 'readonly',
+        setTimeout: 'readonly',
+        setInterval: 'readonly',
+        clearTimeout: 'readonly',
+        clearInterval: 'readonly',
+        CustomEvent: 'readonly',
+        location: 'readonly',
+        // jQuery and other common libraries
+        $: 'readonly',
+        jQuery: 'readonly',
+        // PowerBI
+        powerbi: 'readonly',
+        // Markdown parser
+        marked: 'readonly',
+        // Console is available in browsers too
+        console: 'readonly'
+      }
+    },
+    rules: {
+      // Core quality rules  
+      'no-unused-vars': 'error',
+      'no-undef': 'error',
+      'no-unreachable': 'error',
+      'no-console': 'off',
+      
+      // Code style for better readability
+      'indent': ['error', 2],
+      'quotes': ['error', 'single'],
+      'semi': ['error', 'always'],
+      'no-mixed-spaces-and-tabs': 'error',
+      
+      // Function-specific rules
+      'no-unused-expressions': 'error',
+      'prefer-const': 'error'
+    }
+  },
+
 ];
