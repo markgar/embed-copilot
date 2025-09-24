@@ -15,10 +15,4 @@ router.get('/getDatasetMetadata', metadataController.getDatasetMetadata);
  */
 router.get('/metadata/health', metadataController.healthCheck);
 
-/**
- * Debug endpoint for metadata cache status
- * GET /debug/metadata
- */
-router.get('/debug/metadata', metadataController.getMetadataDebugInfo);
-
 module.exports = router;

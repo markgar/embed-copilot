@@ -21,9 +21,9 @@ The cache service (`src-v2/services/cacheService.js`) is marked as deprecated an
   - [x] Remove all `require('../services/cacheService')` statements
 
 ### Phase 3: Route Updates
-- [ ] Update `/src-v2/routes/metadataRoutes.js`:
-  - [ ] Remove `/debug/metadata` route
-  - [ ] Verify no `/clearMetadataCache` route exists
+- [x] Update `/src-v2/routes/metadataRoutes.js`:
+  - [x] Remove `/debug/metadata` route
+  - [x] Verify no `/clearMetadataCache` route exists
 
 ### Phase 4: Test File Cleanup
 - [ ] Delete dedicated cache service tests:
