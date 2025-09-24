@@ -169,31 +169,38 @@ let currentTablesData = null;
      * @returns {string} HTML string for the column element
      */
     function createColumnElement(column) {
-        // Determine icon based on column type
+        // Determine icon based on column type and if it's a measure
         let iconText = 'Abc'; // default
-        switch (column.type) {
-            case 'number':
-            case 'decimal':
-            case 'integer':
-                iconText = '#';
-                break;
-            case 'currency':
-                iconText = '#';
-                break;
-            case 'date':
-                iconText = '📅';
-                break;
-            case 'text':
-            default:
-                iconText = 'Abc';
-                break;
+        let displayType = column.type;
+        
+        if (column.isMeasure || column.type === 'measure') {
+            iconText = '∑'; // Sigma symbol for measures
+            displayType = column.dataType || 'measure';
+        } else {
+            switch (column.type) {
+                case 'number':
+                case 'decimal':
+                case 'integer':
+                    iconText = '#';
+                    break;
+                case 'currency':
+                    iconText = '$';
+                    break;
+                case 'date':
+                    iconText = '📅';
+                    break;
+                case 'text':
+                default:
+                    iconText = 'Abc';
+                    break;
+            }
         }
 
         return `
-            <div class="tree-column" data-column-name="${column.name}" data-action="column-click" data-column-name="${column.name}" data-column-type="${column.type}">
+            <div class="tree-column${column.isMeasure ? ' tree-measure' : ''}" data-column-name="${column.name}" data-action="column-click" data-column-name="${column.name}" data-column-type="${displayType}">
                 <span class="tree-column-icon">${iconText}</span>
                 <span class="tree-column-name">${column.name}</span>
-                <span class="tree-column-type">${column.type}</span>
+                <span class="tree-column-type">${displayType}</span>
             </div>
         `;
     }

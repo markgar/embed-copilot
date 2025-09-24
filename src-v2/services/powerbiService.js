@@ -290,19 +290,43 @@ class PowerBIService {
                 });
             }
             
-            // Process measures
+            // Process measures and add them to their respective tables
             const measures = [];
             
             if (measuresResult && measuresResult.tables && measuresResult.tables[0] && measuresResult.tables[0].rows) {
                 measuresResult.tables[0].rows.forEach(row => {
                     if (!row['[IsHidden]']) { // Only include non-hidden measures
+                        const tableName = row['[Table]'] || 'Unknown';
                         const measure = {
-                            table: row['[Table]'] || 'Unknown',
+                            table: tableName,
                             name: row['[Name]'],
                             dataType: (row['[DataType]'] || 'number').toLowerCase(),
                             description: row['[Description]'] || `${row['[Name]']} measure`
                         };
                         measures.push(measure);
+                        
+                        // Add measure to its table (create table if it doesn't exist)
+                        let table = tablesMap.get(tableName);
+                        if (!table) {
+                            // Create a new table for measures that don't have a dimension table
+                            table = {
+                                name: tableName,
+                                description: `${tableName} measures`,
+                                type: 'measures',
+                                columns: []
+                            };
+                            tablesMap.set(tableName, table);
+                            visibleTables.push(table);
+                        }
+                        
+                        // Add measure as a special column to the table
+                        table.columns.push({
+                            name: row['[Name]'],
+                            type: 'measure',
+                            dataType: (row['[DataType]'] || 'number').toLowerCase(),
+                            description: row['[Description]'] || `${row['[Name]']} measure`,
+                            isMeasure: true
+                        });
                     }
                 });
             }
@@ -332,103 +356,9 @@ class PowerBIService {
             const metadata = await this.getMetadataWithDax(groupId, datasetId);
             return metadata;
         } catch (error) {
-            console.log('DAX metadata query failed, falling back to hardcoded metadata:', error.message);
-            // Fall back to hardcoded metadata if DAX queries don't work
-            const metadata = await this.getHardcodedMetadata();
-            return metadata;
+            console.error('DAX metadata query failed:', error.message);
+            throw error;
         }
-    }
-
-    /**
-     * Get hardcoded metadata (current implementation)
-     * @returns {Promise<Object>} Hardcoded dataset metadata
-     */
-    async getHardcodedMetadata() {
-        const tables = [
-            {
-                name: "Sales",
-                type: "fact",
-                columns: [
-                    { name: "TotalUnits", type: "number", description: "Total units sold" },
-                    { name: "TotalSales", type: "currency", description: "Total sales amount" }
-                ]
-            },
-            {
-                name: "Time",
-                type: "dimension",
-                columns: [
-                    { name: "Month", type: "date", description: "Month of the year" },
-                    { name: "FiscalMonth", type: "text", description: "Fiscal month" },
-                    { name: "FiscalYear", type: "number", description: "Fiscal year" },
-                    { name: "Year", type: "number", description: "Calendar year" },
-                    { name: "Quarter", type: "text", description: "Calendar quarter" },
-                    { name: "Day", type: "date", description: "Day of the month" }
-                ]
-            },
-            {
-                name: "District",
-                type: "dimension",
-                columns: [
-                    { name: "District", type: "text", description: "Sales district name" },
-                    { name: "DM", type: "text", description: "District Manager" }
-                ]
-            },
-            {
-                name: "Item",
-                type: "dimension",
-                columns: [
-                    { name: "Category", type: "text", description: "Product category" },
-                    { name: "Segment", type: "text", description: "Product segment classification" },
-                    { name: "Buyer", type: "text", description: "Product buyer" },
-                    { name: "FamilyName", type: "text", description: "Product family name" }
-                ]
-            },
-            {
-                name: "Store",
-                type: "dimension",
-                columns: [
-                    { name: "Chain", type: "text", description: "Store chain name" },
-                    { name: "City", type: "text", description: "Store city location" },
-                    { name: "Name", type: "text", description: "Store name" },
-                    { name: "Store Type", type: "text", description: "Type of store" },
-                    { name: "Territory", type: "geography", description: "Store territory" }
-                ]
-            }
-        ];
-
-        // Derive measures & dimensions arrays
-        const measures = [
-            { table: "Sales", name: "TotalSales", dataType: "currency", description: "Total sales amount" },
-            { table: "Sales", name: "TotalUnits", dataType: "number", description: "Total units sold" }
-        ];
-
-        const dimensions = [
-            { table: "Time", name: "Month", dataType: "date", description: "Month of the year" },
-            { table: "Time", name: "FiscalMonth", dataType: "text", description: "Fiscal month" },
-            { table: "Time", name: "FiscalYear", dataType: "number", description: "Fiscal year" },
-            { table: "Time", name: "Year", dataType: "number", description: "Calendar year" },
-            { table: "Time", name: "Quarter", dataType: "text", description: "Calendar quarter" },
-            { table: "Time", name: "Day", dataType: "date", description: "Day of the month" },
-            { table: "District", name: "District", dataType: "text", description: "Sales district name" },
-            { table: "District", name: "DM", dataType: "text", description: "District Manager" },
-            { table: "Item", name: "Category", dataType: "text", description: "Product category" },
-            { table: "Item", name: "Segment", dataType: "text", description: "Product segment classification" },
-            { table: "Item", name: "Buyer", dataType: "text", description: "Product buyer" },
-            { table: "Item", name: "FamilyName", dataType: "text", description: "Product family name" },
-            { table: "Store", name: "Chain", dataType: "text", description: "Store chain name" },
-            { table: "Store", name: "City", dataType: "text", description: "Store city location" },
-            { table: "Store", name: "Name", dataType: "text", description: "Store name" },
-            { table: "Store", name: "Store Type", dataType: "text", description: "Type of store" },
-            { table: "Store", name: "Territory", dataType: "geography", description: "Store territory" }
-        ];
-
-        return {
-            dataset: { name: "Store Sales" },
-            lastUpdated: new Date().toISOString(),
-            tables,
-            measures,
-            dimensions
-        };
     }
 
     /**
