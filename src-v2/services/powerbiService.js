@@ -238,6 +238,10 @@ class PowerBIService {
             const columnsQuery = "EVALUATE INFO.VIEW.COLUMNS()";
             const columnsResult = await this._executeDaxQuery(groupId, datasetId, columnsQuery);
             
+            // Step 3: Get all measures
+            const measuresQuery = "EVALUATE INFO.VIEW.MEASURES()";
+            const measuresResult = await this._executeDaxQuery(groupId, datasetId, measuresQuery);
+            
             // Process tables and create a map for easy lookup
             const tablesMap = new Map();
             const visibleTables = [];
@@ -286,11 +290,28 @@ class PowerBIService {
                 });
             }
             
+            // Process measures
+            const measures = [];
+            
+            if (measuresResult && measuresResult.tables && measuresResult.tables[0] && measuresResult.tables[0].rows) {
+                measuresResult.tables[0].rows.forEach(row => {
+                    if (!row['[IsHidden]']) { // Only include non-hidden measures
+                        const measure = {
+                            table: row['[Table]'] || 'Unknown',
+                            name: row['[Name]'],
+                            dataType: (row['[DataType]'] || 'number').toLowerCase(),
+                            description: row['[Description]'] || `${row['[Name]']} measure`
+                        };
+                        measures.push(measure);
+                    }
+                });
+            }
+            
             return {
                 dataset: { name: "Dynamic Dataset" },
                 lastUpdated: new Date().toISOString(),
                 tables: visibleTables,
-                measures: [], // Will be populated in next step
+                measures: measures,
                 dimensions: dimensions
             };
             
