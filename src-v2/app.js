@@ -3,40 +3,15 @@ const express = require('express');
 const path = require('path');
 const bodyParser = require('body-parser');
 const mountRoutes = require('./routes/index'); // Updated path
-const telemetry = require('./services/telemetryService');
 
 const app = express();
 
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 
-// Telemetry middleware - capture all requests/responses (AFTER body parsing)
+// Request logging middleware
 app.use((req, res, next) => {
   console.log(`[Express] ${req.method} ${req.path} - Body:`, req.body);
-  const startTime = Date.now();
-  
-  // Skip telemetry for static assets to reduce noise
-  if (req.path.startsWith('/js/') || req.path.startsWith('/css/') || req.path.startsWith('/public/')) {
-    return next();
-  }
-
-  // Store original res.json and res.send to capture response data
-  const originalJson = res.json;
-  const originalSend = res.send;
-  let responseData = null;
-
-  res.json = function(data) {
-    responseData = data;
-    telemetry.logRequest(req, res, responseData, startTime);
-    return originalJson.call(this, data);
-  };
-
-  res.send = function(data) {
-    responseData = data;
-    telemetry.logRequest(req, res, responseData, startTime);
-    return originalSend.call(this, data);
-  };
-
   next();
 });
 

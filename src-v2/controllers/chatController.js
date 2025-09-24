@@ -2,7 +2,6 @@ const openaiService = require('../services/openaiService');
 const PowerBIService = require('../services/powerbiService');
 const configService = require('../services/configService');
 const errorService = require('../services/errorService');
-const telemetry = require('../services/telemetryService');
 
 /**
  * Chat Controller - Handles AI chat functionality
@@ -18,19 +17,13 @@ class ChatController {
     console.log('[ChatController] Chat request received:', req.body);
     try {
       // Validate request - extract all expected parameters from original implementation
-      const { message, currentChart, chatHistory, conversation = [] } = req.body || {};
+      const { message, currentChart, chatHistory } = req.body || {};
       console.log('[ChatController] Extracted message:', message);
       console.log('[ChatController] Extracted currentChart:', currentChart);
       console.log('[ChatController] Extracted chatHistory:', chatHistory);
             
       if (!message || message.trim() === '') {
         console.log('[ChatController] Message validation failed');
-        telemetry.recordEvent('chat_response', {
-          message_length: message ? message.length : 0,
-          conversation_length: Array.isArray(conversation) ? conversation.length : 0,
-          success: false,
-          error: 'Message is required'
-        });
         return errorService.sendError(res, 400, 'Message is required');
       }
 
@@ -43,12 +36,6 @@ class ChatController {
       // Check OpenAI configuration
       if (!config.openaiApiKey && !config.azureOpenAIApiKey) {
         console.log('[ChatController] OpenAI configuration missing');
-        telemetry.recordEvent('chat_response', {
-          message_length: message.length,
-          conversation_length: Array.isArray(conversation) ? conversation.length : 0,
-          success: false,
-          error: 'OpenAI service not configured'
-        });
         return errorService.sendError(res, 500, 'OpenAI service not configured');
       }
 
@@ -68,12 +55,6 @@ class ChatController {
       } catch (contextError) {
         console.log('[ChatController] Metadata context error:', contextError.message);
         console.log('[ChatController] Metadata context error:', contextError.message);
-        telemetry.recordEvent('chat_response', {
-          message_length: message.length,
-          conversation_length: Array.isArray(conversation) ? conversation.length : 0,
-          success: false,
-          error: contextError.message
-        });
         return errorService.sendError(res, 500, 'Failed to retrieve data context', contextError.message);
       }
 
@@ -93,33 +74,13 @@ class ChatController {
 
         console.log('[ChatController] Chat processing complete, result:', result);
 
-        // Record successful telemetry
-        telemetry.recordEvent('chat_response', {
-          message_length: message.length,
-          conversation_length: Array.isArray(conversation) ? conversation.length : 0,
-          response_tokens: result.usage?.total_tokens || 0,
-          success: true
-        });
-
         res.json({ response: result.response, usage: result.usage });
       } catch (openaiError) {
         console.log('[ChatController] OpenAI error:', openaiError.message);
-        telemetry.recordEvent('chat_response', {
-          message_length: message.length,
-          conversation_length: Array.isArray(conversation) ? conversation.length : 0,
-          success: false,
-          error: openaiError.message
-        });
         return errorService.sendError(res, 500, 'Failed to generate response', openaiError.message);
       }
 
     } catch (error) {
-      telemetry.recordEvent('chat_response', {
-        message_length: req.body?.message?.length || 0,
-        conversation_length: 0,
-        success: false,
-        error: error.message
-      });
       return errorService.sendError(res, 500, 'Chat request failed', error.message);
     }
   }
@@ -169,7 +130,6 @@ class ChatController {
       }
 
       // Generate streaming response
-      let chunkCount = 0;
       try {
         await openaiService.initialize();
         const responseStream = openaiService.generateStreamingResponse(
@@ -180,31 +140,14 @@ class ChatController {
 
         for await (const chunk of responseStream) {
           res.write(`data: ${chunk}\n\n`);
-          chunkCount++;
         }
 
         res.write('data: [DONE]\n\n');
         res.end();
 
-        // Record successful telemetry
-        telemetry.recordEvent('chat_stream', {
-          message_length: message.length,
-          conversation_length: Array.isArray(conversation) ? conversation.length : 0,
-          chunks_sent: chunkCount,
-          success: true
-        });
-
-      } catch (streamError) {
+      } catch {
         res.write('data: {"error": "Failed to generate streaming response"}\n\n');
         res.end();
-
-        telemetry.recordEvent('chat_stream', {
-          message_length: message.length,
-          conversation_length: Array.isArray(conversation) ? conversation.length : 0,
-          chunks_sent: chunkCount,
-          success: false,
-          error: streamError.message
-        });
       }
 
     } catch {

@@ -1,7 +1,8 @@
 /**
  * Performance Verification Tests
  * 
- * Tests to ensure the new service architecture maintains
+ * Tests to ensure the new service architectu      expect(avgTime).toBeLessThan(100);
+    });maintains
  * reasonable performance characteristics.
  */
 
@@ -86,7 +87,7 @@ describe('Performance Verification', () => {
       
       // Should be very fast (less than 1ms per instantiation on average)
       expect(avgTime).toBeLessThan(1);
-      console.log(`PowerBI service instantiation: ${avgTime.toFixed(3)}ms average over ${iterations} iterations`);
+      // PowerBI service instantiation: ${avgTime.toFixed(3)}ms average over ${iterations} iterations
     });
 
     it('should load configuration quickly', () => {
@@ -102,7 +103,6 @@ describe('Performance Verification', () => {
       
       // Should be reasonably fast (less than 5ms per load on average)
       expect(avgTime).toBeLessThan(5);
-      console.log(`Config loading: ${avgTime.toFixed(3)}ms average over ${iterations} iterations`);
     });
   });
 
@@ -118,8 +118,6 @@ describe('Performance Verification', () => {
       expect(time).toBeLessThan(10);
       expect(metadata).toBeDefined();
       expect(metadata.tables).toHaveLength(5);
-      
-      console.log(`Metadata processing: ${time}ms`);
     });
 
     it('should process different metadata formats efficiently', async () => {
@@ -136,8 +134,6 @@ describe('Performance Verification', () => {
         
         expect(time).toBeLessThan(15); // Should be fast for all formats
         expect(result).toBeDefined();
-        
-        console.log(`${format.name} metadata: ${time}ms`);
       }
     });
 
@@ -188,8 +184,6 @@ describe('Performance Verification', () => {
       } else {
         expect(max).toBeLessThanOrEqual(1); // Very fast, all calls under 1ms
       }
-      
-      console.log(`Performance over ${iterations} calls - avg: ${avg.toFixed(2)}ms, min: ${min}ms, max: ${max}ms`);
     });
   });
 
@@ -217,7 +211,6 @@ describe('Performance Verification', () => {
       
       // Should maintain good performance even with potential errors
       expect(avgTime).toBeLessThan(300);
-      console.log(`Error handling performance: ${avgTime.toFixed(2)}ms average`);
     });
   });
 });

@@ -48,7 +48,7 @@ describe('Critical Bug: PowerBI Report Instance Integration', () => {
   });
 
   test('should NOT show "No report instance available" error when processing chat', async () => {
-    console.log('🔍 Testing for "No report instance available" bug...');
+    // Testing for "No report instance available" bug
     
     // Navigate to the application
     await page.goto(APP_URL, { 

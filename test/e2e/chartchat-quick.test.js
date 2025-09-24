@@ -37,8 +37,6 @@ describe('ChartChat E2E - Quick Validation', () => {
   });
 
   test('should load app, initialize modules, and process chat message', async () => {
-    console.log('🚀 Loading ChartChat application...');
-    
     // Navigate to the application
     await page.goto(APP_URL, { 
       waitUntil: 'networkidle2',
@@ -60,15 +58,11 @@ describe('ChartChat E2E - Quick Validation', () => {
              window.ChartChatApp;
     }, { timeout: 15000 });
     
-    console.log('✅ All modules loaded');
-    
     // Wait for PowerBI to be ready
     await page.waitForFunction(() => {
       const status = window.PowerBICore?.getReportLoadState();
       return status && status.loaded && status.rendered;
     }, { timeout: 5000 }); // Reduced from 60000 to 5000
-    
-    console.log('✅ PowerBI ready');
     
     // Wait for chat input to be enabled
     await page.waitForFunction(() => {
@@ -84,7 +78,7 @@ describe('ChartChat E2E - Quick Validation', () => {
     
     await page.keyboard.press('Enter');
     
-    console.log('📤 Message sent, waiting for response...');
+    await page.click('#send-btn');
     
     // Wait for response
     await page.waitForFunction((initialCount) => {
@@ -96,12 +90,8 @@ describe('ChartChat E2E - Quick Validation', () => {
     const finalMessageCount = await page.$$eval('.message', messages => messages.length);
     expect(finalMessageCount).toBeGreaterThan(initialMessageCount);
     
-    console.log('✅ Chat interaction successful');
-    
     // Basic performance check
     const metrics = await page.metrics();
     expect(metrics.JSHeapUsedSize).toBeLessThan(100 * 1024 * 1024); // Less than 100MB
-    
-    console.log('✅ E2E validation complete');
   }, 90000);
 });

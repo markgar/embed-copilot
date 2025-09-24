@@ -26,10 +26,9 @@ describe('Frontend-Backend API Contract Validation', () => {
                 
                 // Check that it's NOT calling the wrong endpoint
                 expect(treeviewContent).not.toContain('/api/metadata/tables');
-                
-                console.log('✅ TreeView module is using correct endpoint');
             } else {
-                console.warn('⚠️  TreeView module not found at expected path');
+                // Skip test if file not found
+            }
             }
         });
 
@@ -47,8 +46,6 @@ describe('Frontend-Backend API Contract Validation', () => {
                 
                 // Check that it's NOT looking for the wrong container ID
                 expect(treeviewContent).not.toContain('tree-view-container');
-                
-                console.log('✅ TreeView module is using correct DOM element IDs');
             }
         });
 
@@ -105,7 +102,6 @@ describe('Frontend-Backend API Contract Validation', () => {
                 
                 // Should not be 404 - either success or other error is fine
                 expect(response.status).not.toBe(404);
-                console.log(`✅ Endpoint ${endpoint} exists (status: ${response.status})`);
             }
         });
 
@@ -125,7 +121,6 @@ describe('Frontend-Backend API Contract Validation', () => {
                 
                 // These should all be 404
                 expect(response.status).toBe(404);
-                console.log(`✅ Deprecated endpoint ${endpoint} correctly returns 404`);
             }
         });
     });
@@ -143,7 +138,7 @@ describe('Frontend-Backend API Contract Validation', () => {
                 // Check that it's loaded as ES6 module
                 expect(htmlContent).toContain('type="module"');
                 
-                console.log('✅ TreeView module is properly referenced in HTML');
+
             }
         });
 
@@ -164,7 +159,7 @@ describe('Frontend-Backend API Contract Validation', () => {
                 expect(appContent).toContain('initializeTreeView');
                 expect(appContent).toContain('treeview.js');
                 
-                console.log('✅ TreeView module exports/imports are consistent');
+
             }
         });
     });

@@ -26,7 +26,7 @@ module.exports = function mountRoutes(app) {
   app.use('/', embedRoutes);      // /getEmbedToken
   app.use('/', metadataRoutes);   // /getDatasetMetadata, /debug/metadata
   app.use('/', chatRoutes);       // /chat
-  app.use('/', systemRoutes);     // /health, /log-error, /log-console, /telemetry-control
+  app.use('/', systemRoutes);     // /health, /log-error, /log-console
   
   console.log('[Routes] All routes mounted successfully');
 };

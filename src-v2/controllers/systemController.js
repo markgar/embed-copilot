@@ -1,4 +1,3 @@
-const telemetry = require('../services/telemetryService');
 const errorService = require('../services/errorService');
 const EmbedController = require('./embedController');
 const MetadataController = require('./metadataController');
@@ -6,7 +5,7 @@ const ChatController = require('./chatController');
 
 /**
  * System Controller - Handles system-wide operations
- * Health checks, telemetry control, logging, and service status
+ * Health checks, logging, and service status
  */
 class SystemController {
   /**
@@ -80,10 +79,6 @@ class SystemController {
           metadata: metadataStatus,
           chat: chatStatus
         },
-        telemetry: {
-          enabled: telemetry.enabled,
-          console: telemetry.console
-        },
         timestamp: new Date().toISOString()
       });
 
@@ -124,73 +119,6 @@ class SystemController {
     } catch (err) {
       console.error('[SystemController] Log console failed:', err);
       errorService.sendError(res, 500, 'Failed to log message');
-    }
-  }
-
-  /**
-     * Telemetry control
-     * POST /telemetry-control
-     * Body: { action: 'enable' | 'disable' | 'status' | 'clear' }
-     */
-  static telemetryControl(req, res) {
-    try {
-      const { action } = req.body;
-            
-      switch (action) {
-      case 'enable':
-        process.env.TELEMETRY_MODE = 'true';
-        process.env.TELEMETRY_CONSOLE = 'true';
-        telemetry.enabled = true;
-        telemetry.console = true;
-        res.json({ success: true, message: 'Telemetry enabled' });
-        break;
-
-      case 'disable':
-        process.env.TELEMETRY_MODE = 'false';
-        process.env.TELEMETRY_CONSOLE = 'false';
-        telemetry.enabled = false;
-        telemetry.console = false;
-        res.json({ success: true, message: 'Telemetry disabled' });
-        break;
-
-      case 'status':
-        res.json({
-          enabled: telemetry.enabled,
-          console: telemetry.console,
-          env_telemetry: process.env.TELEMETRY_MODE,
-          env_console: process.env.TELEMETRY_CONSOLE
-        });
-        break;
-
-      case 'clear':
-        telemetry.clearLogs();
-        res.json({ success: true, message: 'Telemetry logs cleared' });
-        break;
-
-      default:
-        return errorService.sendError(res, 400, 'Invalid action. Use enable, disable, status, or clear');
-      }
-    } catch (error) {
-      console.error('[SystemController] Telemetry control error:', error);
-      errorService.sendError(res, 500, 'Failed to control telemetry', error.message);
-    }
-  }
-
-  /**
-     * Get telemetry logs
-     * GET /telemetry/logs
-     */
-  static getTelemetryLogs(req, res) {
-    try {
-      const logs = telemetry.readLogs();
-      res.json({
-        count: logs.length,
-        logs: logs,
-        timestamp: new Date().toISOString()
-      });
-    } catch (error) {
-      console.error('[SystemController] Get telemetry logs error:', error);
-      errorService.sendError(res, 500, 'Failed to read telemetry logs', error.message);
     }
   }
 

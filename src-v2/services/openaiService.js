@@ -1,10 +1,9 @@
 const configService = require('./configService');
-const telemetry = require('./telemetryService');
 const fetch = require('node-fetch');
 
 /**
  * OpenAI Service - Handles all OpenAI/Azure OpenAI interactions
- * Consolidates chat completion, system prompt building, and telemetry logging
+ * Consolidates chat completion and system prompt building
  */
 class OpenAIService {
   constructor() {
@@ -275,10 +274,9 @@ Always respond with ONLY valid JSON and no extra commentary.`;
      * @param {Object} metadata - Optional dataset metadata for context
      * @param {Object} currentChart - Current chart context from frontend
      * @param {Array} chatHistory - Chat history for context
-     * @param {Object} telemetryContext - Request context for telemetry
      * @returns {Object} - Chat completion response
      */
-  async processChat(message, metadata = null, currentChart = null, chatHistory = null, telemetryContext = {}) {
+  async processChat(message, metadata = null, currentChart = null, chatHistory = null) {
     console.log('[OpenAIService] processChat called with message:', message);
     console.log('[OpenAIService] currentChart:', currentChart);
     console.log('[OpenAIService] chatHistory:', chatHistory);
@@ -344,9 +342,6 @@ Always respond with ONLY valid JSON and no extra commentary.`;
       // Extract response content
       const content = responseData.choices?.[0]?.message?.content || 'No response generated';
       console.log('[OpenAIService] Extracted content:', content);
-            
-      // Log telemetry if enabled
-      this._logChatTelemetry(message, content, startTime, telemetryContext, null, metadata, currentChart);
 
       console.log('[OpenAIService] Returning result...');
       return {
@@ -358,56 +353,8 @@ Always respond with ONLY valid JSON and no extra commentary.`;
 
     } catch (error) {
       console.log('[OpenAIService] Error in processChat:', error.message);
-      // Log error telemetry
-      this._logChatTelemetry(message, null, startTime, telemetryContext, error, metadata, currentChart);
             
       throw new Error(`Chat completion failed: ${error.message}`);
-    }
-  }
-
-  /**
-     * Log chat interaction telemetry
-     * 
-     * @param {string} message - User message
-     * @param {string|null} response - AI response (null if error)
-     * @param {number} startTime - Request start time
-     * @param {Object} context - Request context
-     * @param {Error|null} error - Error if any
-     * @param {Object|null} metadata - Dataset metadata
-     * @param {Object|null} currentChart - Current chart context
-     */
-  _logChatTelemetry(message, response, startTime, context = {}, error = null, metadata = null, currentChart = null) {
-    try {
-      const telemetryData = {
-        type: 'chat_completion',
-        timestamp: new Date().toISOString(),
-        duration: Date.now() - startTime,
-        request: {
-          message: message,
-          hasMetadata: !!metadata,
-          currentChart: telemetry.sanitizeObject(currentChart)
-        },
-        response: error ? null : {
-          generated: !!response,
-          length: response ? response.length : 0
-        },
-        error: error ? {
-          message: error.message,
-          type: error.constructor.name
-        } : null,
-        context: {
-          endpoint: '/chat',
-          service: 'openai',
-          ...context
-        }
-      };
-
-      // Use existing telemetry system for consistent logging
-      if (context.req && context.res) {
-        telemetry.logRequest(context.req, context.res, telemetryData, startTime);
-      }
-    } catch (telemetryError) {
-      console.error('[OpenAI Service] Telemetry logging failed:', telemetryError.message);
     }
   }
 

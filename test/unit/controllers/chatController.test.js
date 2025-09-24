@@ -1,12 +1,11 @@
-const ChatController = require('../../../src-v2/controllers/chatController');
+const openaiService = require('../../../src-v2/services/openaiService');
 const PowerBIService = require('../../../src-v2/services/powerbiService');
 const errorService = require('../../../src-v2/services/errorService');
-const telemetry = require('../../../src-v2/services/telemetryService');
+const ChatController = require('../../../src-v2/controllers/chatController');
 
 // Mock dependencies
 jest.mock('../../../src-v2/services/powerbiService');
 jest.mock('../../../src-v2/services/errorService');
-jest.mock('../../../src-v2/services/telemetryService');
 
 // Mock OpenAI service as a singleton instance
 jest.mock('../../../src-v2/services/openaiService', () => ({

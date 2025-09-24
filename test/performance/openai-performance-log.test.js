@@ -76,13 +76,7 @@ describe('OpenAI Performance Recording', () => {
 
         await fs.writeFile(logPath, JSON.stringify(performanceReport, null, 2));
         
-        console.log('\n📊 PERFORMANCE SUMMARY:');
-        console.log(`Model: ${performanceReport.model}`);
-        console.log(`API Version: ${performanceReport.apiVersion}`);
-        console.log(`Total Tests: ${performanceReport.testRun.totalTests}`);
-        console.log(`Total Duration: ${performanceReport.testRun.totalDuration}ms`);
-        console.log(`Average Duration: ${Math.round(performanceReport.testRun.averageDuration)}ms`);
-        console.log(`Log saved to: ${logPath}`);
+        // Performance summary logged to file at ${logPath}
     });
 
     const recordPerformance = async (testName, testFunction) => {
@@ -101,7 +95,7 @@ describe('OpenAI Performance Recording', () => {
         
         performanceLog.push(logEntry);
         
-        console.log(`⏱️  ${testName}: ${duration}ms`);
+        // Test completed in ${duration}ms
         return result;
     };
 
