@@ -7,7 +7,43 @@
 const request = require('supertest');
 const app = require('../../src-v2/app');
 
+// Mock PowerBI service to avoid making real API calls
+const mockMetadata = {
+    dataset: { name: 'Store Sales' },
+    tables: [
+        { name: 'Sales', type: 'Table', columns: ['TotalSales', 'TotalUnits'] },
+        { name: 'Time', type: 'Table', columns: ['Month', 'Quarter'] },
+        { name: 'District', type: 'Table', columns: ['District', 'Region'] },
+        { name: 'Category', type: 'Table', columns: ['Category', 'Subcategory'] },
+        { name: 'Store', type: 'Table', columns: ['StoreName', 'StoreType'] }
+    ],
+    measures: ['TotalSales', 'TotalUnits'],
+    dimensions: [
+        'Time.Month', 'Time.Quarter', 'District.District', 'District.Region',
+        'Category.Category', 'Category.Subcategory', 'Store.StoreName', 'Store.StoreType',
+        'Sales.TotalSales', 'Sales.TotalUnits'
+    ],
+    lastUpdated: new Date().toISOString()
+};
+
+jest.mock('../../src-v2/services/powerbiService', () => {
+    return jest.fn().mockImplementation(() => ({
+        getDatasetMetadata: jest.fn().mockResolvedValue(mockMetadata),
+        getAccessToken: jest.fn().mockResolvedValue({ accessToken: 'mock-token' }),
+        getRequestHeader: jest.fn().mockResolvedValue({ 'Authorization': 'Bearer mock-token' }),
+        getDatasetIdFromReport: jest.fn().mockResolvedValue('mock-dataset-id')
+    }));
+});
+
 describe('Metadata Pane Integration Tests', () => {
+    // Helper to add delay between API calls to avoid rate limiting
+    const delay = (ms) => new Promise(resolve => setTimeout(resolve, ms));
+    
+    beforeEach(async () => {
+        // Add delay between tests to avoid rate limiting
+        // PowerBI throttling shows "Retry in 60 seconds", so we use conservative delays
+        await delay(3000);
+    });
     describe('Metadata API Endpoints', () => {
         test('GET /getDatasetMetadata should return valid metadata structure', async () => {
             const response = await request(app)

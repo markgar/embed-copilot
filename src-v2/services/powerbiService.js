@@ -6,8 +6,7 @@
  * - embedConfigService.js (embed logic) 
  * - datasetMetadata.js (metadata logic)
  * 
- * Integrates with cacheService for metadata caching and
- * errorService for consistent error handling.
+ * Simplified architecture without caching complexity for demo applications.
  */
 
 const configService = require('./configService');

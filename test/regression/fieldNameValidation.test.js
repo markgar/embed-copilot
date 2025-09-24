@@ -12,6 +12,9 @@ describe('AI Model Field Name Validation', () => {
         app = require('../../src-v2/app.js');
     });
 
+    // Helper to add delay between API calls to avoid rate limiting
+    const delay = (ms) => new Promise(resolve => setTimeout(resolve, ms));
+
     // Helper to extract valid field names from metadata response
     const getValidFieldsFromMetadata = async () => {
         const metadataResponse = await request(app)
@@ -36,6 +39,10 @@ describe('AI Model Field Name Validation', () => {
 
     // Helper to test a message and validate field names
     const testMessageFieldValidation = async (message, validFields) => {
+        // Add delay to avoid PowerBI API rate limiting  
+        // PowerBI throttling shows "Retry in 60 seconds", so we use conservative 5-second delays
+        await delay(5000);
+        
         const response = await request(app)
             .post('/chat')
             .send({ message, chatHistory: [] });

@@ -8,38 +8,13 @@ const errorService = require('../../src-v2/services/errorService');
 const fs = require('fs');
 const path = require('path');
 
-// Mock the PowerBI service to avoid making real API calls
-jest.mock('../../src-v2/services/powerbiService');
-
 describe('PowerBI Service Integration', () => {
     let powerbiService;
     let mockConfig;
-    
-    // Mock metadata response
-    const mockMetadata = {
-        dataset: { name: 'Store Sales' },
-        tables: [
-            { name: 'Sales', type: 'Table', columns: ['TotalSales', 'TotalUnits'] },
-            { name: 'Time', type: 'Table', columns: ['Month', 'Quarter'] },
-            { name: 'District', type: 'Table', columns: ['District', 'Region'] },
-            { name: 'Category', type: 'Table', columns: ['Category', 'Subcategory'] },
-            { name: 'Store', type: 'Table', columns: ['StoreName', 'StoreType'] }
-        ],
-        measures: ['TotalSales', 'TotalUnits'],
-        dimensions: [
-            'Time.Month', 'Time.Quarter', 'District.District', 'District.Region',
-            'Category.Category', 'Category.Subcategory', 'Store.StoreName', 'Store.StoreType',
-            'Sales.TotalSales', 'Sales.TotalUnits'
-        ],
-        lastUpdated: new Date().toISOString()
-    };
 
     beforeEach(() => {
         // Clear any cached data
         cacheService.clearCache();
-
-        // Reset all mocks
-        jest.clearAllMocks();
 
         // Use mock config to avoid real authentication
         mockConfig = {
@@ -51,21 +26,6 @@ describe('PowerBI Service Integration', () => {
             powerBIGroupId: 'test-group-id',
             powerBIReportId: 'test-report-id'
         };
-
-        // Create a mock implementation that properly mimics PowerBIService
-        PowerBIService.mockImplementation((config) => ({
-            config: config,
-            getDatasetMetadata: jest.fn().mockResolvedValue(mockMetadata),
-            getAccessToken: jest.fn().mockResolvedValue({ accessToken: 'mock-token' }),
-            getRequestHeader: jest.fn().mockResolvedValue({ 'Authorization': 'Bearer mock-token' }),
-            getEmbedInfo: jest.fn().mockResolvedValue({ embedUrl: 'mock-url' }),
-            getSimplifiedMetadata: jest.fn().mockResolvedValue(mockMetadata),
-            getNameOnlySchema: jest.fn().mockResolvedValue({
-                tables: mockMetadata.tables,
-                measures: mockMetadata.measures,
-                dimensions: mockMetadata.dimensions
-            })
-        }));
 
         powerbiService = new PowerBIService(mockConfig);
     });
@@ -83,7 +43,33 @@ describe('PowerBI Service Integration', () => {
         });
     });
 
-    // Cache Service Integration tests removed - cache service is deprecated
+    describe('Cache Service Integration', () => {
+        it('should integrate with cache service for metadata', async () => {
+            // First call should not use cache
+            expect(cacheService.getCachedMetadata()).toBeNull();
+
+            const metadata1 = await powerbiService.getDatasetMetadata('group-id', 'dataset-id');
+            
+            // Verify metadata was cached
+            const cachedData = cacheService.getCachedMetadata();
+            expect(cachedData).not.toBeNull();
+            expect(cachedData.dataset.name).toBe('Store Sales');
+
+            // Second call should use cache
+            const metadata2 = await powerbiService.getDatasetMetadata('group-id', 'dataset-id');
+            expect(metadata2).toEqual(metadata1);
+        });
+
+        it('should clear cache properly', async () => {
+            // Get metadata to populate cache
+            await powerbiService.getDatasetMetadata('group-id', 'dataset-id');
+            expect(cacheService.getCachedMetadata()).not.toBeNull();
+
+            // Clear cache
+            cacheService.clearCache();
+            expect(cacheService.getCachedMetadata()).toBeNull();
+        });
+    });
 
     describe('Service Architecture Integration', () => {
         it('should work with the v2 service architecture', () => {
@@ -150,6 +136,17 @@ describe('PowerBI Service Integration', () => {
     });
 
     describe('Service Dependencies', () => {
+        it('should work without external dependencies for hardcoded metadata', async () => {
+            // This test verifies the service can function with hardcoded data
+            const metadata = await powerbiService.getHardcodedMetadata();
+            
+            expect(metadata).toBeDefined();
+            expect(metadata.dataset.name).toBe('Store Sales');
+            expect(metadata.tables).toHaveLength(5);
+            expect(metadata.measures).toHaveLength(2);
+            expect(metadata.dimensions).toHaveLength(17);
+        });
+
         it('should handle service instantiation with different configurations', () => {
             const configs = [
                 mockConfig,
