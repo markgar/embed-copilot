@@ -28,7 +28,7 @@ graph TB
         subgraph "Controller Layer"
             ChatCtrl["Chat Controller<br/>📁 src-v2/controllers/chatController.js<br/>• chat method<br/>• chatStream method<br/>• healthCheck method"]
             EmbedCtrl["Embed Controller<br/>📁 src-v2/controllers/embedController.js<br/>• getEmbedToken method<br/>• healthCheck method"]
-            MetaCtrl["Metadata Controller<br/>📁 src-v2/controllers/metadataController.js<br/>• getDatasetMetadata method<br/>• getMetadataDebugInfo method<br/>• healthCheck method"]
+            MetaCtrl["Metadata Controller<br/>📁 src-v2/controllers/metadataController.js<br/>• getDatasetMetadata method<br/>• healthCheck method"]
             SysCtrl["System Controller<br/>📁 src-v2/controllers/systemController.js<br/>• healthCheck method<br/>• detailedHealthCheck method<br/>• getTelemetryLogs method<br/>• logError method<br/>• logConsole method<br/>• telemetryControl method"]
         end
 
@@ -36,7 +36,6 @@ graph TB
             OpenAI["OpenAI Service<br/>📁 src-v2/services/openaiService.js<br/>• processChat method<br/>• buildSystemPrompt method<br/>• Streaming Support<br/>• Telemetry Integration"]
             PowerBI["PowerBI Service<br/>📁 src-v2/services/powerbiService.js<br/>• getAccessToken method<br/>• getEmbedInfo method<br/>• getMetadataContext method<br/>• MSAL Integration"]
             Config["Config Service<br/>📁 src-v2/services/configService.js<br/>• loadConfig method<br/>• validateConfig method<br/>• Environment Variables"]
-            Cache["Cache Service<br/>📁 src-v2/services/cacheService.js<br/>• getCachedMetadata method<br/>• setCachedMetadata method<br/>• Cache Invalidation"]
             Error["Error Service<br/>📁 src-v2/services/errorService.js<br/>• badRequest method<br/>• serverError method<br/>• notFound method<br/>• sendError method"]
             Telemetry["Telemetry Service<br/>📁 src-v2/services/telemetryService.js<br/>• logRequest method<br/>• sanitizeObject method<br/>• recordEvent method"]
         end
@@ -191,13 +190,12 @@ src-v2/
 ├── controllers/             # Request orchestration and business logic coordination
 │   ├── chatController.js    → chat(), chatStream(), healthCheck()
 │   ├── embedController.js   → getEmbedToken(), healthCheck()
-│   ├── metadataController.js→ getDatasetMetadata(), getMetadataDebugInfo()
+│   ├── metadataController.js→ getDatasetMetadata(), healthCheck()
 │   └── systemController.js  → healthCheck(), detailedHealthCheck(), getTelemetryLogs()
 └── services/               # Core business logic and external integrations
     ├── openaiService.js     → Azure OpenAI integration, prompt building, streaming
     ├── powerbiService.js    → PowerBI REST API, MSAL auth, metadata fetching
     ├── configService.js     → Environment configuration, validation
-    ├── cacheService.js      → In-memory caching, cache management
     ├── errorService.js      → Standardized error responses
     └── telemetryService.js  → Request logging, data sanitization, monitoring
 ```
@@ -214,7 +212,7 @@ src-v2/
 - All controllers depend on: `errorService`, `configService`
 - `chatController`: `openaiService`, `powerbiService`, `telemetryService`
 - `embedController`: `powerbiService`, `utils`
-- `metadataController`: `powerbiService`, `cacheService`
+- `metadataController`: `powerbiService`
 - `systemController`: `telemetryService`
 - `openaiService`: `configService`, `telemetryService`, Azure OpenAI API
-- `powerbiService`: `configService`, `cacheService`, `errorService`, MSAL, PowerBI API
+- `powerbiService`: `configService`, `errorService`, MSAL, PowerBI API

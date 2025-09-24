@@ -42,10 +42,11 @@ The cache service (`src-v2/services/cacheService.js`) is marked as deprecated an
   - [x] `/test/integration/powerbi-integration.test.js.backup2`
 
 ### Phase 5: Documentation Updates
-- [ ] Update `/ARCHITECTURE.md`:
-  - [ ] Remove Cache Service component from diagrams
-  - [ ] Remove cache service dependencies from service list
-  - [ ] Update service dependency mappings
+- [x] Update `/ARCHITECTURE.md`:
+  - [x] Remove Cache Service component from diagrams
+  - [x] Remove cache service dependencies from service list
+  - [x] Update service dependency mappings
+  - [x] Remove getMetadataDebugInfo from controller descriptions
 
 ### Phase 6: Verification
 - [ ] Run full test suite to ensure no breaking changes
