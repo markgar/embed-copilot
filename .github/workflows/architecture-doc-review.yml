@@ -1,4 +1,4 @@
-name: Architecture Review POC - Copilot Analysis
+name: Architecture Documentation Review
 
 # This workflow creates an issue asking Copilot to review architecture documentation against code
 on:
@@ -48,6 +48,8 @@ jobs:
               "3. **Compare the documentation against the actual code**",
               "4. **Identify any gaps, inaccuracies, or needed updates**",
               "",
+              "⚠️ **EXCLUDE from analysis**: Do not review the `test/` directory - this contains test code and is not part of the architecture documentation scope.",
+              "",
               "## 🎯 **What to look for:**",
               "",
               "- **File paths and structure** - Are the documented paths correct?",
@@ -77,6 +79,7 @@ jobs:
               "- Frontend code: `public/js/modules/` directory",
               "- Configuration: `config/` directory", 
               "- This is a Node.js app with PowerBI integration and OpenAI chat",
+              "- **IGNORE**: `test/` directory (test code, not architecture)",
               "",
               "**Goal:** Keep our architecture documentation accurate and up-to-date!"
             ].join("\n");
@@ -96,27 +99,40 @@ jobs:
 
             console.log(`✅ Created architecture review issue #${issue.data.number}`);
             console.log(`🔗 Issue URL: ${issue.data.html_url}`);
-            console.log(`🤖 Next: Manually assign this issue to Copilot via GitHub UI`);
             console.log(`⏰ Created at: ${currentTime}`);
 
             core.setOutput('issue-url', issue.data.html_url);
             core.setOutput('issue-number', issue.data.number);
+
+      - name: Assign Issue to Copilot
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            try {
+              const response = await github.rest.issues.assignCopilot({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: ${{ steps.create-issue.outputs.issue-number }}
+              });
+              console.log(`✅ Successfully assigned issue to Copilot`);
+            } catch (error) {
+              console.log(`⚠️ Could not assign to Copilot automatically: ${error.message}`);
+              console.log(`🤖 Manual assignment may be required`);
+            }
             
       - name: Display Results
         run: |
-          echo "🎉 Architecture Review Issue Created!"
+          echo "🎉 Architecture Review Issue Created and Assigned!"
           echo "📋 Issue Number: ${{ steps.create-issue.outputs.issue-number }}"
           echo "🔗 Issue URL: ${{ steps.create-issue.outputs.issue-url }}"
+          echo "🤖 Assigned to: Copilot (automatic)"
           echo ""
-          echo "✋ MANUAL STEP REQUIRED:"
-          echo "1. Visit the issue URL above"
-          echo "2. Click on 'Assignees' in the right sidebar" 
-          echo "3. Assign the issue to 'Copilot' from the dropdown"
-          echo ""
-          echo "🔍 What Copilot will do:"
+          echo "🔍 What Copilot will do next:"
           echo "1. Acknowledge with 👀 emoji"
           echo "2. Read ARCHITECTURE.md and analyze the codebase"
           echo "3. Create a PR with updates or confirmation report"
           echo "4. Compare documented vs actual file structure"
           echo ""
           echo "📝 This tests Copilot's code analysis and documentation skills!"
+          echo "⏰ No manual steps required - Copilot should start working automatically!"
