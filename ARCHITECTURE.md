@@ -19,7 +19,7 @@ graph TB
         end
 
         subgraph "Route Handlers"
-            ChatRoutes["Chat Routes<br/>📁 src-v2/routes/chatRoutes.js<br/>• POST /chat<br/>• POST /chat/stream"]
+            ChatRoutes["Chat Routes<br/>📁 src-v2/routes/chatRoutes.js<br/>• POST /chat<br/>• POST /chat/stream (commented out)"]
             EmbedRoutes["Embed Routes<br/>📁 src-v2/routes/embedRoutes.js<br/>• GET /getEmbedToken"]
             MetaRoutes["Metadata Routes<br/>📁 src-v2/routes/metadataRoutes.js<br/>• GET /getDatasetMetadata<br/>• GET /metadata/health<br/>• GET /debug/metadata"]
             SysRoutes["System Routes<br/>📁 src-v2/routes/systemRoutes.js<br/>• GET /health<br/>• GET /status<br/>• GET /logs<br/>• POST /log-error<br/>• POST /log-console<br/>• POST /telemetry-control"]
@@ -28,8 +28,8 @@ graph TB
         subgraph "Controller Layer"
             ChatCtrl["Chat Controller<br/>📁 src-v2/controllers/chatController.js<br/>• chat method<br/>• chatStream method<br/>• healthCheck method"]
             EmbedCtrl["Embed Controller<br/>📁 src-v2/controllers/embedController.js<br/>• getEmbedToken method<br/>• healthCheck method"]
-            MetaCtrl["Metadata Controller<br/>📁 src-v2/controllers/metadataController.js<br/>• getDatasetMetadata method<br/>• getMetadataDebugInfo method<br/>• healthCheck method"]
-            SysCtrl["System Controller<br/>📁 src-v2/controllers/systemController.js<br/>• healthCheck method<br/>• detailedHealthCheck method<br/>• getTelemetryLogs method<br/>• logError method<br/>• logConsole method<br/>• telemetryControl method"]
+            MetaCtrl["Metadata Controller<br/>📁 src-v2/controllers/metadataController.js<br/>• getDatasetMetadata method<br/>• getMetadataDebugInfo method<br/>• healthCheck method<br/>• getSimplifiedMetadata method (internal)<br/>• getNameOnlySchema method (internal)<br/>• clearCache method (internal)"]
+            SysCtrl["System Controller<br/>📁 src-v2/controllers/systemController.js<br/>• healthCheck method<br/>• detailedHealthCheck method<br/>• getTelemetryLogs method<br/>• getSystemInfo method<br/>• logError method<br/>• logConsole method<br/>• telemetryControl method"]
         end
 
         subgraph "Service Layer"
@@ -184,15 +184,15 @@ src-v2/
 ├── utils.js                 # Validation utilities, auth helpers
 ├── routes/                  # Route definitions and mounting
 │   ├── index.js             → Route mounting, view handlers (/, /chartchat)
-│   ├── chatRoutes.js        → Chat endpoints (/chat, /chat/stream)
+│   ├── chatRoutes.js        → Chat endpoints (/chat, /chat/stream commented out)
 │   ├── embedRoutes.js       → PowerBI embed endpoints (/getEmbedToken)
 │   ├── metadataRoutes.js    → Dataset metadata endpoints (/getDatasetMetadata)
 │   └── systemRoutes.js      → System endpoints (/health, /status, /logs)
 ├── controllers/             # Request orchestration and business logic coordination
 │   ├── chatController.js    → chat(), chatStream(), healthCheck()
 │   ├── embedController.js   → getEmbedToken(), healthCheck()
-│   ├── metadataController.js→ getDatasetMetadata(), getMetadataDebugInfo()
-│   └── systemController.js  → healthCheck(), detailedHealthCheck(), getTelemetryLogs()
+│   ├── metadataController.js→ getDatasetMetadata(), getMetadataDebugInfo(), healthCheck(), plus internal methods: getSimplifiedMetadata(), getNameOnlySchema(), clearCache()
+│   └── systemController.js  → healthCheck(), detailedHealthCheck(), getTelemetryLogs(), getSystemInfo(), logError(), logConsole(), telemetryControl()
 └── services/               # Core business logic and external integrations
     ├── openaiService.js     → Azure OpenAI integration, prompt building, streaming
     ├── powerbiService.js    → PowerBI REST API, MSAL auth, metadata fetching
@@ -207,14 +207,18 @@ src-v2/
 ### External Libraries
 - **@azure/msal-node**: Service Principal authentication for PowerBI
 - **node-fetch**: HTTP requests to Azure OpenAI and PowerBI APIs
+- **axios**: Additional HTTP client for some API requests
 - **express**: Web framework and middleware
+- **body-parser**: Express middleware for parsing request bodies
 - **dotenv**: Environment variable management
+- **powerbi-client**: Frontend PowerBI embed functionality
 
 ### Service Dependencies
-- All controllers depend on: `errorService`, `configService`
-- `chatController`: `openaiService`, `powerbiService`, `telemetryService`
+- All controllers depend on: `errorService`
+- `chatController`: `openaiService`, `powerbiService`, `configService`, `telemetryService`
 - `embedController`: `powerbiService`, `utils`
-- `metadataController`: `powerbiService`, `cacheService`
+- `metadataController`: `powerbiService`, `configService`, `cacheService`
 - `systemController`: `telemetryService`
 - `openaiService`: `configService`, `telemetryService`, Azure OpenAI API
 - `powerbiService`: `configService`, `cacheService`, `errorService`, MSAL, PowerBI API
+- `cacheService`: `configService`
