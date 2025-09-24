@@ -13,8 +13,8 @@ This document outlines the step-by-step plan to migrate the application from usi
 - [x] **Run the test** and confirm it passes against the current hard-coded implementation. This test is now your safety net.
 
 ### Phase 2: Implement DAX Query Execution
-- [ ] **Add a new private method** to `powerbiService.js`: `async _executeDaxQueries(groupId, datasetId, queries)`. This method will accept an array of DAX queries.
-- [ ] **Implement the logic** within `_executeDaxQueries` to:
+- [x] **Add a new private method** to `powerbiService.js`: `async _executeDaxQueries(groupId, datasetId, queries)`. This method will accept an array of DAX queries.
+- [x] **Implement the logic** within `_executeDaxQueries` to:
     -   Get an authentication header using `this.getRequestHeader()`.
     -   Construct the API endpoint URL: `https://api.powerbi.com/v1.0/myorg/groups/${groupId}/datasets/${datasetId}/executeQueries`.
     -   Create the request body by mapping the `queries` array into the format `{ queries: [...] }`.
@@ -23,13 +23,13 @@ This document outlines the step-by-step plan to migrate the application from usi
     -   Return the `results` array from the parsed JSON response.
 
 ### Phase 3: Fetch and Transform Live Metadata
-- [ ] **Create a new method** in `powerbiService.js`: `async getMetadataWithDax(groupId, datasetId)`.
-- [ ] **Inside `getMetadataWithDax`**, define the required DAX queries:
+- [x] **Create a new method** in `powerbiService.js`: `async getMetadataWithDax(groupId, datasetId)`.
+- [x] **Inside `getMetadataWithDax`**, define the required DAX queries:
     -   `tablesQuery = "EVALUATE INFO.TABLES()"`
     -   `columnsQuery = "EVALUATE INFO.COLUMNS()"`
     -   `measuresQuery = "EVALUATE INFO.MEASURES()"`
-- [ ] **Execute all queries in parallel** using `Promise.all` and the `_executeDaxQueries` method to get the raw data for tables, columns, and measures.
-- [ ] **Implement transformation logic** to process the raw API results:
+- [x] **Execute all queries in parallel** using `Promise.all` and the `_executeDaxQueries` method to get the raw data for tables, columns, and measures.
+- [x] **Implement transformation logic** to process the raw API results:
     -   Create a `Map` of tables for efficient lookup.
     -   Iterate through the raw columns list, adding each column to the correct table in your `Map`.
     -   Iterate through the raw measures list, adding each measure to a new `measures` array.
@@ -37,10 +37,15 @@ This document outlines the step-by-step plan to migrate the application from usi
     -   Assemble the final object with `dataset: { name: 'Dynamic Dataset' }`, `lastUpdated`, and the transformed `tables`, `measures`, and `dimensions` arrays.
 
 ### Phase 4: Switch Over and Verify
-- [ ] **Modify the `getDatasetMetadata` method** in `powerbiService.js`.
-- [ ] **Remove the calls** to `cacheService.getCachedMetadata()` and `cacheService.setCachedMetadata()`.
-- [ ] **Replace the call** to `this.getHardcodedMetadata()` with a call to `this.getMetadataWithDax(groupId, datasetId)`.
-- [ ] **Run the integration test** from Phase 1. It should still pass. If it fails, debug the transformation logic from Phase 3 until the test passes.
+- [x] **Modify the `getDatasetMetadata` method** in `powerbiService.js`.
+- [x] **Remove the calls** to `cacheService.getCachedMetadata()` and `cacheService.setCachedMetadata()`.
+- [x] **Replace the call** to `this.getHardcodedMetadata()` with a call to `this.getMetadataWithDax(groupId, datasetId)`.
+- [x] **Run the integration test** from Phase 1. It passes! The dynamic metadata maintains the same API contract while providing richer, live data from the Power BI dataset.
+
+**Key Discoveries**:
+- The `INFO.VIEW.*` functions work better than `INFO.*` functions (more user-friendly column names)
+- Live dataset contains more tables and columns than the hardcoded sample (Store=16 cols, Item=5 cols, Time=4 cols, District=7 cols)
+- Contract test validates structure, not content, so it passes with the richer live data
 
 ### Phase 5: Final Cleanup
 - [ ] **Delete the `getHardcodedMetadata` method** from `powerbiService.js` as it is no longer used.

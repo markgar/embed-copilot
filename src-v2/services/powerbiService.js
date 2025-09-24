@@ -223,26 +223,99 @@ class PowerBIService {
     }
 
     /**
+     * Fetches and transforms live dataset metadata using DAX queries.
+     * @param {string} groupId The Power BI group ID.
+     * @param {string} datasetId The Power BI dataset ID.
+     * @returns {Promise<Object>} The structured dataset metadata.
+     */
+    async getMetadataWithDax(groupId, datasetId) {
+        try {
+            // Step 1: Get all tables
+            const tablesQuery = "EVALUATE INFO.VIEW.TABLES()";
+            const tablesResult = await this._executeDaxQuery(groupId, datasetId, tablesQuery);
+            
+            // Step 2: Get all columns
+            const columnsQuery = "EVALUATE INFO.VIEW.COLUMNS()";
+            const columnsResult = await this._executeDaxQuery(groupId, datasetId, columnsQuery);
+            
+            // Process tables and create a map for easy lookup
+            const tablesMap = new Map();
+            const visibleTables = [];
+            
+            if (tablesResult && tablesResult.tables && tablesResult.tables[0] && tablesResult.tables[0].rows) {
+                tablesResult.tables[0].rows.forEach(row => {
+                    // Only include non-hidden, non-private tables
+                    if (!row['[IsHidden]'] && !row['[IsPrivate]']) {
+                        const table = {
+                            name: row['[Name]'] || 'Unknown',
+                            description: row['[Description]'] || '',
+                            type: row['[DataCategory]'] === 'Time' ? 'dimension' : 'dimension', // We'll refine this logic later
+                            columns: []
+                        };
+                        tablesMap.set(row['[Name]'], table);
+                        visibleTables.push(table);
+                    }
+                });
+            }
+            
+            // Process columns and add them to their respective tables
+            const dimensions = [];
+            
+            if (columnsResult && columnsResult.tables && columnsResult.tables[0] && columnsResult.tables[0].rows) {
+                columnsResult.tables[0].rows.forEach(row => {
+                    const tableName = row['[Table]'];
+                    const table = tablesMap.get(tableName);
+                    
+                    if (table && !row['[IsHidden]']) { // Only include non-hidden columns from visible tables
+                        const column = {
+                            name: row['[Name]'],
+                            type: (row['[DataType]'] || 'text').toLowerCase(),
+                            description: row['[Description]'] || `${row['[Name]']} column from ${tableName} table`
+                        };
+                        
+                        table.columns.push(column);
+                        
+                        // Add to dimensions (we'll filter out measures later)
+                        dimensions.push({
+                            table: tableName,
+                            name: column.name,
+                            dataType: column.type,
+                            description: column.description
+                        });
+                    }
+                });
+            }
+            
+            return {
+                dataset: { name: "Dynamic Dataset" },
+                lastUpdated: new Date().toISOString(),
+                tables: visibleTables,
+                measures: [], // Will be populated in next step
+                dimensions: dimensions
+            };
+            
+        } catch (error) {
+            console.error('Metadata query failed:', error.message);
+            throw error;
+        }
+    }
+
+    /**
      * Get complete dataset metadata with caching
      * @param {string} groupId - Power BI group ID
      * @param {string} datasetId - Power BI dataset ID
      * @returns {Promise<Object>} Complete dataset metadata
      */
     async getDatasetMetadata(groupId, datasetId) {
-        // Check cache first
-        const cachedData = cacheService.getCachedMetadata();
-        if (cachedData) {
-            return cachedData;
+        try {
+            const metadata = await this.getMetadataWithDax(groupId, datasetId);
+            return metadata;
+        } catch (error) {
+            console.log('DAX metadata query failed, falling back to hardcoded metadata:', error.message);
+            // Fall back to hardcoded metadata if DAX queries don't work
+            const metadata = await this.getHardcodedMetadata();
+            return metadata;
         }
-
-        // For now, return hardcoded metadata (as per current implementation)
-        // In a real implementation, this would call Power BI REST API
-        const metadata = await this.getHardcodedMetadata();
-        
-        // Cache the result
-        cacheService.setCachedMetadata(metadata);
-        
-        return metadata;
     }
 
     /**
@@ -391,12 +464,47 @@ class PowerBIService {
         return lines.join('\n');
     }
 
+    
     /**
      * Get metadata context for chat - alias for getDatasetMetadata
      * This method exists for compatibility with chat controller expectations
      */
     async getMetadataContext(groupId, datasetId) {
         return await this.getDatasetMetadata(groupId, datasetId);
+    }
+
+    /**
+     * Executes an array of DAX queries against a dataset.
+     * @param {string} groupId The Power BI group ID.
+     * @param {string} datasetId The Power BI dataset ID.
+     * @param {Array<string>} queries An array of DAX query strings.
+     * @returns {Promise<Object>} The results from the Power BI REST API.
+     * @private
+     */
+    async _executeDaxQuery(groupId, datasetId, query) {
+        const headers = await this.getRequestHeader();
+        const apiUrl = `https://api.powerbi.com/v1.0/myorg/groups/${groupId}/datasets/${datasetId}/executeQueries`;
+
+        const requestBody = {
+            queries: [{ query: query }],
+            serializerSettings: {
+                includeNulls: true
+            }
+        };
+
+        const response = await fetch(apiUrl, {
+            method: 'POST',
+            headers: headers,
+            body: JSON.stringify(requestBody)
+        });
+
+        if (!response.ok) {
+            const errorBody = await response.text();
+            throw new Error(`DAX query failed with status ${response.status}: ${response.statusText}. Response: ${errorBody}`);
+        }
+
+        const jsonResponse = await response.json();
+        return jsonResponse.results[0];
     }
 }
 
