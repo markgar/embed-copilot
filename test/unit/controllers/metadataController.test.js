@@ -5,7 +5,6 @@ const errorService = require('../../../src-v2/services/errorService');
 // Mock dependencies
 jest.mock('../../../src-v2/services/powerbiService');
 jest.mock('../../../src-v2/services/errorService');
-jest.mock('../../../src-v2/services/cacheService');
 
 // Mock configService properly
 jest.mock('../../../src-v2/services/configService', () => ({
@@ -235,38 +234,6 @@ describe('MetadataController', () => {
         });
     });
 
-    describe('clearCache', () => {
-        test('should clear cache successfully', async () => {
-            const mockCacheService = require('../../../src-v2/services/cacheService');
-            mockCacheService.clearCache = jest.fn();
-
-            await MetadataController.clearCache(req, res);
-
-            expect(mockCacheService.clearCache).toHaveBeenCalledTimes(1);
-            expect(res.json).toHaveBeenCalledWith({
-                status: 'success',
-                message: 'Metadata cache cleared',
-                timestamp: expect.any(String)
-            });
-        });
-
-        test('should handle cache clear errors', async () => {
-            const mockCacheService = require('../../../src-v2/services/cacheService');
-            mockCacheService.clearCache = jest.fn().mockImplementation(() => {
-                throw new Error('Cache clear failed');
-            });
-
-            await MetadataController.clearCache(req, res);
-
-            expect(errorService.sendError).toHaveBeenCalledWith(
-                res,
-                500,
-                'Failed to clear cache',
-                'Cache clear failed'
-            );
-        });
-    });
-
     describe('healthCheck', () => {
         test('should return healthy status when properly configured', async () => {
             const mockCacheService = require('../../../src-v2/services/cacheService');
@@ -300,15 +267,6 @@ describe('MetadataController', () => {
             });
         });
 
-        test('should show cache status correctly', async () => {
-            const mockCacheService = require('../../../src-v2/services/cacheService');
-            mockCacheService.getCachedMetadata = jest.fn().mockReturnValue(null);
-
-            await MetadataController.healthCheck(req, res);
-
-            const call = res.json.mock.calls[0][0];
-            expect(call.cache.hasCachedData).toBe(false);
-        });
     });
 
     describe('parameter handling', () => {

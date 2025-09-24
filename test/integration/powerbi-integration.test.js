@@ -3,7 +3,6 @@
  */
 
 const PowerBIService = require('../../src-v2/services/powerbiService');
-const cacheService = require('../../src-v2/services/cacheService');
 const errorService = require('../../src-v2/services/errorService');
 const fs = require('fs');
 const path = require('path');
@@ -35,9 +34,6 @@ describe('PowerBI Service Integration', () => {
     };
 
     beforeEach(() => {
-        // Clear any cached data
-        cacheService.clearCache();
-
         // Reset all mocks
         jest.clearAllMocks();
 

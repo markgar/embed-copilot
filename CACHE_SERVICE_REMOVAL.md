@@ -26,20 +26,20 @@ The cache service (`src-v2/services/cacheService.js`) is marked as deprecated an
   - [x] Verify no `/clearMetadataCache` route exists
 
 ### Phase 4: Test File Cleanup
-- [ ] Delete dedicated cache service tests:
-  - [ ] `/test/services/cacheService.integration.test.js`
-  - [ ] `/test/unit/services/cacheService.test.js`
+- [x] Delete dedicated cache service tests:
+  - [x] `/test/services/cacheService.integration.test.js`
+  - [x] `/test/unit/services/cacheService.test.js`
 
-- [ ] Update test files that import cacheService:
-  - [ ] `/test/validation/powerbi-endpoint-comprehensive.test.js`
-  - [ ] `/test/integration/powerbi-integration.test.js` 
-  - [ ] `/test/integration/service-integration.test.js`
-  - [ ] `/test/unit/controllers/metadataController.test.js`
+- [x] Update test files that import cacheService:
+  - [x] `/test/validation/powerbi-endpoint-comprehensive.test.js`
+  - [x] `/test/integration/powerbi-integration.test.js` 
+  - [x] `/test/integration/service-integration.test.js` (deleted entirely - cache-focused)
+  - [x] `/test/unit/controllers/metadataController.test.js`
 
-- [ ] Clean up backup test files:
-  - [ ] `/test/validation/caching-behavior.test.js.backup`
-  - [ ] `/test/integration/powerbi-integration.test.js.backup`
-  - [ ] `/test/integration/powerbi-integration.test.js.backup2`
+- [x] Clean up backup test files:
+  - [x] `/test/validation/caching-behavior.test.js.backup`
+  - [x] `/test/integration/powerbi-integration.test.js.backup`
+  - [x] `/test/integration/powerbi-integration.test.js.backup2`
 
 ### Phase 5: Documentation Updates
 - [ ] Update `/ARCHITECTURE.md`:

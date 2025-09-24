@@ -7,7 +7,6 @@
 
 const request = require('supertest');
 const PowerBIService = require('../../src-v2/services/powerbiService');
-const cacheService = require('../../src-v2/services/cacheService');
 
 // Mock external dependencies to avoid real PowerBI calls
 jest.mock('@azure/msal-node');
@@ -36,10 +35,7 @@ describe('PowerBI Endpoints - Comprehensive Validation', () => {
     app = require('../../src-v2/app.js');
   });
 
-  beforeEach(() => {
-    // Clear cache before each test
-    cacheService.clearCache();
-  });
+
 
   describe('GET /getEmbedToken', () => {
     it('should handle missing configuration gracefully', async () => {
@@ -107,26 +103,6 @@ describe('PowerBI Endpoints - Comprehensive Validation', () => {
       }
     });
 
-    it('should use PowerBI service with caching', async () => {
-      // Mock successful service response
-      const mockMetadata = {
-        dataset: { name: 'Test Dataset' },
-        tables: [],
-        measures: [],
-        dimensions: []
-      };
-
-      // Spy on cache service to verify integration
-      jest.spyOn(cacheService, 'getCachedMetadata').mockReturnValue(null);
-      jest.spyOn(cacheService, 'setCachedMetadata');
-      
-      const response = await request(app)
-        .get('/getDatasetMetadata?groupId=test-group&datasetId=test-dataset');
-      
-      // Should attempt to use service architecture
-      expect(response.status).not.toBe(404);
-    });
-
     it('should maintain API contract compatibility', async () => {
       const response = await request(app)
         .get('/getDatasetMetadata?groupId=test-group&datasetId=test-dataset');
@@ -169,13 +145,6 @@ describe('PowerBI Endpoints - Comprehensive Validation', () => {
       const service = new PowerBIService(mockConfig);
       expect(service).toBeInstanceOf(PowerBIService);
       expect(service.config).toEqual(mockConfig);
-    });
-
-    it('should integrate with cache service', () => {
-      // Verify cache service integration
-      expect(typeof cacheService.getCachedMetadata).toBe('function');
-      expect(typeof cacheService.setCachedMetadata).toBe('function');
-      expect(typeof cacheService.clearCache).toBe('function');
     });
 
     it('should handle errors gracefully', async () => {
