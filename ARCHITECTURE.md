@@ -207,14 +207,18 @@ src-v2/
 ### External Libraries
 - **@azure/msal-node**: Service Principal authentication for PowerBI
 - **node-fetch**: HTTP requests to Azure OpenAI and PowerBI APIs
+- **axios**: Additional HTTP client for some API requests
 - **express**: Web framework and middleware
+- **body-parser**: Express middleware for parsing request bodies
 - **dotenv**: Environment variable management
+- **powerbi-client**: Frontend PowerBI embed functionality
 
 ### Service Dependencies
-- All controllers depend on: `errorService`, `configService`
-- `chatController`: `openaiService`, `powerbiService`, `telemetryService`
+- All controllers depend on: `errorService`
+- `chatController`: `openaiService`, `powerbiService`, `configService`, `telemetryService`
 - `embedController`: `powerbiService`, `utils`
-- `metadataController`: `powerbiService`, `cacheService`
+- `metadataController`: `powerbiService`, `configService`, `cacheService`
 - `systemController`: `telemetryService`
 - `openaiService`: `configService`, `telemetryService`, Azure OpenAI API
 - `powerbiService`: `configService`, `cacheService`, `errorService`, MSAL, PowerBI API
+- `cacheService`: `configService`
