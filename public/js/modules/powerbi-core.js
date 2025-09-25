@@ -90,7 +90,7 @@ function embedReport() {
         // Use other embed report config based on the requirement. We have used the first one for demo purpose
         embedUrl: embedData.embedUrl[0].embedUrl,
 
-        // Keep edit permissions for API access but use view mode to hide edit UI
+        // Enable view mode by default, with all permissions for when we need edit mode
         permissions: models.Permissions.All,
         viewMode: models.ViewMode.View,
 
@@ -118,18 +118,18 @@ function embedReport() {
           panes: {
             filters: {
               expanded: false,
-              visible: false
+              visible: true
             },
             pageNavigation: {
               visible: true
             },
             visualizations: {
               expanded: false,
-              visible: false
+              visible: true
             },
             fields: {
               expanded: false,
-              visible: false
+              visible: true
             }
           }
         }
@@ -163,14 +163,21 @@ function setupReportEventHandlers() {
   report.off('loaded');
 
   // Triggers when a report schema is successfully loaded
-  report.on('loaded', function () {
-    console.log('Report loaded successfully - no automatic field addition');
+  report.on('loaded', async function () {
+    console.log('Report loaded successfully - creating default visual');
     reportLoadState.loaded = true;
             
     // Notify other modules about report ready state
     notifyReportStateChange();
             
-    // No automatic measure addition - start with empty chart
+    // Automatically create a default visual when report loads
+    try {
+      await createDefaultVisual();
+      console.log('Default visual created successfully on report load');
+    } catch (error) {
+      console.error('Error creating default visual on report load:', error);
+      logError(error, 'Auto-Create Default Visual');
+    }
   });
 
   // Clear any other rendered handler events
@@ -353,15 +360,53 @@ async function getPages() {
 }
 
 /**
-     * Get the active page
-     * @returns {Promise<Object>} Promise that resolves to active page
-     */
+ * Get the active page
+ * @returns {Promise<Object>} Promise that resolves to active page
+ */
 async function getActivePage() {
   const pages = await getPages();
   return pages.find(page => page.isActive) || pages[0];
 }
 
-// Auto-initialize when DOM is ready
+/**
+ * Create a default visual on the active page
+ * @returns {Promise<Object>} Promise that resolves to the created visual response
+ */
+async function createDefaultVisual() {
+  try {
+    if (!report) {
+      throw new Error('Report not initialized');
+    }
+
+    console.log('Creating default visual...');
+    
+    // Get the active page
+    const activePage = await getActivePage();
+    if (!activePage) {
+      throw new Error('No active page found');
+    }
+
+    // Create a simple line chart visual with layout (based on showcase pattern)
+    const customLayout = {
+      width: 1242,
+      height: 682,
+      x: 19,
+      y: 18,
+      displayState: {
+        mode: models.VisualContainerDisplayMode.Visible
+      }
+    };
+    
+    const createVisualResponse = await activePage.createVisual('lineChart', customLayout);
+    console.log('Visual created successfully:', createVisualResponse);
+    
+    return createVisualResponse;
+  } catch (error) {
+    console.error('Error creating default visual:', error);
+    logError(error, 'Create Default Visual');
+    throw error;
+  }
+}// Auto-initialize when DOM is ready
 if (document.readyState === 'loading') {
   document.addEventListener('DOMContentLoaded', initializePowerBI);
 } else {
@@ -380,5 +425,6 @@ export {
   switchToViewMode,
   getPages,
   getActivePage,
-  cleanupPowerBIReport
+  cleanupPowerBIReport,
+  createDefaultVisual
 };
