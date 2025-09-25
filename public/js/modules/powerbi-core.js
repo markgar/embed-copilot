@@ -6,6 +6,7 @@
 
 // ES6 Module imports
 import { logError } from './utilities.js';
+import { FabricClient } from './fabric-client.js';
 
 // PowerBI client models and core variables
 const models = window['powerbi-client'].models;
@@ -65,18 +66,84 @@ function initializePowerBI() {
   // Initialize iframe for embedding report
   powerbi.bootstrap(reportContainer, { type: 'report' });
         
-  // Start the embedding process
-  embedReport();
+  // Start the report discovery/creation process
+  discoverAndEmbedReport();
+}
+
+/**
+     * Discover or create report, then embed it
+     */
+async function discoverAndEmbedReport() {
+  try {
+    console.log('🔍 Starting report discovery/creation process...');
+    
+    // Get frontend configuration from backend
+    const config = await getFrontendConfig();
+    if (!config.powerBIWorkspaceId || !config.powerBIDatasetId) {
+      throw new Error('Missing workspace ID or dataset ID in configuration');
+    }
+
+    console.log('📋 Config loaded:', { 
+      workspaceId: config.powerBIWorkspaceId, 
+      datasetId: config.powerBIDatasetId 
+    });
+
+    // Use datasetId as the report name (as per requirements)
+    const reportName = config.powerBIDatasetId;
+    
+    // Initialize Fabric client and ensure report exists
+    const fabricClient = new FabricClient();
+    const reportResult = await fabricClient.ensureReport(
+      config.powerBIWorkspaceId,
+      config.powerBIDatasetId,
+      reportName
+    );
+
+    console.log('✅ Report ready:', reportResult);
+
+    // Now embed the report using the discovered/created reportId
+    embedReport(reportResult.reportId);
+
+  } catch (error) {
+    console.error('❌ Report discovery/creation failed:', error);
+    logError(error, 'Report Discovery/Creation');
+    showEmbedError(`Failed to discover or create report: ${error.message}`);
+  }
+}
+
+/**
+     * Get frontend configuration from backend
+     * @returns {Promise<Object>} Frontend configuration
+     */
+async function getFrontendConfig() {
+  try {
+    const response = await fetch('/system/config');
+    if (!response.ok) {
+      throw new Error(`Config request failed: ${response.status} ${response.statusText}`);
+    }
+    return await response.json();
+  } catch (error) {
+    console.error('Failed to load frontend config:', error);
+    throw new Error(`Configuration loading failed: ${error.message}`);
+  }
 }
 
 /**
      * Get embed token and embed the report
+     * @param {string} reportId - The Power BI report ID to embed
      */
-function embedReport() {
+function embedReport(reportId) {
+  if (!reportId) {
+    showEmbedError('No report ID provided for embedding');
+    return;
+  }
+
+  console.log('Embedding report with ID:', reportId);
+
   // AJAX request to get the report details from the API and pass it to the UI
   $.ajax({
     type: 'GET',
-    url: '/getEmbedToken',
+    url: `/getEmbedToken?reportId=${encodeURIComponent(reportId)}`,
     dataType: 'json',
     success: function (embedData) {
       console.log('Embed token received successfully');
@@ -417,6 +484,8 @@ if (document.readyState === 'loading') {
 export {
   initializePowerBI,
   embedReport,
+  discoverAndEmbedReport,
+  getFrontendConfig,
   getReport,
   getReportContainer,
   getReportLoadState,

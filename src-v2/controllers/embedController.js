@@ -9,19 +9,26 @@ const utils = require('../utils'); // Use v2 utils with configService
 class EmbedController {
   /**
      * Get embed token and configuration for Power BI reports
-     * GET /getEmbedToken
+     * GET /getEmbedToken?reportId=<reportId>
      */
   static async getEmbedToken(req, res) {
     try {
+      // Get reportId from query parameters
+      const { reportId } = req.query;
+      
+      if (!reportId) {
+        return errorService.sendError(res, 400, 'reportId query parameter is required');
+      }
+
       // Validate configuration first using existing utils
       const configCheckResult = utils.validateConfig();
       if (configCheckResult) {
         return errorService.sendError(res, 400, configCheckResult);
       }
 
-      // Use PowerBI service to get embed info
+      // Use PowerBI service to get embed info with dynamic reportId
       const powerbiService = new PowerBIService();
-      const result = await powerbiService.getEmbedInfo();
+      const result = await powerbiService.getEmbedInfo(reportId);
             
       // Send response with original status from service
       res.status(result.status).send(result);

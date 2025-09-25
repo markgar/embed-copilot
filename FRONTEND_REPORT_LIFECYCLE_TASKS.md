@@ -24,15 +24,23 @@ Transform the frontend from using a hardcoded reportId to dynamically creating/f
   - ✅ Implemented proper handling of Fabric API async operations (202 Accepted)
   - ✅ Successfully tested with real workspace/dataset IDs from .env file
 
-### Phase 2: Frontend Report Discovery Logic  
-- ⬜ **Task 2.1**: Modify `embedReport()` function to accept dynamic reportId parameter
-- ⬜ **Task 2.2**: Create `discoverReport()` function that calls fabric service with datasetId as reportName
-- ⬜ **Task 2.3**: Update embed token request to use discovered reportId instead of config reportId
+### Phase 2: Frontend Report Discovery Logic
+- ✅ **Task 2.1**: Modify `embedReport()` to accept dynamic `reportId` parameter instead of hardcoded value
+- ✅ **Task 2.2**: Create frontend logic to call Fabric API and get/create report  
+- ✅ **Task 2.3**: Update backend to accept dynamic reportId parameter from frontend
+- ✅ **Task 2.4**: Add `/system/config` endpoint to provide frontend with workspace/dataset IDs
+- ✅ **Task 2.5**: Create `discoverAndEmbedReport()` function to orchestrate the full flow
 
-### Phase 3: Integration & Flow Control
-- ⬜ **Task 3.1**: Modify `initializePowerBI()` to call `discoverReport()` first
-- ⬜ **Task 3.2**: Chain the flow: discover → embed → render
-- ⬜ **Task 3.3**: Add loading states during report discovery/creation process
+**✅ Phase 2 Complete!** All core components implemented:
+- Frontend dynamically gets workspace/dataset IDs from `/system/config`
+- `embedReport()` now accepts dynamic reportId parameter  
+- `discoverAndEmbedReport()` calls Fabric API to ensure report exists
+- Backend accepts reportId query parameter in `/getEmbedToken`
+
+## Phase 3: Integration & Testing
+- 🚧 **Task 3.1**: Test complete flow: config → Fabric → embed
+- ⬜ **Task 3.2**: Handle async report creation (202 Accepted → poll for completion)
+- ⬜ **Task 3.3**: Add loading states and user feedback
 
 ### Phase 4: Configuration Updates
 - ⬜ **Task 4.1**: Remove dependency on `powerBIReportId` from config

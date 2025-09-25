@@ -1,4 +1,5 @@
 const errorService = require('../services/errorService');
+const configService = require('../services/configService');
 const EmbedController = require('./embedController');
 const MetadataController = require('./metadataController');
 const ChatController = require('./chatController');
@@ -140,6 +141,27 @@ class SystemController {
     } catch (error) {
       console.error('[SystemController] System info error:', error);
       errorService.sendError(res, 500, 'Failed to get system info', error.message);
+    }
+  }
+
+  /**
+     * Frontend configuration endpoint
+     * GET /system/config
+     */
+  static getFrontendConfig(req, res) {
+    try {
+      const config = configService.loadConfig();
+      
+      // Only send frontend-safe configuration
+      const frontendConfig = {
+        powerBIWorkspaceId: config.powerBIWorkspaceId,
+        powerBIDatasetId: config.powerBIDatasetId
+      };
+
+      res.json(frontendConfig);
+    } catch (error) {
+      console.error('[SystemController] Frontend config error:', error);
+      errorService.sendError(res, 500, 'Failed to get frontend config', error.message);
     }
   }
 }

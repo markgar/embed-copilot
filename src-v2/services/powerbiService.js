@@ -69,14 +69,22 @@ class PowerBIService {
 
   /**
      * Generate embed token and embed URLs for reports
+     * @param {string} reportId - The Power BI report ID (optional, falls back to config)
      * @returns {Promise<Object>} Embed details with token, URL, and expiry
      */
-  async getEmbedInfo() {
+  async getEmbedInfo(reportId = null) {
     try {
+      // Use provided reportId or fall back to config
+      const targetReportId = reportId || this.config.powerBIReportId;
+      
+      if (!targetReportId) {
+        throw new Error('No report ID provided and no default configured');
+      }
+
       // Get report details and embed token
       const embedParams = await this.getEmbedParamsForSingleReport(
         this.config.powerBIGroupId, 
-        this.config.powerBIReportId
+        targetReportId
       );
 
       return {

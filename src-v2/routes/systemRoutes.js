@@ -27,4 +27,16 @@ router.post('/log-error', systemController.logError);
  */
 router.post('/log-console', systemController.logConsole);
 
+/**
+ * System info endpoint
+ * GET /system/info
+ */
+router.get('/system/info', systemController.getSystemInfo);
+
+/**
+ * Frontend configuration endpoint
+ * GET /system/config
+ */
+router.get('/system/config', systemController.getFrontendConfig);
+
 module.exports = router;
