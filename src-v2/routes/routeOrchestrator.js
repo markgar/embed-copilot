@@ -5,6 +5,7 @@ const embedRoutes = require('./embedRoutes');
 const metadataRoutes = require('./metadataRoutes');
 const chatRoutes = require('./chatRoutes');
 const systemRoutes = require('./systemRoutes');
+const fabricRoutes = require('./fabricRoutes');
 
 module.exports = function mountRoutes(app) {
   console.log('[Routes] Mounting routes...');
@@ -27,6 +28,7 @@ module.exports = function mountRoutes(app) {
   app.use('/', metadataRoutes);   // /getDatasetMetadata, /debug/metadata
   app.use('/', chatRoutes);       // /chat
   app.use('/', systemRoutes);     // /health, /log-error, /log-console
+  app.use('/fabric', fabricRoutes); // /fabric/reports/ensure
   
   console.log('[Routes] All routes mounted successfully');
 };
