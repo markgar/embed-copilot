@@ -14,7 +14,6 @@ const config = {
   // Support both property names for backwards compatibility
   powerBIGroupId: process.env.POWERBI_GROUP_ID || process.env.POWERBI_WORKSPACE_ID,
   powerBIWorkspaceId: process.env.POWERBI_WORKSPACE_ID || process.env.POWERBI_GROUP_ID,
-  powerBIReportId: process.env.POWERBI_REPORT_ID,
   powerBIDatasetId: process.env.POWERBI_DATASET_ID,
     
   // Azure OpenAI Configuration
@@ -56,13 +55,7 @@ function validateConfig(config = null) {
     return 'ClientId must be a Guid object. Please register your application as Native app in https://dev.powerbi.com/apps and fill Client Id in config.json.';
   }
 
-  if (!config.powerBIReportId) {
-    return 'ReportId is empty. Please select a report you own and fill its Id in config.json.';
-  }
 
-  if (!guid.isGuid(config.powerBIReportId)) {
-    return 'ReportId must be a Guid object. Please select a report you own and fill its Id in config.json.';
-  }
 
   if (!config.powerBIGroupId) {
     return 'WorkspaceId is empty. Please select a group you own and fill its Id in config.json.';

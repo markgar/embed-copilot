@@ -37,17 +37,35 @@ Transform the frontend from using a hardcoded reportId to dynamically creating/f
 - `discoverAndEmbedReport()` calls Fabric API to ensure report exists
 - Backend accepts reportId query parameter in `/getEmbedToken`
 
-## Phase 3: Integration & Testing
-- 🚧 **Task 3.1**: Test complete flow: config → Fabric → embed
-- ⬜ **Task 3.2**: Handle async report creation (202 Accepted → poll for completion)
-- ⬜ **Task 3.3**: Add loading states and user feedback
+## Phase 3: Report Definition Management ✅ COMPLETE  
+- ✅ **Task 3.1**: Research CLI-generated report structure (`fab mkdir`, `fab export`)
+  - ✅ Successfully created report via CLI: `fab mkdir "EmbedQuickDemo.Workspace/d402b331-953c-436b-879f-5ea2a88f5f05.Report" -P semanticModelId=d402b331-953c-436b-879f-5ea2a88f5f05`
+  - ✅ Exported report to understand required payload structure: `.platform`, `definition.pbir`, `definition/report.json`
+- ✅ **Task 3.2**: Choose report definition storage approach
+  - ✅ **Option 1**: Template files in `/templates/report/` (created platform.template.json, definition.pbir.template.json, report.template.json)
+  - ✅ **Option 2**: Generate dynamically in `fabricService.js` (implemented `generateReportDefinition()` method)
+  - ✅ **Decision**: Using Option 2 (dynamic generation) for simplicity and maintainability
+- ✅ **Task 3.3**: Update `createEmptyReport()` to use comprehensive PBIR payload
+  - ✅ Updated to include both `definition.pbir` and `definition/report.json` parts
+  - ✅ Uses complete report structure based on CLI export analysis
 
-### Phase 4: Configuration Updates
-- ⬜ **Task 4.1**: Remove dependency on `powerBIReportId` from config
-- ⬜ **Task 4.2**: Ensure `powerBIDatasetId` and `powerBIWorkspaceId` are available in frontend
-- ⬜ **Task 4.3**: Update any remaining hardcoded reportId references
+## Phase 4: Integration & Testing
+- ⬜ **Task 4.1**: Test complete flow: config → Fabric → embed  
+- ⬜ **Task 4.2**: Handle async report creation (202 Accepted → poll for completion)
+- ⬜ **Task 4.3**: Add loading states and user feedback
 
-### Phase 5: Error Handling & UX
+### Phase 5: Configuration Updates ✅ COMPLETE
+- ✅ **Task 5.1**: Remove dependency on `powerBIReportId` from config
+  - ✅ Removed `POWERBI_REPORT_ID` from `.env` and `.env.example` 
+  - ✅ Removed `powerBIReportId` from `configService.js`
+  - ✅ Removed `powerBIReportId` validation from config validation
+  - ✅ Updated README.md to reflect dynamic report creation approach
+- ✅ **Task 5.2**: Ensure `powerBIDatasetId` and `powerBIWorkspaceId` are available in frontend
+  - ✅ Already implemented in Phase 2 via `/system/config` endpoint
+- ✅ **Task 5.3**: Update any remaining hardcoded reportId references
+  - ✅ All reportId references now use dynamic values from Fabric API
+
+### Phase 6: Error Handling & UX
 - ⬜ **Task 5.1**: Handle case where workspace/dataset doesn't exist
 - ⬜ **Task 5.2**: Add proper loading indicators during report creation
 - ⬜ **Task 5.3**: Handle authentication errors gracefully

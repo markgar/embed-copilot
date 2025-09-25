@@ -100,24 +100,26 @@ class FabricService {
     try {
       const token = await this.getAccessToken();
 
-      // Create minimal report definition
-      const reportDefinition = {
-        version: '5.0',
-        config: JSON.stringify({
-          'version': '5.0',
-          'themeCollection': {},
-          'settings': {},
-          'objects': {},
-          'dataModelSchema': [{
-            'name': datasetId,
-            'tables': []
-          }]
-        }),
-        layoutOptimization: 0
+      // Generate comprehensive report definition using the new method
+      const reportDef = this.generateReportDefinition(datasetId, reportName);
+
+      // Create the PBIR definition
+      const pbirDefinition = {
+        '$schema': 'https://developer.microsoft.com/json-schemas/fabric/item/report/definitionProperties/2.0.0/schema.json',
+        version: '4.0',
+        datasetReference: {
+          byConnection: {
+            connectionString: `Data Source=powerbi://api.powerbi.com/v1.0/myorg/EmbedQuickDemo;initial catalog="Store Sales";integrated security=ClaimsToken;semanticmodelid=${datasetId}`
+          }
+        }
       };
 
-      // Base64 encode the definition
-      const encodedDefinition = Buffer.from(JSON.stringify(reportDefinition)).toString('base64');
+      // Create the main report definition
+      const reportDefinition = reportDef.definition.report;
+
+      // Base64 encode both definitions
+      const encodedPbirDef = Buffer.from(JSON.stringify(pbirDefinition)).toString('base64');
+      const encodedReportDef = Buffer.from(JSON.stringify(reportDefinition)).toString('base64');
 
       const requestBody = {
         displayName: reportName,
@@ -125,8 +127,13 @@ class FabricService {
         definition: {
           parts: [
             {
-              path: 'report.json',
-              payload: encodedDefinition,
+              path: 'definition.pbir',
+              payload: encodedPbirDef,
+              payloadType: 'InlineBase64'
+            },
+            {
+              path: 'definition/report.json',
+              payload: encodedReportDef,
               payloadType: 'InlineBase64'
             }
           ]
@@ -175,13 +182,131 @@ class FabricService {
   }
 
   /**
+   * Poll for operation completion
+   * @param {string} operationId - The operation ID to poll
+   * @param {number} maxRetries - Maximum number of retries (default: 10)
+   * @param {number} retryDelay - Delay between retries in ms (default: 3000)
+   * @returns {Object} Operation result when complete
+   */
+  async pollOperationCompletion(operationId, maxRetries = 10, retryDelay = 3000) {
+    try {
+      const token = await this.getAccessToken();
+      
+      for (let attempt = 1; attempt <= maxRetries; attempt++) {
+        console.log(`📊 Polling operation ${operationId} (attempt ${attempt}/${maxRetries})`);
+        
+        const response = await axios.get(
+          `${this.baseUrl}/operations/${operationId}`,
+          {
+            headers: {
+              'Authorization': `Bearer ${token}`,
+              'Content-Type': 'application/json'
+            }
+          }
+        );
+
+        const operation = response.data;
+        
+        if (operation.status === 'Succeeded') {
+          console.log(`✅ Operation ${operationId} completed successfully`);
+          return operation.result;
+        } else if (operation.status === 'Failed') {
+          throw new Error(`Operation failed: ${operation.error?.message || 'Unknown error'}`);
+        } else if (operation.status === 'InProgress') {
+          console.log(`⏳ Operation ${operationId} still in progress, waiting ${retryDelay}ms...`);
+          await new Promise(resolve => global.setTimeout(resolve, retryDelay));
+          continue;
+        }
+      }
+      
+      throw new Error(`Operation ${operationId} did not complete within ${maxRetries} retries`);
+      
+    } catch (error) {
+      console.error(`❌ Error polling operation ${operationId}:`, error.message);
+      throw new Error(`Failed to poll operation completion: ${error.message}`);
+    }
+  }
+
+  /**
+   * Generate the PBIR report definition payload
+   * @param {string} datasetId - The dataset ID to tie the report to
+   * @param {string} reportName - The report name
+   * @param {string} workspaceName - The workspace name (for connection string)
+   * @param {string} datasetName - The dataset display name (for connection string)
+   * @returns {Object} Complete PBIR report definition
+   */
+  generateReportDefinition(datasetId, reportName, workspaceName = 'EmbedQuickDemo', datasetName = 'Store Sales') {
+    return {
+      displayName: reportName,
+      description: `Auto-generated report for dataset ${datasetId}`,
+      definition: {
+        pbir: {
+          version: '4.0',
+          datasetReference: {
+            byConnection: {
+              connectionString: `Data Source=powerbi://api.powerbi.com/v1.0/myorg/${workspaceName};initial catalog="${datasetName}";integrated security=ClaimsToken;semanticmodelid=${datasetId}`
+            }
+          }
+        },
+        report: {
+          '$schema': 'https://developer.microsoft.com/json-schemas/fabric/item/report/definition/report/1.2.0/schema.json',
+          themeCollection: {
+            baseTheme: {
+              name: 'CY24SU10',
+              reportVersionAtImport: '5.61',
+              type: 'SharedResources'
+            }
+          },
+          layoutOptimization: 'None',
+          objects: {
+            section: [
+              {
+                properties: {
+                  verticalAlignment: {
+                    expr: {
+                      Literal: {
+                        Value: '\'Top\''
+                      }
+                    }
+                  }
+                }
+              }
+            ]
+          },
+          resourcePackages: [
+            {
+              name: 'SharedResources',
+              type: 'SharedResources',
+              items: [
+                {
+                  name: 'CY24SU10',
+                  path: 'BaseThemes/CY24SU10.json',
+                  type: 'BaseTheme'
+                }
+              ]
+            }
+          ],
+          settings: {
+            useStylableVisualContainerHeader: true,
+            defaultDrillFilterOtherVisuals: true,
+            allowChangeFilterTypes: true,
+            useEnhancedTooltips: true,
+            useDefaultAggregateDisplayName: true
+          }
+        }
+      }
+    };
+  }
+
+  /**
    * Ensure a report exists - check if it exists, create if it doesn't
    * @param {string} workspaceId - The workspace ID
    * @param {string} datasetId - The dataset ID to tie the report to
    * @param {string} reportName - The report name
+   * @param {boolean} waitForCompletion - Whether to wait for async operations to complete (default: false)
    * @returns {Object} Report object with existence info
    */
-  async ensureReport(workspaceId, datasetId, reportName) {
+  async ensureReport(workspaceId, datasetId, reportName, waitForCompletion = false) {
     try {
       console.log(`🔍 Checking if report '${reportName}' exists in workspace ${workspaceId}...`);
       
@@ -202,11 +327,30 @@ class FabricService {
       console.log(`📝 Creating new report '${reportName}'...`);
       report = await this.createEmptyReport(workspaceId, datasetId, reportName);
 
+      // Handle async operation (202 Accepted response)
+      if (report.operationId && waitForCompletion) {
+        console.log('⏳ Waiting for report creation to complete...');
+        await this.pollOperationCompletion(report.operationId);
+        
+        // After completion, re-check to get the actual report details
+        const completedReport = await this.checkReportExists(workspaceId, reportName);
+        if (completedReport) {
+          return {
+            reportId: completedReport.id,
+            workspaceId: completedReport.workspaceId,
+            displayName: completedReport.displayName,
+            existed: false,
+            message: `Report '${reportName}' created successfully`
+          };
+        }
+      }
+
       return {
         reportId: report.id,
-        workspaceId: report.workspaceId,
+        workspaceId: report.workspaceId || workspaceId,
         displayName: report.displayName,
-        existed: false
+        existed: false,
+        message: report.message || `Report '${reportName}' created successfully`
       };
 
     } catch (error) {
