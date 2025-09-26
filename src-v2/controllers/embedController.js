@@ -20,8 +20,8 @@ class EmbedController {
         return errorService.sendError(res, 400, 'reportId query parameter is required');
       }
 
-      // Validate configuration first using existing utils
-      const configCheckResult = utils.validateConfig();
+      // Validate configuration (skip reportId check since we're using dynamic reportId)
+      const configCheckResult = utils.validateConfigForDynamicReport();
       if (configCheckResult) {
         return errorService.sendError(res, 400, configCheckResult);
       }

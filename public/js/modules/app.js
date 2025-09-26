@@ -11,7 +11,7 @@
 
 // Import all dependencies
 import { logError } from './utilities.js';
-import { getReportLoadState } from './powerbi-core.js';
+import { getReportLoadState, initializePowerBI } from './powerbi-core.js';
 import { initializeChatInterface } from './chat-interface.js';
 import { initializeDataControls } from './data-controls.js';
 
@@ -42,6 +42,14 @@ function initializeApplication() {
 
     // TreeView initializes itself via DOM ready event
     console.log('✅ TreeView will auto-initialize');
+
+    // Initialize PowerBI Core - This will discover/create reports and embed them
+    if (initializePowerBI) {
+      initializePowerBI();
+      console.log('✅ PowerBI Core initialized - starting report discovery/creation process');
+    } else {
+      console.warn('⚠️ PowerBI Core initialization function not available');
+    }
 
     console.log('🎉 ChartChat App initialization complete!');
 

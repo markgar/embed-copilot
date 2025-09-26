@@ -12,7 +12,7 @@ class FabricController {
    */
   async ensureReport(req, res) {
     try {
-      const { workspaceId, datasetId, reportName } = req.body;
+      const { workspaceId, datasetId, reportName, waitForCompletion } = req.body;
 
       // Validate required fields
       if (!workspaceId || !datasetId || !reportName) {
@@ -49,7 +49,7 @@ class FabricController {
       console.log(`📊 Fabric Controller: Ensuring report exists - ${reportName}`);
 
       // Call fabric service to ensure report exists
-      const result = await fabricService.ensureReport(workspaceId, datasetId, reportName.trim());
+      const result = await fabricService.ensureReport(workspaceId, datasetId, reportName.trim(), waitForCompletion);
 
       // Return success response
       return res.status(200).json({

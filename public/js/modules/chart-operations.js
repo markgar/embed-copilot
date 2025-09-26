@@ -364,39 +364,29 @@ async function getCurrentChartConfig() {
       series: null
     };
 
-    // Determine Y-axis measure
+    // Determine Y-axis measure - use whatever the LLM provided
     if (yAxisFields && yAxisFields.length > 0) {
       const yField = yAxisFields[0];
-      if (yField.column === 'TotalSales') {
-        config.yAxis = 'TotalSales';
-      } else if (yField.column === 'TotalUnits') {
-        config.yAxis = 'TotalUnits';
-      } else if (yField.measure) {
+      if (yField.measure) {
         config.yAxis = yField.measure;
+      } else if (yField.column) {
+        config.yAxis = yField.column;
       }
     }
 
-    // Determine X-axis dimension
+    // Determine X-axis dimension - use whatever the LLM provided
     if (xAxisFields && xAxisFields.length > 0) {
       const xField = xAxisFields[0];
-      if (xField.column === 'Month') {
-        config.xAxis = 'Month';
-      } else if (xField.column === 'District') {
-        config.xAxis = 'District';
-      } else if (xField.column) {
+      if (xField.column) {
         config.xAxis = xField.column;
       }
     }
 
-    // Determine series/legend dimension (for clustered charts)
+    // Determine series/legend dimension (for clustered charts) - use whatever the LLM provided
     if (legendFields && legendFields.length > 0) {
       const legendField = legendFields[0];
-      if (legendField.column === 'District') {
-        config.series = 'District.District';
-      } else if (legendField.column === 'Month') {
-        config.series = 'Time.Month';
-      } else if (legendField.column) {
-        // Try to build full table.column name
+      if (legendField.column) {
+        // Try to build full table.column name if table is provided
         const tableName = legendField.table || 'Unknown';
         config.series = `${tableName}.${legendField.column}`;
       }

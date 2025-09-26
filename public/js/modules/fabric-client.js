@@ -30,7 +30,8 @@ class FabricClient {
         body: JSON.stringify({
           workspaceId: workspaceId,
           datasetId: datasetId,
-          reportName: reportName
+          reportName: reportName,
+          waitForCompletion: true  // Always wait for report creation to complete
         })
       });
 

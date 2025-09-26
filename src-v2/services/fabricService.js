@@ -100,27 +100,57 @@ class FabricService {
     try {
       const token = await this.getAccessToken();
 
-      // Generate comprehensive report definition using the new method
-      const reportDef = this.generateReportDefinition(datasetId, reportName);
-
-      // Create the PBIR definition
+      // Load EXACT CLI-exported templates
+      const fs = require('fs');
+      const path = require('path');
+      
+      // Load template files for PBIR-Legacy format (3 files: definition.pbir, report.json, .platform)
+      const pbirTemplate = JSON.parse(fs.readFileSync(path.join(__dirname, '../../templates/report/definition.pbir.template.json'), 'utf8'));
+      const reportTemplate = JSON.parse(fs.readFileSync(path.join(__dirname, '../../templates/report/report.template.json'), 'utf8'));
+      const platformTemplate = JSON.parse(fs.readFileSync(path.join(__dirname, '../../templates/report/platform.template.json'), 'utf8'));
+      
+      // Replace placeholders in PBIR template (EXACT CLI structure)
       const pbirDefinition = {
-        '$schema': 'https://developer.microsoft.com/json-schemas/fabric/item/report/definitionProperties/2.0.0/schema.json',
-        version: '4.0',
+        ...pbirTemplate,
         datasetReference: {
           byConnection: {
-            connectionString: `Data Source=powerbi://api.powerbi.com/v1.0/myorg/EmbedQuickDemo;initial catalog="Store Sales";integrated security=ClaimsToken;semanticmodelid=${datasetId}`
+            connectionString: pbirTemplate.datasetReference.byConnection.connectionString
+              .replace('{{WORKSPACE_NAME}}', 'EmbedQuickDemo')
+              .replace('{{DATASET_NAME}}', 'Store Sales')
+              .replace('{{DATASET_ID}}', datasetId)
           }
         }
       };
+      
+      // Use EXACT CLI-exported report.json template
+      const reportJson = reportTemplate;
 
-      // Create the main report definition
-      const reportDefinition = reportDef.definition.report;
+      // Replace placeholders in platform template
+      const platformJson = {
+        ...platformTemplate,
+        metadata: {
+          ...platformTemplate.metadata,
+          displayName: platformTemplate.metadata.displayName.replace('{{REPORT_NAME}}', reportName),
+          description: platformTemplate.metadata.description.replace('{{DATASET_ID}}', datasetId)
+        }
+      };
 
-      // Base64 encode both definitions
-      const encodedPbirDef = Buffer.from(JSON.stringify(pbirDefinition)).toString('base64');
-      const encodedReportDef = Buffer.from(JSON.stringify(reportDefinition)).toString('base64');
+      // Create exact JSON strings for PBIR-Legacy format (no formatting for exact match)
+      const pbirJsonString = JSON.stringify(pbirDefinition);
+      const reportJsonString = JSON.stringify(reportJson);
+      const platformJsonString = JSON.stringify(platformJson);
+      
+      // Base64 encode exactly as CLI exports them
+      const encodedPbirDef = Buffer.from(pbirJsonString).toString('base64');
+      const encodedReportJson = Buffer.from(reportJsonString).toString('base64');
+      const encodedPlatformJson = Buffer.from(platformJsonString).toString('base64');
+      
+      console.log('🔍 PBIR JSON (exact):', pbirJsonString);
+      console.log('🔍 Report JSON (exact):', reportJsonString.substring(0, 200) + '...');
+      console.log('🔍 Platform JSON (exact):', platformJsonString);
+      console.log('🔍 Using PBIR-Legacy format (3 parts: definition.pbir v1.0, report.json, .platform)');
 
+      // Create request with PBIR-Legacy format (3 parts: definition.pbir, report.json, .platform)
       const requestBody = {
         displayName: reportName,
         type: 'Report',
@@ -132,8 +162,13 @@ class FabricService {
               payloadType: 'InlineBase64'
             },
             {
-              path: 'definition/report.json',
-              payload: encodedReportDef,
+              path: 'report.json',
+              payload: encodedReportJson,
+              payloadType: 'InlineBase64'
+            },
+            {
+              path: '.platform',
+              payload: encodedPlatformJson,
               payloadType: 'InlineBase64'
             }
           ]
@@ -211,6 +246,8 @@ class FabricService {
           console.log(`✅ Operation ${operationId} completed successfully`);
           return operation.result;
         } else if (operation.status === 'Failed') {
+          console.error('❌ Operation failed - Full error details:', JSON.stringify(operation.error, null, 2));
+          console.error('❌ Operation failed - Full operation response:', JSON.stringify(operation, null, 2));
           throw new Error(`Operation failed: ${operation.error?.message || 'Unknown error'}`);
         } else if (operation.status === 'InProgress') {
           console.log(`⏳ Operation ${operationId} still in progress, waiting ${retryDelay}ms...`);
