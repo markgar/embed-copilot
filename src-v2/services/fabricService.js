@@ -3,12 +3,19 @@
  * Handles Fabric REST API operations for report management
  */
 
-const fetch = require('node-fetch');
 const { URLSearchParams } = require('url');
-const { loadConfig } = require('./configService');
 
 class FabricService {
-  constructor() {
+  constructor(config, httpClient) {
+    if (!config) {
+      throw new Error('config is required');
+    }
+    if (!httpClient) {
+      throw new Error('httpClient is required');
+    }
+    
+    this.config = config;
+    this.httpClient = httpClient;
     this.baseUrl = 'https://api.fabric.microsoft.com/v1';
     this.accessToken = null;
     this.tokenExpiry = null;
@@ -24,17 +31,15 @@ class FabricService {
     }
 
     try {
-      const config = loadConfig();
-
-      const tokenUrl = `https://login.microsoftonline.com/${config.tenantId}/oauth2/v2.0/token`;
+      const tokenUrl = `https://login.microsoftonline.com/${this.config.tenantId}/oauth2/v2.0/token`;
       
       const params = new URLSearchParams();
-      params.append('client_id', config.clientId);
-      params.append('client_secret', config.clientSecret);
+      params.append('client_id', this.config.clientId);
+      params.append('client_secret', this.config.clientSecret);
       params.append('scope', 'https://api.fabric.microsoft.com/.default');
       params.append('grant_type', 'client_credentials');
 
-      const response = await fetch(tokenUrl, {
+      const response = await this.httpClient(tokenUrl, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/x-www-form-urlencoded'
@@ -72,7 +77,7 @@ class FabricService {
       const token = await this.getAccessToken();
       
       const url = `${this.baseUrl}/workspaces/${workspaceId}/items?type=Report`;
-      const response = await fetch(url, {
+      const response = await this.httpClient(url, {
         method: 'GET',
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -188,7 +193,7 @@ class FabricService {
         }
       };
 
-      const response = await fetch(
+      const response = await this.httpClient(
         `${this.baseUrl}/workspaces/${workspaceId}/items`,
         {
           method: 'POST',
@@ -248,7 +253,7 @@ class FabricService {
       for (let attempt = 1; attempt <= maxRetries; attempt++) {
         console.log(`📊 Polling operation ${operationId} (attempt ${attempt}/${maxRetries})`);
         
-        const response = await fetch(
+        const response = await this.httpClient(
           `${this.baseUrl}/operations/${operationId}`,
           {
             method: 'GET',
@@ -420,4 +425,4 @@ class FabricService {
   }
 }
 
-module.exports = new FabricService();
+module.exports = FabricService;

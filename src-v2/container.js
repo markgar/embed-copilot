@@ -7,6 +7,9 @@ const configService = require('./services/configService');
 const AgentService = require('./services/agentService');
 const AzureOpenAIProvider = require('./services/azureOpenAIProvider');
 const ChatController = require('./controllers/chatController');
+const PowerBIService = require('./services/powerbiService');
+const FabricService = require('./services/fabricService');
+const msal = require('@azure/msal-node');
 const fetch = require('node-fetch');
 
 class Container {
@@ -68,6 +71,60 @@ class Container {
       this.services.chatController = new ChatController(this.getAgentService());
     }
     return this.services.chatController;
+  }
+
+  /**
+   * Get MSAL Client instance
+   * Lazy initialization - creates MSAL client for PowerBI authentication
+   */
+  getMsalClient() {
+    if (!this.services.msalClient) {
+      const config = this.getConfigService().loadConfig();
+      
+      const msalConfig = {
+        auth: {
+          clientId: config.clientId,
+          clientSecret: config.clientSecret,
+          authority: `https://login.microsoftonline.com/${config.tenantId}`
+        }
+      };
+
+      this.services.msalClient = new msal.ConfidentialClientApplication(msalConfig);
+    }
+    return this.services.msalClient;
+  }
+
+  /**
+   * Get PowerBIService instance
+   * Lazy initialization with injected config, msalClient, and httpClient
+   */
+  getPowerBIService() {
+    if (!this.services.powerbiService) {
+      const config = this.getConfigService().loadConfig();
+      
+      this.services.powerbiService = new PowerBIService(
+        config,
+        this.getMsalClient(),
+        fetch
+      );
+    }
+    return this.services.powerbiService;
+  }
+
+  /**
+   * Get FabricService instance
+   * Lazy initialization with injected config and httpClient
+   */
+  getFabricService() {
+    if (!this.services.fabricService) {
+      const config = this.getConfigService().loadConfig();
+      
+      this.services.fabricService = new FabricService(
+        config,
+        fetch
+      );
+    }
+    return this.services.fabricService;
   }
 
   /**

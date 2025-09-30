@@ -9,13 +9,23 @@
  * Simplified architecture without caching complexity for demo applications.
  */
 
-const configService = require('./configService');
 const msal = require('@azure/msal-node');
-const fetch = require('node-fetch');
 
 class PowerBIService {
-  constructor(config = null) {
-    this.config = config || configService.loadConfig();
+  constructor(config, msalClient, httpClient) {
+    if (!config) {
+      throw new Error('config is required');
+    }
+    if (!msalClient) {
+      throw new Error('msalClient is required');
+    }
+    if (!httpClient) {
+      throw new Error('httpClient is required');
+    }
+    
+    this.config = config;
+    this.msalClient = msalClient;
+    this.httpClient = httpClient;
   }
 
   /**
@@ -120,7 +130,7 @@ class PowerBIService {
     const headers = await this.getRequestHeader();
 
     // Get report info by calling the PowerBI REST API
-    const result = await fetch(reportInGroupApi, {
+    const result = await this.httpClient(reportInGroupApi, {
       method: 'GET',
       headers: headers,
     });
@@ -192,7 +202,7 @@ class PowerBIService {
     const headers = await this.getRequestHeader();
 
     // Generate Embed token for single report, workspace, and multiple datasets
-    const result = await fetch(embedTokenApi, {
+    const result = await this.httpClient(embedTokenApi, {
       method: 'POST',
       headers: headers,
       body: JSON.stringify(formData)
@@ -215,7 +225,7 @@ class PowerBIService {
     const reportInGroupApi = `https://api.powerbi.com/v1.0/myorg/groups/${groupId}/reports/${reportId}`;
     const headers = await this.getRequestHeader();
 
-    const result = await fetch(reportInGroupApi, {
+    const result = await this.httpClient(reportInGroupApi, {
       method: 'GET',
       headers: headers,
     });
@@ -449,7 +459,7 @@ class PowerBIService {
       }
     };
 
-    const response = await fetch(apiUrl, {
+    const response = await this.httpClient(apiUrl, {
       method: 'POST',
       headers: headers,
       body: JSON.stringify(requestBody)
