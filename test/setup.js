@@ -1,13 +1,17 @@
-// Test setup - run before each test file
-// Set test environment variables to avoid real API calls during testing
+// Jest setup file
+// Runs before all tests
 
-// Suppress console logs during testing unless debugging
-if (!process.env.DEBUG_TESTS) {
-  console.log = jest.fn();
-  console.error = jest.fn();
-  console.warn = jest.fn();
-}
-
-// Set minimal config for testing
+// Set test environment variables
 process.env.NODE_ENV = 'test';
-process.env.PORT = '3001'; // Use different port for testing
+
+// Global test timeout
+jest.setTimeout(10000);
+
+// Suppress console logs during tests (optional - uncomment if needed)
+// global.console = {
+//   ...console,
+//   log: jest.fn(),
+//   debug: jest.fn(),
+//   info: jest.fn(),
+//   warn: jest.fn(),
+// };
