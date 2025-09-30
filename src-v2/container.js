@@ -4,7 +4,6 @@
  */
 
 const configService = require('./services/configService');
-const OpenAIService = require('./services/openaiService');
 const AgentService = require('./services/agentService');
 const AzureOpenAIProvider = require('./services/azureOpenAIProvider');
 const ChatController = require('./controllers/chatController');
@@ -58,17 +57,6 @@ class Container {
       );
     }
     return this.services.agentService;
-  }
-
-  /**
-   * Get OpenAIService instance (DEPRECATED - use getAgentService)
-   * Lazy initialization - creates on first request
-   */
-  getOpenAIService() {
-    if (!this.services.openaiService) {
-      this.services.openaiService = new OpenAIService(this.getConfigService());
-    }
-    return this.services.openaiService;
   }
 
   /**
