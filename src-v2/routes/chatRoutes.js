@@ -1,10 +1,10 @@
 const express = require('express');
-const ChatController = require('../controllers/chatController');
+const container = require('../container');
 
 const router = express.Router();
 
-// Instantiate the controller
-const chatController = new ChatController();
+// Get controller from container (with dependency injection)
+const chatController = container.getChatController();
 
 /**
  * Chat endpoint for OpenAI interactions
