@@ -3,7 +3,7 @@
  * Handles Fabric REST API operations for report management
  */
 
-const axios = require('axios');
+const fetch = require('node-fetch');
 const { URLSearchParams } = require('url');
 const { loadConfig } = require('./configService');
 
@@ -34,21 +34,29 @@ class FabricService {
       params.append('scope', 'https://api.fabric.microsoft.com/.default');
       params.append('grant_type', 'client_credentials');
 
-      const response = await axios.post(tokenUrl, params, {
+      const response = await fetch(tokenUrl, {
+        method: 'POST',
         headers: {
           'Content-Type': 'application/x-www-form-urlencoded'
-        }
+        },
+        body: params.toString()
       });
 
-      this.accessToken = response.data.access_token;
+      if (!response.ok) {
+        const errorText = await response.text();
+        throw new Error(`HTTP ${response.status}: ${errorText}`);
+      }
+
+      const data = await response.json();
+      this.accessToken = data.access_token;
       // Set expiry to 5 minutes before actual expiry for safety
-      this.tokenExpiry = Date.now() + (response.data.expires_in - 300) * 1000;
+      this.tokenExpiry = Date.now() + (data.expires_in - 300) * 1000;
       
       console.log('✅ Fabric access token obtained successfully');
       return this.accessToken;
 
     } catch (error) {
-      console.error('❌ Failed to get Fabric access token:', error.response?.data || error.message);
+      console.error('❌ Failed to get Fabric access token:', error.message);
       throw new Error(`Failed to authenticate with Fabric API: ${error.message}`);
     }
   }
@@ -63,18 +71,23 @@ class FabricService {
     try {
       const token = await this.getAccessToken();
       
-      const response = await axios.get(`${this.baseUrl}/workspaces/${workspaceId}/items`, {
+      const url = `${this.baseUrl}/workspaces/${workspaceId}/items?type=Report`;
+      const response = await fetch(url, {
+        method: 'GET',
         headers: {
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json'
-        },
-        params: {
-          type: 'Report'
         }
       });
 
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+      }
+
+      const data = await response.json();
+      
       // Find report by name
-      const report = response.data.value?.find(item => 
+      const report = data.value?.find(item => 
         item.type === 'Report' && item.displayName === reportName
       );
 
@@ -175,14 +188,15 @@ class FabricService {
         }
       };
 
-      const response = await axios.post(
+      const response = await fetch(
         `${this.baseUrl}/workspaces/${workspaceId}/items`,
-        requestBody,
         {
+          method: 'POST',
           headers: {
             'Authorization': `Bearer ${token}`,
             'Content-Type': 'application/json'
-          }
+          },
+          body: JSON.stringify(requestBody)
         }
       );
 
@@ -190,8 +204,8 @@ class FabricService {
       
       // Handle 202 Accepted (async operation) response - this is expected for Fabric
       if (response.status === 202) {
-        const operationId = response.headers['x-ms-operation-id'];
-        const retryAfter = response.headers['retry-after'];
+        const operationId = response.headers.get('x-ms-operation-id');
+        const retryAfter = response.headers.get('retry-after');
         console.log(`📝 Report creation initiated (Operation ID: ${operationId}, retry after: ${retryAfter}s)`);
         
         // For now, return a success response indicating the operation was accepted
@@ -208,7 +222,11 @@ class FabricService {
       }
       
       // Handle synchronous response (200/201)
-      return response.data;
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+      }
+      
+      return await response.json();
 
     } catch (error) {
       console.error('❌ Error creating report:', error.response?.data || error.message);
@@ -230,9 +248,10 @@ class FabricService {
       for (let attempt = 1; attempt <= maxRetries; attempt++) {
         console.log(`📊 Polling operation ${operationId} (attempt ${attempt}/${maxRetries})`);
         
-        const response = await axios.get(
+        const response = await fetch(
           `${this.baseUrl}/operations/${operationId}`,
           {
+            method: 'GET',
             headers: {
               'Authorization': `Bearer ${token}`,
               'Content-Type': 'application/json'
@@ -240,7 +259,11 @@ class FabricService {
           }
         );
 
-        const operation = response.data;
+        if (!response.ok) {
+          throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+        }
+
+        const operation = await response.json();
         
         if (operation.status === 'Succeeded') {
           console.log(`✅ Operation ${operationId} completed successfully`);
