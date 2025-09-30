@@ -4,9 +4,11 @@
  */
 
 const express = require('express');
-const fabricController = require('../controllers/fabricController');
+const container = require('../container');
 
 const router = express.Router();
+
+const fabricController = container.getFabricController();
 
 /**
  * POST /fabric/reports/ensure
@@ -31,6 +33,6 @@ const router = express.Router();
  *   }
  * }
  */
-router.post('/reports/ensure', fabricController.ensureReport);
+router.post('/reports/ensure', fabricController.ensureReport.bind(fabricController));
 
 module.exports = router;

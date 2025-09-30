@@ -3,9 +3,14 @@
  * Handles HTTP requests for Fabric operations
  */
 
-const fabricService = require('../services/fabricService');
-
 class FabricController {
+  constructor(fabricService) {
+    if (!fabricService) {
+      throw new Error('fabricService is required');
+    }
+    this.fabricService = fabricService;
+  }
+
   /**
    * Ensure a report exists - check if it exists, create if it doesn't
    * POST /fabric/reports/ensure
@@ -49,7 +54,7 @@ class FabricController {
       console.log(`📊 Fabric Controller: Ensuring report exists - ${reportName}`);
 
       // Call fabric service to ensure report exists
-      const result = await fabricService.ensureReport(workspaceId, datasetId, reportName.trim(), waitForCompletion);
+      const result = await this.fabricService.ensureReport(workspaceId, datasetId, reportName.trim(), waitForCompletion);
 
       // Return success response
       return res.status(200).json({
@@ -92,4 +97,4 @@ class FabricController {
   }
 }
 
-module.exports = new FabricController();
+module.exports = FabricController;

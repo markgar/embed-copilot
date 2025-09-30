@@ -7,6 +7,9 @@ const configService = require('./services/configService');
 const AgentService = require('./services/agentService');
 const AzureOpenAIProvider = require('./services/azureOpenAIProvider');
 const ChatController = require('./controllers/chatController');
+const EmbedController = require('./controllers/embedController');
+const MetadataController = require('./controllers/metadataController');
+const FabricController = require('./controllers/fabricController');
 const PowerBIService = require('./services/powerbiService');
 const FabricService = require('./services/fabricService');
 const msal = require('@azure/msal-node');
@@ -64,13 +67,55 @@ class Container {
 
   /**
    * Get ChatController instance
-   * Lazy initialization with injected AgentService
+   * Lazy initialization with injected AgentService and PowerBIService
    */
   getChatController() {
     if (!this.services.chatController) {
-      this.services.chatController = new ChatController(this.getAgentService());
+      this.services.chatController = new ChatController(
+        this.getAgentService(),
+        this.getPowerBIService()
+      );
     }
     return this.services.chatController;
+  }
+
+  /**
+   * Get EmbedController instance
+   * Lazy initialization with injected PowerBIService
+   */
+  getEmbedController() {
+    if (!this.services.embedController) {
+      this.services.embedController = new EmbedController(
+        this.getPowerBIService()
+      );
+    }
+    return this.services.embedController;
+  }
+
+  /**
+   * Get MetadataController instance
+   * Lazy initialization with injected PowerBIService
+   */
+  getMetadataController() {
+    if (!this.services.metadataController) {
+      this.services.metadataController = new MetadataController(
+        this.getPowerBIService()
+      );
+    }
+    return this.services.metadataController;
+  }
+
+  /**
+   * Get FabricController instance
+   * Lazy initialization with injected FabricService
+   */
+  getFabricController() {
+    if (!this.services.fabricController) {
+      this.services.fabricController = new FabricController(
+        this.getFabricService()
+      );
+    }
+    return this.services.fabricController;
   }
 
   /**

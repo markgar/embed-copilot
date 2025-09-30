@@ -1,4 +1,3 @@
-const PowerBIService = require('../services/powerbiService');
 const errorService = require('../services/errorService');
 const utils = require('../utils'); // Use v2 utils with configService
 
@@ -7,11 +6,18 @@ const utils = require('../utils'); // Use v2 utils with configService
  * Thin wrapper around PowerBI service methods
  */
 class EmbedController {
+  constructor(powerbiService) {
+    if (!powerbiService) {
+      throw new Error('powerbiService is required');
+    }
+    this.powerbiService = powerbiService;
+  }
+
   /**
-     * Get embed token and configuration for Power BI reports
-     * GET /getEmbedToken?reportId=<reportId>
-     */
-  static async getEmbedToken(req, res) {
+   * Get embed token and configuration for Power BI reports
+   * GET /getEmbedToken?reportId=<reportId>
+   */
+  async getEmbedToken(req, res) {
     try {
       // Get reportId from query parameters
       const { reportId } = req.query;
@@ -27,8 +33,7 @@ class EmbedController {
       }
 
       // Use PowerBI service to get embed info with dynamic reportId
-      const powerbiService = new PowerBIService();
-      const result = await powerbiService.getEmbedInfo(reportId);
+      const result = await this.powerbiService.getEmbedInfo(reportId);
             
       // Send response with original status from service
       res.status(result.status).send(result);
@@ -40,10 +45,10 @@ class EmbedController {
   }
 
   /**
-     * Health check for embed functionality
-     * Can be used to verify PowerBI service configuration
-     */
-  static async healthCheck(req, res) {
+   * Health check for embed functionality
+   * Can be used to verify PowerBI service configuration
+   */
+  async healthCheck(req, res) {
     try {
       // Check if configuration is valid
       const configCheckResult = utils.validateConfig();
@@ -56,9 +61,7 @@ class EmbedController {
         });
       }
 
-      // Try to create PowerBI service instance
-      new PowerBIService(); // Just verify it can be instantiated
-            
+      // PowerBI service already instantiated via DI
       res.json({
         status: 'ok',
         service: 'embed',

@@ -1,4 +1,3 @@
-const PowerBIService = require('../services/powerbiService');
 const configService = require('../services/configService');
 const errorService = require('../services/errorService');
 
@@ -7,11 +6,15 @@ const errorService = require('../services/errorService');
  * Thin wrapper around AgentService with metadata integration
  */
 class ChatController {
-  constructor(agentService) {
+  constructor(agentService, powerbiService) {
     if (!agentService) {
       throw new Error('agentService is required');
     }
+    if (!powerbiService) {
+      throw new Error('powerbiService is required');
+    }
     this.openaiService = agentService; // Keep property name for backward compatibility
+    this.powerbiService = powerbiService;
   }
   /**
      * Process chat message with AI
@@ -48,13 +51,12 @@ class ChatController {
       // Get metadata context
       let context = null;
       try {
-        const powerbiService = new PowerBIService(config);
         const groupId = config.powerBIGroupId;
         const datasetId = config.powerBIDatasetId;
                 
         if (groupId && datasetId) {
           console.log('[ChatController] Fetching PowerBI metadata context...');
-          context = await powerbiService.getMetadataContext(groupId, datasetId);
+          context = await this.powerbiService.getMetadataContext(groupId, datasetId);
           console.log('[ChatController] Metadata context retrieved successfully');
         }
       } catch (contextError) {
@@ -118,12 +120,11 @@ class ChatController {
       let context = null;
             
       try {
-        const powerbiService = new PowerBIService(config);
         const groupId = config.powerBIGroupId;
         const datasetId = config.powerBIDatasetId;
                 
         if (groupId && datasetId) {
-          context = await powerbiService.getMetadataContext(groupId, datasetId);
+          context = await this.powerbiService.getMetadataContext(groupId, datasetId);
         }
       } catch {
         res.write('data: {"error": "Failed to retrieve data context"}\n\n');
