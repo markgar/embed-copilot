@@ -1,4 +1,4 @@
-const openaiService = require('../services/openaiService');
+const OpenAIService = require('../services/openaiService');
 const PowerBIService = require('../services/powerbiService');
 const configService = require('../services/configService');
 const errorService = require('../services/errorService');
@@ -8,12 +8,15 @@ const errorService = require('../services/errorService');
  * Thin wrapper around OpenAI service with metadata integration
  */
 class ChatController {
+  constructor(openaiService = null) {
+    this.openaiService = openaiService || new OpenAIService();
+  }
   /**
      * Process chat message with AI
      * POST /chat
      * Body: { message, conversation? }
      */
-  static async chat(req, res) {
+  async chat(req, res) {
     console.log('[ChatController] Chat request received:', req.body);
     try {
       // Validate request - extract all expected parameters from original implementation
@@ -61,10 +64,10 @@ class ChatController {
       console.log('[ChatController] Initializing OpenAI service...');
       // Generate response using OpenAI service
       try {
-        await openaiService.initialize();
+        await this.openaiService.initialize();
         console.log('[ChatController] OpenAI service initialized, processing chat...');
                 
-        const result = await openaiService.processChat(
+        const result = await this.openaiService.processChat(
           message,
           context,
           currentChart,
@@ -90,7 +93,7 @@ class ChatController {
      * POST /chat/stream
      * Body: { message, conversation? }
      */
-  static async chatStream(req, res) {
+  async chatStream(req, res) {
     try {
       // Validate request
       const { message, conversation = [] } = req.body || {};
@@ -131,8 +134,8 @@ class ChatController {
 
       // Generate streaming response
       try {
-        await openaiService.initialize();
-        const responseStream = openaiService.generateStreamingResponse(
+        await this.openaiService.initialize();
+        const responseStream = this.openaiService.generateStreamingResponse(
           message,
           Array.isArray(conversation) ? conversation : [],
           context
@@ -161,7 +164,7 @@ class ChatController {
      * Health check for chat service
      * GET /chat/health
      */
-  static async healthCheck(req, res) {
+  async healthCheck(req, res) {
     try {
       const config = configService.loadConfig();
             

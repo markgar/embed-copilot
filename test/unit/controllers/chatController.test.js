@@ -1,4 +1,3 @@
-const openaiService = require('../../../src-v2/services/openaiService');
 const PowerBIService = require('../../../src-v2/services/powerbiService');
 const errorService = require('../../../src-v2/services/errorService');
 const ChatController = require('../../../src-v2/controllers/chatController');
@@ -6,18 +5,6 @@ const ChatController = require('../../../src-v2/controllers/chatController');
 // Mock dependencies
 jest.mock('../../../src-v2/services/powerbiService');
 jest.mock('../../../src-v2/services/errorService');
-
-// Mock OpenAI service as a singleton instance
-jest.mock('../../../src-v2/services/openaiService', () => ({
-    initialize: jest.fn(),
-    processChat: jest.fn(),
-    generateStreamingResponse: jest.fn(),
-    getStatus: jest.fn(),
-    initialized: false,
-    config: null
-}));
-
-const openaiService = require('../../../src-v2/services/openaiService');
 
 // Mock configService properly
 jest.mock('../../../src-v2/services/configService', () => ({
@@ -31,7 +18,7 @@ jest.mock('../../../src-v2/services/configService', () => ({
 const configService = require('../../../src-v2/services/configService');
 
 describe('ChatController', () => {
-    let req, res;
+    let req, res, chatController, mockOpenAIService;
     const mockConfig = {
         powerBIGroupId: 'test-group-id',
         powerBIDatasetId: 'test-dataset-id',
@@ -46,6 +33,19 @@ describe('ChatController', () => {
 
     beforeEach(() => {
         jest.clearAllMocks();
+        
+        // Create a mock OpenAI service for each test
+        mockOpenAIService = {
+            initialize: jest.fn().mockResolvedValue(),
+            processChat: jest.fn(),
+            generateStreamingResponse: jest.fn(),
+            getStatus: jest.fn(),
+            initialized: false,
+            config: null
+        };
+        
+        // Instantiate controller with mock service
+        chatController = new ChatController(mockOpenAIService);
         
         req = {
             body: {
@@ -77,19 +77,19 @@ describe('ChatController', () => {
                 usage: { total_tokens: 150 }
             };
 
-            // Mock OpenAI service methods directly (since it's a singleton)
-            openaiService.initialize.mockResolvedValue();
-            openaiService.processChat.mockResolvedValue(mockResponse);
+            // Mock OpenAI service methods
+            mockOpenAIService.initialize.mockResolvedValue();
+            mockOpenAIService.processChat.mockResolvedValue(mockResponse);
 
             const mockPowerBIService = {
                 getMetadataContext: jest.fn().mockResolvedValue(mockContext)
             };
             PowerBIService.mockImplementation(() => mockPowerBIService);
 
-            await ChatController.chat(req, res);
+            await chatController.chat(req, res);
 
             expect(configService.loadConfig).toHaveBeenCalledTimes(1);
-            expect(openaiService.initialize).toHaveBeenCalled();
+            expect(mockOpenAIService.initialize).toHaveBeenCalled();
             expect(PowerBIService).toHaveBeenCalledWith(mockConfig);
             
             expect(mockPowerBIService.getMetadataContext).toHaveBeenCalledWith(
@@ -97,7 +97,7 @@ describe('ChatController', () => {
                 'test-dataset-id'
             );
             
-            expect(openaiService.processChat).toHaveBeenCalledWith(
+            expect(mockOpenAIService.processChat).toHaveBeenCalledWith(
                 'What are total sales?',
                 mockContext,
                 undefined, // currentChart
@@ -126,16 +126,16 @@ describe('ChatController', () => {
             };
 
             // Mock the singleton OpenAI service methods
-            openaiService.processChat = jest.fn().mockResolvedValue(mockResponse);
+            mockOpenAIService.processChat = jest.fn().mockResolvedValue(mockResponse);
 
             const mockPowerBIService = {
                 getMetadataContext: jest.fn().mockResolvedValue(mockContext)
             };
             PowerBIService.mockImplementation(() => mockPowerBIService);
 
-            await ChatController.chat(req, res);
+            await chatController.chat(req, res);
 
-            expect(openaiService.processChat).toHaveBeenCalledWith(
+            expect(mockOpenAIService.processChat).toHaveBeenCalledWith(
                 'What are total sales?',
                 mockContext,
                 undefined, // currentChart
@@ -154,7 +154,7 @@ describe('ChatController', () => {
         test('should handle missing message in request body', async () => {
             req.body = { conversation: [] };
 
-            await ChatController.chat(req, res);
+            await chatController.chat(req, res);
 
             expect(errorService.sendError).toHaveBeenCalledWith(
                 res,
@@ -172,7 +172,7 @@ describe('ChatController', () => {
         test('should handle empty message', async () => {
             req.body.message = '';
 
-            await ChatController.chat(req, res);
+            await chatController.chat(req, res);
 
             expect(errorService.sendError).toHaveBeenCalledWith(
                 res,
@@ -188,7 +188,7 @@ describe('ChatController', () => {
             };
             PowerBIService.mockImplementation(() => mockPowerBIService);
 
-            await ChatController.chat(req, res);
+            await chatController.chat(req, res);
 
             expect(errorService.sendError).toHaveBeenCalledWith(
                 res,
@@ -208,14 +208,14 @@ describe('ChatController', () => {
             const openaiError = new Error('OpenAI API error');
             
             // Mock the singleton OpenAI service methods
-            openaiService.processChat = jest.fn().mockRejectedValue(openaiError);
+            mockOpenAIService.processChat = jest.fn().mockRejectedValue(openaiError);
 
             const mockPowerBIService = {
                 getMetadataContext: jest.fn().mockResolvedValue(mockContext)
             };
             PowerBIService.mockImplementation(() => mockPowerBIService);
 
-            await ChatController.chat(req, res);
+            await chatController.chat(req, res);
 
             expect(errorService.sendError).toHaveBeenCalledWith(
                 res,
@@ -238,7 +238,7 @@ describe('ChatController', () => {
             };
             configService.loadConfig.mockReturnValue(configWithoutOpenAI);
 
-            await ChatController.chat(req, res);
+            await chatController.chat(req, res);
 
             expect(errorService.sendError).toHaveBeenCalledWith(
                 res,
@@ -253,7 +253,7 @@ describe('ChatController', () => {
             const mockStreamResponse = ['chunk1', 'chunk2', 'chunk3'];
             
             // Mock the singleton OpenAI service methods
-            openaiService.generateStreamingResponse = jest.fn().mockImplementation(async function* () {
+            mockOpenAIService.generateStreamingResponse = jest.fn().mockImplementation(async function* () {
                 for (const chunk of mockStreamResponse) {
                     yield chunk;
                 }
@@ -264,14 +264,14 @@ describe('ChatController', () => {
             };
             PowerBIService.mockImplementation(() => mockPowerBIService);
 
-            await ChatController.chatStream(req, res);
+            await chatController.chatStream(req, res);
 
             expect(res.setHeader).toHaveBeenCalledWith('Content-Type', 'text/event-stream');
             expect(res.setHeader).toHaveBeenCalledWith('Cache-Control', 'no-cache');
             expect(res.setHeader).toHaveBeenCalledWith('Connection', 'keep-alive');
             expect(res.setHeader).toHaveBeenCalledWith('Access-Control-Allow-Origin', '*');
 
-            expect(openaiService.generateStreamingResponse).toHaveBeenCalledWith(
+            expect(mockOpenAIService.generateStreamingResponse).toHaveBeenCalledWith(
                 'What are total sales?',
                 [],
                 mockContext
@@ -297,7 +297,7 @@ describe('ChatController', () => {
             const streamError = new Error('Streaming failed');
             
             // Mock the singleton OpenAI service methods
-            openaiService.generateStreamingResponse = jest.fn().mockImplementation(async function* () {
+            mockOpenAIService.generateStreamingResponse = jest.fn().mockImplementation(async function* () {
                 throw streamError;
             });
 
@@ -306,7 +306,7 @@ describe('ChatController', () => {
             };
             PowerBIService.mockImplementation(() => mockPowerBIService);
 
-            await ChatController.chatStream(req, res);
+            await chatController.chatStream(req, res);
 
             expect(res.write).toHaveBeenCalledWith('data: {"error": "Failed to generate streaming response"}\n\n');
             expect(res.end).toHaveBeenCalledTimes(1);
@@ -323,7 +323,7 @@ describe('ChatController', () => {
         test('should handle missing message in streaming request', async () => {
             req.body = {};
 
-            await ChatController.chatStream(req, res);
+            await chatController.chatStream(req, res);
 
             expect(res.write).toHaveBeenCalledWith('data: {"error": "Message is required"}\n\n');
             expect(res.end).toHaveBeenCalledTimes(1);
@@ -332,7 +332,7 @@ describe('ChatController', () => {
 
     describe('healthCheck', () => {
         test('should return healthy status when properly configured', async () => {
-            await ChatController.healthCheck(req, res);
+            await chatController.healthCheck(req, res);
 
             expect(res.json).toHaveBeenCalledWith({
                 status: 'ok',
@@ -353,7 +353,7 @@ describe('ChatController', () => {
             };
             configService.loadConfig.mockReturnValue(incompleteConfig);
 
-            await ChatController.healthCheck(req, res);
+            await chatController.healthCheck(req, res);
 
             expect(res.json).toHaveBeenCalledWith({
                 status: 'degraded',
@@ -375,7 +375,7 @@ describe('ChatController', () => {
             };
             configService.loadConfig.mockReturnValue(partialConfig);
 
-            await ChatController.healthCheck(req, res);
+            await chatController.healthCheck(req, res);
 
             const call = res.json.mock.calls[0][0];
             expect(call.status).toBe('degraded');
@@ -389,17 +389,17 @@ describe('ChatController', () => {
             req.body.conversation = 'not an array';
 
             // Mock the singleton OpenAI service methods
-            openaiService.processChat = jest.fn().mockResolvedValue({ message: 'response' });
+            mockOpenAIService.processChat = jest.fn().mockResolvedValue({ message: 'response' });
 
             const mockPowerBIService = {
                 getMetadataContext: jest.fn().mockResolvedValue(mockContext)
             };
             PowerBIService.mockImplementation(() => mockPowerBIService);
 
-            await ChatController.chat(req, res);
+            await chatController.chat(req, res);
 
             // Should pass undefined values for currentChart and chatHistory
-            expect(openaiService.processChat).toHaveBeenCalledWith(
+            expect(mockOpenAIService.processChat).toHaveBeenCalledWith(
                 req.body.message,
                 mockContext,
                 undefined, // currentChart
@@ -414,14 +414,14 @@ describe('ChatController', () => {
             const mockResponse = { message: 'response', usage: { total_tokens: 100 } };
             
             // Mock the singleton OpenAI service methods
-            openaiService.processChat = jest.fn().mockResolvedValue(mockResponse);
+            mockOpenAIService.processChat = jest.fn().mockResolvedValue(mockResponse);
 
             const mockPowerBIService = {
                 getMetadataContext: jest.fn().mockResolvedValue(mockContext)
             };
             PowerBIService.mockImplementation(() => mockPowerBIService);
 
-            await ChatController.chat(req, res);
+            await chatController.chat(req, res);
 
             expect(telemetry.recordEvent).toHaveBeenCalledWith('chat_response', {
                 message_length: 10000,
@@ -434,7 +434,7 @@ describe('ChatController', () => {
         test('should handle missing request body', async () => {
             req.body = undefined;
 
-            await ChatController.chat(req, res);
+            await chatController.chat(req, res);
 
             expect(errorService.sendError).toHaveBeenCalledWith(
                 res,

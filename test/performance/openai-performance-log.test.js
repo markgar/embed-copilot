@@ -49,8 +49,8 @@ describe('OpenAI Performance Recording', () => {
         // Mock the config service
         jest.spyOn(configService, 'loadConfig').mockReturnValue(mockConfig);
         
-        // Use the singleton service instance
-        openaiService = require('../../src-v2/services/openaiService');
+        // Create a fresh service instance
+        openaiService = new OpenAIService();
         await openaiService.initialize();
     });
 

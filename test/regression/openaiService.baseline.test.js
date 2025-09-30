@@ -1,5 +1,5 @@
 const request = require('supertest');
-const openaiService = require('../../src-v2/services/openaiService');
+const OpenAIService = require('../../src-v2/services/openaiService');
 
 /**
  * OpenAI Service Baseline Snapshot Tests
@@ -7,6 +7,7 @@ const openaiService = require('../../src-v2/services/openaiService');
  */
 describe('OpenAI Service - Baseline Response Snapshots', () => {
     let app;
+    let openaiService;
 
     beforeAll(() => {
         process.env.NODE_ENV = 'test';
@@ -14,14 +15,15 @@ describe('OpenAI Service - Baseline Response Snapshots', () => {
     });
 
     beforeEach(async () => {
-        // Ensure OpenAI service is initialized for consistent behavior
-        // This prevents test interference from other test suites that reset singleton state
+        // Create a fresh OpenAI service instance for each test
+        openaiService = new OpenAIService();
+        
+        // Initialize the service
         if (!openaiService.initialized) {
             await openaiService.initialize();
         }
         
         // Clear any potential state that could affect test isolation
-        // (OpenAI service doesn't store history, but being explicit about fresh state)
         console.log('[Test Setup] OpenAI service initialized:', openaiService.initialized);
     });
 

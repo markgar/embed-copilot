@@ -1,13 +1,16 @@
 const express = require('express');
-const chatController = require('../controllers/chatController');
+const ChatController = require('../controllers/chatController');
 
 const router = express.Router();
+
+// Instantiate the controller
+const chatController = new ChatController();
 
 /**
  * Chat endpoint for OpenAI interactions
  * POST /chat
  */
-router.post('/chat', chatController.chat);
+router.post('/chat', (req, res) => chatController.chat(req, res));
 
 /**
  * Streaming chat endpoint (future enhancement)

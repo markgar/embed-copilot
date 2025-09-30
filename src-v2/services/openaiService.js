@@ -382,5 +382,5 @@ Always respond with ONLY valid JSON and no extra commentary.`;
   }
 }
 
-// Export a singleton instance
-module.exports = new OpenAIService();
+// Export the class for instantiation
+module.exports = OpenAIService;

@@ -1,4 +1,4 @@
-const openaiService = require('../../../src-v2/services/openaiService');
+const OpenAIService = require('../../../src-v2/services/openaiService');
 const configService = require('../../../src-v2/services/configService');
 
 // Mock dependencies
@@ -9,6 +9,8 @@ jest.mock('node-fetch', () => jest.fn());
 const mockFetch = require('node-fetch');
 
 describe('OpenAI Service', () => {
+    let openaiService;
+    
     const mockConfig = {
         azureOpenAIEndpoint: 'https://test.openai.azure.com',
         azureOpenAIApiKey: 'test-api-key',
@@ -19,9 +21,8 @@ describe('OpenAI Service', () => {
     beforeEach(() => {
         jest.clearAllMocks();
         
-        // Reset service state
-        openaiService.initialized = false;
-        openaiService.config = null;
+        // Create a fresh instance for each test
+        openaiService = new OpenAIService();
         
         // Mock config service
         configService.loadConfig.mockReturnValue(mockConfig);

@@ -7,17 +7,28 @@ const SystemController = require('../../src-v2/controllers/systemController');
 
 // Mock external services for predictable test results
 jest.mock('../../src-v2/services/powerbiService');
-jest.mock('../../src-v2/services/openaiService');
 jest.mock('../../src-v2/services/configService');
 
 const PowerBIService = require('../../src-v2/services/powerbiService');
-const openaiService = require('../../src-v2/services/openaiService');
 const configService = require('../../src-v2/services/configService');
 
 // Create test app with controller routes
 const createTestApp = () => {
     const app = express();
     app.use(express.json());
+    
+    // Create mock OpenAI service for the chat controller
+    const mockOpenAIService = {
+        initialize: jest.fn().mockResolvedValue(),
+        processChat: jest.fn(),
+        processMessage: jest.fn().mockResolvedValue({
+            message: 'Test response',
+            chartType: 'bar'
+        })
+    };
+    
+    // Instantiate controllers
+    const chatController = new ChatController(mockOpenAIService);
     
     // Embed routes
     app.post('/getEmbedToken', EmbedController.getEmbedToken);
@@ -31,9 +42,9 @@ const createTestApp = () => {
     app.get('/metadata/health', MetadataController.healthCheck);
     
     // Chat routes
-    app.post('/chat', ChatController.chat);
-    app.post('/chat/stream', ChatController.chatStream);
-    app.get('/chat/health', ChatController.healthCheck);
+    app.post('/chat', (req, res) => chatController.chat(req, res));
+    app.post('/chat/stream', (req, res) => chatController.chatStream(req, res));
+    app.get('/chat/health', (req, res) => chatController.healthCheck(req, res));
     
     // System routes
     app.get('/health', SystemController.healthCheck);
@@ -79,11 +90,6 @@ describe('Controller Integration Tests', () => {
         PowerBIService.prototype.getDatasetMetadata = jest.fn().mockResolvedValue({
             status: 200,
             data: { tables: [{ name: 'Sales' }] }
-        });
-
-        openaiService.processMessage = jest.fn().mockResolvedValue({
-            message: 'Test response',
-            chartType: 'bar'
         });
     });
 

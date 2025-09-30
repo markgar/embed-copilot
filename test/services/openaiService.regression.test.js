@@ -73,8 +73,8 @@ describe('OpenAI Service - Regression Tests', () => {
         // Mock the config service
         jest.spyOn(configService, 'loadConfig').mockReturnValue(mockConfig);
         
-        // Use the singleton service instance
-        openaiService = require('../../src-v2/services/openaiService');
+        // Create a fresh service instance for each test
+        openaiService = new OpenAIService();
         await openaiService.initialize();
     });
 
