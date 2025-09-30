@@ -1,4 +1,3 @@
-const configService = require('./configService');
 const fetch = require('node-fetch');
 
 /**
@@ -6,7 +5,11 @@ const fetch = require('node-fetch');
  * Consolidates chat completion and system prompt building
  */
 class OpenAIService {
-  constructor() {
+  constructor(configService) {
+    if (!configService) {
+      throw new Error('configService is required');
+    }
+    this.configService = configService;
     this.initialized = false;
     this.config = null;
   }
@@ -16,7 +19,7 @@ class OpenAIService {
      */
   async initialize() {
     try {
-      this.config = configService.loadConfig();
+      this.config = this.configService.loadConfig();
       this.initialized = true;
     } catch (error) {
       throw new Error(`Failed to initialize OpenAI service: ${error.message}`);
