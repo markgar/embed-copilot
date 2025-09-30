@@ -314,7 +314,7 @@ Always respond with ONLY valid JSON and no extra commentary.`;
           { role: 'user', content: message }
         ],
         max_tokens: 1000,
-        temperature: 0.1 // Low temperature for consistent chart logic, minimal text variation
+        temperature: 0 // Zero temperature for completely deterministic responses
       };
 
       console.log('[OpenAIService] Sending request to Azure OpenAI...');
