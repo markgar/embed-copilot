@@ -1,15 +1,17 @@
-const OpenAIService = require('../services/openaiService');
 const PowerBIService = require('../services/powerbiService');
 const configService = require('../services/configService');
 const errorService = require('../services/errorService');
 
 /**
  * Chat Controller - Handles AI chat functionality
- * Thin wrapper around OpenAI service with metadata integration
+ * Thin wrapper around AgentService with metadata integration
  */
 class ChatController {
-  constructor(openaiService = null) {
-    this.openaiService = openaiService || new OpenAIService();
+  constructor(agentService) {
+    if (!agentService) {
+      throw new Error('agentService is required');
+    }
+    this.openaiService = agentService; // Keep property name for backward compatibility
   }
   /**
      * Process chat message with AI
@@ -61,12 +63,9 @@ class ChatController {
         return errorService.sendError(res, 500, 'Failed to retrieve data context', contextError.message);
       }
 
-      console.log('[ChatController] Initializing OpenAI service...');
-      // Generate response using OpenAI service
+      console.log('[ChatController] Calling agent service...');
+      // Generate response using Agent service
       try {
-        await this.openaiService.initialize();
-        console.log('[ChatController] OpenAI service initialized, processing chat...');
-                
         const result = await this.openaiService.processChat(
           message,
           context,
@@ -134,7 +133,6 @@ class ChatController {
 
       // Generate streaming response
       try {
-        await this.openaiService.initialize();
         const responseStream = this.openaiService.generateStreamingResponse(
           message,
           Array.isArray(conversation) ? conversation : [],
