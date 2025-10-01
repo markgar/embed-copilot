@@ -13,31 +13,35 @@ graph TB
     subgraph NodeServer["🖥️ Node.js Server (Backend)"]
         subgraph "Express Application Layer"
             App["Express App<br/>📁 src-v2/app.js<br/>• Error Handlers<br/>• Graceful Shutdown"]
-            Routes["Route Index<br/>📁 src-v2/routes/index.js<br/>• View Routes /chartchat<br/>• API Route Mounting"]
-            Middleware["Middleware<br/>• Body Parser<br/>• Telemetry Capture<br/>• Static Assets"]
+            Container["DI Container<br/>📁 src-v2/container.js<br/>• Service Factory<br/>• Lazy Initialization<br/>• Singleton Pattern"]
+            Routes["Route Orchestrator<br/>📁 src-v2/routes/routeOrchestrator.js<br/>• View Routes /chartchat<br/>• API Route Mounting"]
+            Middleware["Middleware<br/>• Body Parser<br/>• Static Assets<br/>• Error Handling"]
             Utils["Utils<br/>📁 src-v2/utils.js<br/>• Config Validation<br/>• Auth Headers<br/>• GUID Validation"]
         end
 
         subgraph "Route Handlers"
             ChatRoutes["Chat Routes<br/>📁 src-v2/routes/chatRoutes.js<br/>• POST /chat<br/>• POST /chat/stream"]
             EmbedRoutes["Embed Routes<br/>📁 src-v2/routes/embedRoutes.js<br/>• GET /getEmbedToken"]
-            MetaRoutes["Metadata Routes<br/>📁 src-v2/routes/metadataRoutes.js<br/>• GET /getDatasetMetadata<br/>• GET /metadata/health<br/>• GET /debug/metadata"]
-            SysRoutes["System Routes<br/>📁 src-v2/routes/systemRoutes.js<br/>• GET /health<br/>• GET /status<br/>• GET /logs<br/>• POST /log-error<br/>• POST /log-console<br/>• POST /telemetry-control"]
+            MetaRoutes["Metadata Routes<br/>📁 src-v2/routes/metadataRoutes.js<br/>• GET /getDatasetMetadata<br/>• GET /metadata/simple<br/>• GET /metadata/context<br/>• GET /metadata/schema"]
+            FabricRoutes["Fabric Routes<br/>📁 src-v2/routes/fabricRoutes.js<br/>• POST /api/fabric/create-report<br/>• GET /api/fabric/templates"]
+            SysRoutes["System Routes<br/>📁 src-v2/routes/systemRoutes.js<br/>• GET /health<br/>• GET /api/system/config<br/>• GET /api/system/validate-config"]
         end
 
         subgraph "Controller Layer"
-            ChatCtrl["Chat Controller<br/>📁 src-v2/controllers/chatController.js<br/>• chat method<br/>• chatStream method<br/>• healthCheck method"]
-            EmbedCtrl["Embed Controller<br/>📁 src-v2/controllers/embedController.js<br/>• getEmbedToken method<br/>• healthCheck method"]
-            MetaCtrl["Metadata Controller<br/>📁 src-v2/controllers/metadataController.js<br/>• getDatasetMetadata method<br/>• healthCheck method"]
-            SysCtrl["System Controller<br/>📁 src-v2/controllers/systemController.js<br/>• healthCheck method<br/>• detailedHealthCheck method<br/>• getTelemetryLogs method<br/>• logError method<br/>• logConsole method<br/>• telemetryControl method"]
+            ChatCtrl["Chat Controller<br/>📁 src-v2/controllers/chatController.js<br/>• chat method<br/>• chatStream method<br/>• Uses AgentService"]
+            EmbedCtrl["Embed Controller<br/>📁 src-v2/controllers/embedController.js<br/>• getEmbedToken method<br/>• Uses PowerBIService"]
+            MetaCtrl["Metadata Controller<br/>📁 src-v2/controllers/metadataController.js<br/>• getMetadata method<br/>• getMetadataSimple method<br/>• getMetadataContext method<br/>• getMetadataSchema method"]
+            FabricCtrl["Fabric Controller<br/>📁 src-v2/controllers/fabricController.js<br/>• createReport method<br/>• getTemplates method<br/>• Uses FabricService"]
+            SysCtrl["System Controller<br/>📁 src-v2/controllers/systemController.js<br/>• getConfig method<br/>• validateConfiguration method<br/>• Uses ConfigService"]
         end
 
         subgraph "Service Layer"
-            OpenAI["OpenAI Service<br/>📁 src-v2/services/openaiService.js<br/>• processChat method<br/>• buildSystemPrompt method<br/>• Streaming Support<br/>• Telemetry Integration"]
-            PowerBI["PowerBI Service<br/>📁 src-v2/services/powerbiService.js<br/>• getAccessToken method<br/>• getEmbedInfo method<br/>• getMetadataContext method<br/>• MSAL Integration"]
+            Agent["Agent Service<br/>📁 src-v2/services/agentService.js<br/>• buildSystemPrompt method<br/>• processChat method<br/>• Uses LLM Provider"]
+            AzureAI["Azure OpenAI Provider<br/>📁 src-v2/services/azureOpenAIProvider.js<br/>• sendChatRequest method<br/>• sendStreamingRequest method<br/>• HTTP Client Integration"]
+            PowerBI["PowerBI Service<br/>📁 src-v2/services/powerbiService.js<br/>• getAccessToken method<br/>• getEmbedInfo method<br/>• getDatasetMetadata methods<br/>• MSAL Integration"]
+            Fabric["Fabric Service<br/>📁 src-v2/services/fabricService.js<br/>• createReport method<br/>• uploadFile method<br/>• createSemanticModel method<br/>• Fabric REST API"]
             Config["Config Service<br/>📁 src-v2/services/configService.js<br/>• loadConfig method<br/>• validateConfig method<br/>• Environment Variables"]
             Error["Error Service<br/>📁 src-v2/services/errorService.js<br/>• badRequest method<br/>• serverError method<br/>• notFound method<br/>• sendError method"]
-            Telemetry["Telemetry Service<br/>📁 src-v2/services/telemetryService.js<br/>• logRequest method<br/>• sanitizeObject method<br/>• recordEvent method"]
         end
     end
 
@@ -65,34 +69,46 @@ graph TB
     MetaRoutes --> MetaCtrl
     SysRoutes --> SysCtrl
 
-    ChatCtrl --> OpenAI
+    %% Container provides dependencies
+    Container --> ChatCtrl
+    Container --> EmbedCtrl
+    Container --> MetaCtrl
+    Container --> FabricCtrl
+    Container --> SysCtrl
+    Container --> Agent
+    Container --> AzureAI
+    Container --> PowerBI
+    Container --> Fabric
+    Container --> Config
+
+    %% Controller dependencies
+    ChatCtrl --> Agent
     ChatCtrl --> PowerBI
-    ChatCtrl --> Telemetry
     ChatCtrl --> Error
-    ChatCtrl --> Config
 
     EmbedCtrl --> PowerBI
     EmbedCtrl --> Error
-    EmbedCtrl --> Utils
 
     MetaCtrl --> PowerBI
-    MetaCtrl --> Cache
-    MetaCtrl --> Error
     MetaCtrl --> Config
+    MetaCtrl --> Error
+
+    FabricCtrl --> Fabric
+    FabricCtrl --> Error
 
     SysCtrl --> Config
-    SysCtrl --> Telemetry
+    SysCtrl --> Error
 
-    %% Server to External APIs
-    OpenAI --> AzureAI
-    OpenAI --> Config
-    OpenAI --> Telemetry
-
+    %% Service dependencies
+    Agent --> AzureAI
+    
+    AzureAI --> External
     PowerBI --> AzureAD
     PowerBI --> PowerBIAPI
     PowerBI --> Config
-    PowerBI --> Cache
-    PowerBI --> Error
+    
+    Fabric --> PowerBIAPI
+    Fabric --> Config
 
     %% Styling
     classDef browser fill:#e3f2fd,stroke:#1976d2,stroke-width:2px
@@ -104,7 +120,7 @@ graph TB
     class External external
     
     class UI,Chart,ClientJS browser
-    class App,Routes,Middleware,Utils,ChatRoutes,EmbedRoutes,MetaRoutes,SysRoutes,ChatCtrl,EmbedCtrl,MetaCtrl,SysCtrl,OpenAI,PowerBI,Config,Cache,Error,Telemetry server
+    class App,Container,Routes,Middleware,Utils,ChatRoutes,EmbedRoutes,MetaRoutes,FabricRoutes,SysRoutes,ChatCtrl,EmbedCtrl,MetaCtrl,FabricCtrl,SysCtrl,Agent,AzureAI,PowerBI,Fabric,Config,Error server
     class AzureAI,PowerBIAPI,AzureAD external
 ```
 
@@ -116,7 +132,8 @@ sequenceDiagram
     participant Client
     participant Routes
     participant ChatController
-    participant OpenAIService
+    participant AgentService
+    participant AzureOpenAIProvider
     participant PowerBIService
     participant External as External APIs
 
@@ -124,10 +141,12 @@ sequenceDiagram
     Routes->>ChatController: chat(req, res)
     ChatController->>PowerBIService: getMetadataContext()
     PowerBIService->>External: Fetch dataset metadata
-    ChatController->>OpenAIService: processChat()
-    OpenAIService->>External: Chat completion request
-    External-->>OpenAIService: AI response
-    OpenAIService-->>ChatController: Processed response
+    ChatController->>AgentService: processChat()
+    AgentService->>AzureOpenAIProvider: sendChatRequest()
+    AzureOpenAIProvider->>External: Azure OpenAI API call
+    External-->>AzureOpenAIProvider: AI response
+    AzureOpenAIProvider-->>AgentService: Formatted response
+    AgentService-->>ChatController: Processed response
     ChatController-->>Routes: JSON response
     Routes-->>Client: Chat response + chart action
 ```
@@ -152,67 +171,123 @@ sequenceDiagram
     Routes-->>Client: Embed token + URL
 ```
 
+### Fabric Report Creation Flow
+```mermaid
+sequenceDiagram
+    participant Client
+    participant Routes
+    participant FabricController
+    participant FabricService
+    participant External as Fabric REST API
+
+    Client->>Routes: POST /api/fabric/create-report
+    Routes->>FabricController: createReport(req, res)
+    FabricController->>FabricService: createReport()
+    FabricService->>External: Upload PBIR files
+    FabricService->>External: Create semantic model
+    FabricService->>External: Bind report to model
+    External-->>FabricService: Report created
+    FabricService-->>FabricController: Report details
+    FabricController-->>Routes: JSON response
+    Routes-->>Client: Success + report ID
+```
+
 ## Key Design Principles
+
+### Dependency Injection Pattern
+- **Container.js**: Central service factory with lazy initialization
+- **Singleton Pattern**: Services are instantiated once and reused
+- **Testability**: Services can be mocked/replaced via container
+- **Loose Coupling**: Controllers depend on interfaces, not implementations
 
 ### Separation of Concerns
 - **Controllers**: Handle HTTP requests/responses, orchestrate services
 - **Services**: Contain business logic, external API integration
-- **Utilities**: Shared functionality (config, cache, error handling)
+- **Providers**: Abstract external API communication (e.g., Azure OpenAI)
+- **Utilities**: Shared functionality (config, validation, error handling)
 
 ### Error Handling Strategy
 - Centralized error service for consistent error responses
-- Telemetry integration for monitoring and debugging
+- Standardized error formats across all endpoints
 - Graceful degradation when external services fail
 
-### Caching Strategy
-- Dataset metadata cached to reduce PowerBI API calls
-- Cache invalidation on configuration changes
-- Performance optimization for repeated requests
+### Configuration Management
+- Environment-based configuration via .env files
+- Centralized validation on startup (fail-fast)
+- Backwards compatibility for legacy environment variables
 
 ### Security Model
-- Service Principal authentication for PowerBI
+- Service Principal authentication for PowerBI and Fabric
 - API key management through environment variables
-- No sensitive data in logs or telemetry
+- MSAL library for Azure AD token management
+- No sensitive data in logs or responses
 
 ## File Structure Mapping
 
 ```
 src-v2/
-├── app.js                    # Express application setup, middleware, static assets
-├── server.js                # Server startup, error handlers, graceful shutdown
-├── utils.js                 # Validation utilities, auth helpers
-├── routes/                  # Route definitions and mounting
-│   ├── index.js             → Route mounting, view handlers (/, /chartchat)
-│   ├── chatRoutes.js        → Chat endpoints (/chat, /chat/stream)
-│   ├── embedRoutes.js       → PowerBI embed endpoints (/getEmbedToken)
-│   ├── metadataRoutes.js    → Dataset metadata endpoints (/getDatasetMetadata)
-│   └── systemRoutes.js      → System endpoints (/health, /status, /logs)
-├── controllers/             # Request orchestration and business logic coordination
-│   ├── chatController.js    → chat(), chatStream(), healthCheck()
-│   ├── embedController.js   → getEmbedToken(), healthCheck()
-│   ├── metadataController.js→ getDatasetMetadata(), healthCheck()
-│   └── systemController.js  → healthCheck(), detailedHealthCheck(), getTelemetryLogs()
-└── services/               # Core business logic and external integrations
-    ├── openaiService.js     → Azure OpenAI integration, prompt building, streaming
-    ├── powerbiService.js    → PowerBI REST API, MSAL auth, metadata fetching
-    ├── configService.js     → Environment configuration, validation
-    ├── errorService.js      → Standardized error responses
-    └── telemetryService.js  → Request logging, data sanitization, monitoring
+├── app.js                      # Express application setup, middleware, static assets
+├── server.js                   # Server startup, error handlers, graceful shutdown
+├── container.js                # Dependency injection container, service factory
+├── utils.js                    # Validation utilities, auth helpers
+├── routes/                     # Route definitions and mounting
+│   ├── routeOrchestrator.js    → Route mounting, view handlers (/, /chartchat)
+│   ├── chatRoutes.js           → Chat endpoints (/chat, /chat/stream)
+│   ├── embedRoutes.js          → PowerBI embed endpoints (/getEmbedToken)
+│   ├── metadataRoutes.js       → Dataset metadata endpoints (/getDatasetMetadata, etc.)
+│   ├── fabricRoutes.js         → Fabric endpoints (/api/fabric/create-report)
+│   └── systemRoutes.js         → System endpoints (/health, /api/system/config)
+├── controllers/                # Request orchestration and business logic coordination
+│   ├── chatController.js       → chat(), chatStream() - uses AgentService, PowerBIService
+│   ├── embedController.js      → getEmbedToken() - uses PowerBIService
+│   ├── metadataController.js   → getMetadata*() - uses PowerBIService, ConfigService
+│   ├── fabricController.js     → createReport(), getTemplates() - uses FabricService
+│   └── systemController.js     → getConfig(), validateConfiguration() - uses ConfigService
+└── services/                   # Core business logic and external integrations
+    ├── agentService.js         → AI agent logic, prompt building, chat orchestration
+    ├── azureOpenAIProvider.js  → Azure OpenAI API client, streaming support
+    ├── powerbiService.js       → PowerBI REST API, MSAL auth, metadata fetching
+    ├── fabricService.js        → Fabric REST API, report creation, file upload
+    ├── configService.js        → Environment configuration, validation
+    └── errorService.js         → Standardized error responses
 ```
 
 ## Key Dependencies
 
 ### External Libraries
-- **@azure/msal-node**: Service Principal authentication for PowerBI
-- **node-fetch**: HTTP requests to Azure OpenAI and PowerBI APIs
+- **@azure/msal-node**: Service Principal authentication for PowerBI and Fabric
+- **node-fetch**: HTTP requests to Azure OpenAI, PowerBI, and Fabric APIs
 - **express**: Web framework and middleware
 - **dotenv**: Environment variable management
+- **guid**: GUID validation utilities
 
-### Service Dependencies
-- All controllers depend on: `errorService`, `configService`
-- `chatController`: `openaiService`, `powerbiService`, `telemetryService`
-- `embedController`: `powerbiService`, `utils`
-- `metadataController`: `powerbiService`
-- `systemController`: `telemetryService`
-- `openaiService`: `configService`, `telemetryService`, Azure OpenAI API
-- `powerbiService`: `configService`, `errorService`, MSAL, PowerBI API
+### Service Dependencies (via Dependency Injection)
+- **Container** manages all service lifecycle and dependencies
+- **Controllers** receive dependencies via constructor injection:
+  - `chatController`: `agentService`, `powerbiService`
+  - `embedController`: `powerbiService`
+  - `metadataController`: `powerbiService`
+  - `fabricController`: `fabricService`
+  - `systemController`: uses `configService` directly
+  
+- **Services** receive dependencies via constructor injection:
+  - `agentService`: `azureOpenAIProvider`
+  - `azureOpenAIProvider`: config object, `fetch` (HTTP client)
+  - `powerbiService`: config object, `msalClient`, `fetch` (HTTP client)
+  - `fabricService`: config object, `fetch` (HTTP client)
+  - `configService`: stateless, no dependencies
+
+- **All services** use `errorService` for consistent error responses
+
+### Architectural Flow
+```
+Container (DI)
+  ↓
+Controllers (HTTP handlers)
+  ↓
+Services (Business logic)
+  ↓
+Providers/Clients (External APIs)
+  ↓
+External Services (Azure OpenAI, PowerBI, Fabric)
+```
