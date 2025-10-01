@@ -2,6 +2,8 @@
 
 Node.js application that embeds Power BI reports with an AI-powered chat interface for data visualization and chart creation.
 
+![Chart Chat Demo](./chartchat.gif)
+
 ## Features
 
 - **Power BI Integration** - Secure report embedding with Service Principal authentication
