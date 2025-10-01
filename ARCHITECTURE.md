@@ -69,18 +69,6 @@ graph TB
     MetaRoutes --> MetaCtrl
     SysRoutes --> SysCtrl
 
-    %% Container provides dependencies
-    Container --> ChatCtrl
-    Container --> EmbedCtrl
-    Container --> MetaCtrl
-    Container --> FabricCtrl
-    Container --> SysCtrl
-    Container --> Agent
-    Container --> AzureAI
-    Container --> PowerBI
-    Container --> Fabric
-    Container --> Config
-
     %% Controller dependencies
     ChatCtrl --> Agent
     ChatCtrl --> PowerBI
