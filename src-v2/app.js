@@ -20,9 +20,9 @@ app.use('/js', express.static(path.join(__dirname, '../node_modules/bootstrap/di
 app.use('/js', express.static(path.join(__dirname, '../node_modules/jquery/dist/')));
 app.use('/js', express.static(path.join(__dirname, '../node_modules/powerbi-client/dist/')));
 app.use('/css', express.static(path.join(__dirname, '../node_modules/bootstrap/dist/css/')));
-app.use('/css', express.static(path.join(__dirname, '../public/css/')));  // Add our custom CSS
-app.use('/js', express.static(path.join(__dirname, '../public/js/')));   // Add our custom JS
-app.use('/public', express.static(path.join(__dirname, '../public/')));
+app.use('/css', express.static(path.join(__dirname, '../client/css/')));  // Client CSS
+app.use('/js', express.static(path.join(__dirname, '../client/js/')));   // Client JS
+app.use('/client', express.static(path.join(__dirname, '../client/')));  // Client assets
 
 // Mount routes
 mountRoutes(app);

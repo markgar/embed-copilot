@@ -13,13 +13,13 @@ module.exports = function mountRoutes(app) {
   // Views - chartchat is now the default page
   app.get('/', (req, res) => {
     console.log('[Routes] Root route accessed');
-    res.sendFile(path.join(__dirname, '../../views/chartchat.html'));
+    res.sendFile(path.join(__dirname, '../../client/views/chartchat.html'));
   });
 
   // Keep the /chartchat route for backwards compatibility
   app.get('/chartchat', (req, res) => {
     console.log('[Routes] Chartchat route accessed');
-    res.sendFile(path.join(__dirname, '../../views/chartchat.html'));
+    res.sendFile(path.join(__dirname, '../../client/views/chartchat.html'));
   });
 
   console.log('[Routes] Mounting API routes...');
