@@ -62,11 +62,13 @@ graph TB
     Routes --> ChatRoutes
     Routes --> EmbedRoutes
     Routes --> MetaRoutes
+    Routes --> FabricRoutes
     Routes --> SysRoutes
 
     ChatRoutes --> ChatCtrl
     EmbedRoutes --> EmbedCtrl
     MetaRoutes --> MetaCtrl
+    FabricRoutes --> FabricCtrl
     SysRoutes --> SysCtrl
 
     %% Controller dependencies
