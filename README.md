@@ -34,16 +34,17 @@ Node.js application that embeds Power BI reports with an AI-powered chat interfa
 ## Required Environment Variables
 
 **Power BI:**
-- `POWERBI_TENANT_ID` - Azure AD tenant ID
-- `POWERBI_CLIENT_ID` - App registration client ID  
-- `POWERBI_CLIENT_SECRET` - App registration secret
-- `POWERBI_WORKSPACE_ID` - Workspace containing your reports
-- `POWERBI_DATASET_ID` - Dataset for metadata access (reports will be auto-created based on this)
+- `TENANT_ID` - Azure AD tenant ID
+- `CLIENT_ID` - App registration client ID  
+- `CLIENT_SECRET` - App registration secret
+- `POWERBI_WORKSPACE_ID` (or `POWERBI_GROUP_ID`) - Workspace containing your reports
+- `POWERBI_DATASET_ID` - Dataset for metadata access
 
 **Azure OpenAI:**
 - `AZURE_OPENAI_ENDPOINT` - Service endpoint URL
 - `AZURE_OPENAI_API_KEY` - API key
 - `AZURE_OPENAI_DEPLOYMENT_NAME` - GPT model deployment name
+- `AZURE_OPENAI_API_VERSION` - API version (default: 2023-12-01-preview)
 
 ## Usage
 
@@ -86,10 +87,10 @@ sequenceDiagram
 ## Development
 
 ```bash
-npm run dev              # Development server
-npm run dev:telemetry    # With telemetry logging
-npm test                 # Run tests
-npm run test:e2e         # End-to-end tests
+npm run dev              # Development server with nodemon
+npm start                # Production server
+npm run lint             # Run ESLint
+npm run lint:fix         # Fix ESLint errors
 ```
 
 ## Model Performance Testing
@@ -101,19 +102,27 @@ Multiple Azure OpenAI models have been tested for optimal performance with this 
 ## Project Structure
 
 ```
-src-v2/          # Backend (Express.js)
-public/          # Frontend assets  
-views/           # HTML templates
-test/            # Test suite
-tools/           # Development utilities
-config/          # Configuration
+src/                       # Backend (Express.js)
+  ├── server.js            # Entry point
+  ├── app.js               # Express app configuration
+  ├── container.js         # Dependency injection container
+  ├── utils.js             # Utility functions
+  ├── routes/              # API route definitions
+  ├── controllers/         # Request handlers
+  └── services/            # Business logic (PowerBI, OpenAI, Fabric)
+client/                    # Frontend (static files)
+  ├── css/                 # Stylesheets
+  ├── js/modules/          # Client-side JavaScript modules
+  └── views/               # HTML pages
+templates/report/          # Power BI report templates (PBIR format)
+logs/                      # Runtime logs (not tracked in git)
 ```
 
 ## Health Checks
 
-- `GET /health` - System health
-- `GET /embed/health` - Power BI service
-- `GET /chat/health` - OpenAI service
+- `GET /health` - Basic system health check
+- `GET /status` - Detailed system status with all services
+- `GET /metadata/health` - Metadata service health
 
 ## License
 

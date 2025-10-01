@@ -17,7 +17,7 @@ class SystemController {
     try {
       res.json({
         status: 'ok',
-        version: 'src-v2',
+        version: '1.0.0',
         architecture: 'service-integration',
         timestamp: new Date().toISOString(),
         services: {
@@ -73,7 +73,7 @@ class SystemController {
 
       res.json({
         status: allOk ? 'ok' : 'degraded',
-        version: 'src-v2',
+        version: '1.0.0',
         architecture: 'service-integration',
         services: {
           embed: embedStatus,
@@ -130,7 +130,7 @@ class SystemController {
   static getSystemInfo(req, res) {
     try {
       res.json({
-        version: 'src-v2',
+        version: '1.0.0',
         architecture: 'service-integration',
         node_version: process.version,
         environment: process.env.NODE_ENV || 'development',

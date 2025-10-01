@@ -4,7 +4,7 @@ export default [
   js.configs.recommended,
   // Node.js server code and configuration files
   {
-    files: ['src-v2/**/*.js', 'tools/**/*.js', 'models/**/*.js'],
+    files: ['src/**/*.js', 'tools/**/*.js', 'models/**/*.js'],
     languageOptions: {
       ecmaVersion: 'latest',
       sourceType: 'module',

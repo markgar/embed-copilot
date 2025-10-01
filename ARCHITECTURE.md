@@ -12,36 +12,36 @@ graph TB
 
     subgraph NodeServer["🖥️ Node.js Server (Backend)"]
         subgraph "Express Application Layer"
-            App["Express App<br/>📁 src-v2/app.js<br/>• Error Handlers<br/>• Graceful Shutdown"]
-            Container["DI Container<br/>📁 src-v2/container.js<br/>• Service Factory<br/>• Lazy Initialization<br/>• Singleton Pattern"]
-            Routes["Route Orchestrator<br/>📁 src-v2/routes/routeOrchestrator.js<br/>• View Routes /chartchat<br/>• API Route Mounting"]
+            App["Express App<br/>📁 src/app.js<br/>• Error Handlers<br/>• Graceful Shutdown"]
+            Container["DI Container<br/>📁 src/container.js<br/>• Service Factory<br/>• Lazy Initialization<br/>• Singleton Pattern"]
+            Routes["Route Orchestrator<br/>📁 src/routes/routeOrchestrator.js<br/>• View Routes /chartchat<br/>• API Route Mounting"]
             Middleware["Middleware<br/>• Body Parser<br/>• Static Assets<br/>• Error Handling"]
-            Utils["Utils<br/>📁 src-v2/utils.js<br/>• Config Validation<br/>• Auth Headers<br/>• GUID Validation"]
+            Utils["Utils<br/>📁 src/utils.js<br/>• Config Validation<br/>• Auth Headers<br/>• GUID Validation"]
         end
 
         subgraph "Route Handlers"
-            ChatRoutes["Chat Routes<br/>📁 src-v2/routes/chatRoutes.js<br/>• POST /chat<br/>• POST /chat/stream"]
-            EmbedRoutes["Embed Routes<br/>📁 src-v2/routes/embedRoutes.js<br/>• GET /getEmbedToken"]
-            MetaRoutes["Metadata Routes<br/>📁 src-v2/routes/metadataRoutes.js<br/>• GET /getDatasetMetadata<br/>• GET /metadata/simple<br/>• GET /metadata/context<br/>• GET /metadata/schema"]
-            FabricRoutes["Fabric Routes<br/>📁 src-v2/routes/fabricRoutes.js<br/>• POST /api/fabric/create-report<br/>• GET /api/fabric/templates"]
-            SysRoutes["System Routes<br/>📁 src-v2/routes/systemRoutes.js<br/>• GET /health<br/>• GET /api/system/config<br/>• GET /api/system/validate-config"]
+            ChatRoutes["Chat Routes<br/>📁 src/routes/chatRoutes.js<br/>• POST /chat<br/>• POST /chat/stream"]
+            EmbedRoutes["Embed Routes<br/>📁 src/routes/embedRoutes.js<br/>• GET /getEmbedToken"]
+            MetaRoutes["Metadata Routes<br/>📁 src/routes/metadataRoutes.js<br/>• GET /getDatasetMetadata<br/>• GET /metadata/simple<br/>• GET /metadata/context<br/>• GET /metadata/schema"]
+            FabricRoutes["Fabric Routes<br/>📁 src/routes/fabricRoutes.js<br/>• POST /api/fabric/create-report<br/>• GET /api/fabric/templates"]
+            SysRoutes["System Routes<br/>📁 src/routes/systemRoutes.js<br/>• GET /health<br/>• GET /api/system/config<br/>• GET /api/system/validate-config"]
         end
 
         subgraph "Controller Layer"
-            ChatCtrl["Chat Controller<br/>📁 src-v2/controllers/chatController.js<br/>• chat method<br/>• chatStream method<br/>• Uses AgentService"]
-            EmbedCtrl["Embed Controller<br/>📁 src-v2/controllers/embedController.js<br/>• getEmbedToken method<br/>• Uses PowerBIService"]
-            MetaCtrl["Metadata Controller<br/>📁 src-v2/controllers/metadataController.js<br/>• getMetadata method<br/>• getMetadataSimple method<br/>• getMetadataContext method<br/>• getMetadataSchema method"]
-            FabricCtrl["Fabric Controller<br/>📁 src-v2/controllers/fabricController.js<br/>• createReport method<br/>• getTemplates method<br/>• Uses FabricService"]
-            SysCtrl["System Controller<br/>📁 src-v2/controllers/systemController.js<br/>• getConfig method<br/>• validateConfiguration method<br/>• Uses ConfigService"]
+            ChatCtrl["Chat Controller<br/>📁 src/controllers/chatController.js<br/>• chat method<br/>• chatStream method<br/>• Uses AgentService"]
+            EmbedCtrl["Embed Controller<br/>📁 src/controllers/embedController.js<br/>• getEmbedToken method<br/>• Uses PowerBIService"]
+            MetaCtrl["Metadata Controller<br/>📁 src/controllers/metadataController.js<br/>• getMetadata method<br/>• getMetadataSimple method<br/>• getMetadataContext method<br/>• getMetadataSchema method"]
+            FabricCtrl["Fabric Controller<br/>📁 src/controllers/fabricController.js<br/>• createReport method<br/>• getTemplates method<br/>• Uses FabricService"]
+            SysCtrl["System Controller<br/>📁 src/controllers/systemController.js<br/>• getConfig method<br/>• validateConfiguration method<br/>• Uses ConfigService"]
         end
 
         subgraph "Service Layer"
-            Agent["Agent Service<br/>📁 src-v2/services/agentService.js<br/>• buildSystemPrompt method<br/>• processChat method<br/>• Uses LLM Provider"]
-            AzureAI["Azure OpenAI Provider<br/>📁 src-v2/services/azureOpenAIProvider.js<br/>• sendChatRequest method<br/>• sendStreamingRequest method<br/>• HTTP Client Integration"]
-            PowerBI["PowerBI Service<br/>📁 src-v2/services/powerbiService.js<br/>• getAccessToken method<br/>• getEmbedInfo method<br/>• getDatasetMetadata methods<br/>• MSAL Integration"]
-            Fabric["Fabric Service<br/>📁 src-v2/services/fabricService.js<br/>• createReport method<br/>• uploadFile method<br/>• createSemanticModel method<br/>• Fabric REST API"]
-            Config["Config Service<br/>📁 src-v2/services/configService.js<br/>• loadConfig method<br/>• validateConfig method<br/>• Environment Variables"]
-            Error["Error Service<br/>📁 src-v2/services/errorService.js<br/>• badRequest method<br/>• serverError method<br/>• notFound method<br/>• sendError method"]
+            Agent["Agent Service<br/>📁 src/services/agentService.js<br/>• buildSystemPrompt method<br/>• processChat method<br/>• Uses LLM Provider"]
+            AzureAI["Azure OpenAI Provider<br/>📁 src/services/azureOpenAIProvider.js<br/>• sendChatRequest method<br/>• sendStreamingRequest method<br/>• HTTP Client Integration"]
+            PowerBI["PowerBI Service<br/>📁 src/services/powerbiService.js<br/>• getAccessToken method<br/>• getEmbedInfo method<br/>• getDatasetMetadata methods<br/>• MSAL Integration"]
+            Fabric["Fabric Service<br/>📁 src/services/fabricService.js<br/>• createReport method<br/>• uploadFile method<br/>• createSemanticModel method<br/>• Fabric REST API"]
+            Config["Config Service<br/>📁 src/services/configService.js<br/>• loadConfig method<br/>• validateConfig method<br/>• Environment Variables"]
+            Error["Error Service<br/>📁 src/services/errorService.js<br/>• badRequest method<br/>• serverError method<br/>• notFound method<br/>• sendError method"]
         end
     end
 
@@ -215,7 +215,7 @@ sequenceDiagram
 ## File Structure Mapping
 
 ```
-src-v2/
+src/
 ├── app.js                      # Express application setup, middleware, static assets
 ├── server.js                   # Server startup, error handlers, graceful shutdown
 ├── container.js                # Dependency injection container, service factory

@@ -1,4 +1,4 @@
-// Server entry point for refactored src-v2 architecture
+// Server entry point for Express application
 // Service Integration Architecture: orchestrates Power BI and OpenAI APIs
 
 const PORT = process.env.PORT || 5300;
