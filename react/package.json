@@ -10,10 +10,11 @@
     "preview": "vite preview"
   },
   "dependencies": {
-    "react": "^18.2.0",
-    "react-dom": "^18.2.0",
+    "powerbi-client": "^2.21.0",
     "powerbi-client-react": "^2.0.0",
-    "powerbi-client": "^2.21.0"
+    "powerbi-report-authoring": "^2.0.0",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0"
   },
   "devDependencies": {
     "@types/react": "^18.2.66",
