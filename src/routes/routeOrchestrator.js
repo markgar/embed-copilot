@@ -1,4 +1,5 @@
 const path = require('path');
+const express = require('express');
 
 // Import route modules
 const embedRoutes = require('./embedRoutes');
@@ -20,6 +21,13 @@ module.exports = function mountRoutes(app) {
   app.get('/chartchat', (req, res) => {
     console.log('[Routes] Chartchat route accessed');
     res.sendFile(path.join(__dirname, '../../client/views/chartchat.html'));
+  });
+
+  // React app routes
+  app.use('/react', express.static(path.join(__dirname, '../../react/dist')));
+  app.get('/react/*', (req, res) => {
+    console.log('[Routes] React route accessed');
+    res.sendFile(path.join(__dirname, '../../react/dist/index.html'));
   });
 
   console.log('[Routes] Mounting API routes...');

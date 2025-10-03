@@ -14,12 +14,42 @@
 				"reveal": "always",
 				"panel": "shared",
 				"clear": true,
-				"focus": false
+				"focus": false,
+				"group": "dev"
 			},
 			"options": {
 				"env": {
 					"NODE_ENV": "development"
 				}
+			}
+		},
+		{
+			"label": "React Build Watch",
+			"type": "shell",
+			"command": "npm run react:build:watch",
+			"isBackground": true,
+			"problemMatcher": [],
+			"presentation": {
+				"reveal": "silent",
+				"panel": "shared",
+				"group": "dev",
+				"focus": false
+			},
+			"dependsOn": [],
+			"runOptions": {}
+		},
+		{
+			"label": "Start Full Development",
+			"dependsOrder": "parallel",
+			"dependsOn": [
+				"Dev Server",
+				"React Build Watch"
+			],
+			"problemMatcher": [],
+			"presentation": {
+				"reveal": "always",
+				"panel": "shared",
+				"group": "dev"
 			}
 		}
 	]
