@@ -51,12 +51,12 @@ class ChatController {
       // Get metadata context
       let context = null;
       try {
-        const groupId = config.powerBIGroupId;
+        const workspaceId = config.powerBIWorkspaceId;
         const datasetId = config.powerBIDatasetId;
                 
-        if (groupId && datasetId) {
+        if (workspaceId && datasetId) {
           console.log('[ChatController] Fetching PowerBI metadata context...');
-          context = await this.powerbiService.getMetadataContext(groupId, datasetId);
+          context = await this.powerbiService.getMetadataContext(workspaceId, datasetId);
           console.log('[ChatController] Metadata context retrieved successfully');
         }
       } catch (contextError) {
@@ -120,11 +120,11 @@ class ChatController {
       let context = null;
             
       try {
-        const groupId = config.powerBIGroupId;
+        const workspaceId = config.powerBIWorkspaceId;
         const datasetId = config.powerBIDatasetId;
                 
-        if (groupId && datasetId) {
-          context = await this.powerbiService.getMetadataContext(groupId, datasetId);
+        if (workspaceId && datasetId) {
+          context = await this.powerbiService.getMetadataContext(workspaceId, datasetId);
         }
       } catch {
         res.write('data: {"error": "Failed to retrieve data context"}\n\n');
@@ -169,7 +169,7 @@ class ChatController {
             
       // Check service configurations
       const openaiConfigured = !!(config.openaiApiKey || (config.azureOpenAIApiKey && config.azureOpenAIEndpoint));
-      const powerbiConfigured = !!(config.powerBIGroupId && config.powerBIDatasetId);
+      const powerbiConfigured = !!(config.powerBIWorkspaceId && config.powerBIDatasetId);
             
       let status = 'ok';
       let message = 'Chat service ready';

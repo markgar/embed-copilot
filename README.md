@@ -39,7 +39,7 @@ Node.js application that embeds Power BI reports with an AI-powered chat interfa
 - `TENANT_ID` - Azure AD tenant ID
 - `CLIENT_ID` - App registration client ID  
 - `CLIENT_SECRET` - App registration secret
-- `POWERBI_WORKSPACE_ID` (or `POWERBI_GROUP_ID`) - Workspace containing your reports
+- `POWERBI_WORKSPACE_ID` - Workspace containing your reports
 - `POWERBI_DATASET_ID` - Dataset for metadata access
 
 **Azure OpenAI:**

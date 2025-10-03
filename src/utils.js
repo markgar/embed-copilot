@@ -33,11 +33,11 @@ function validateConfig() {
     return 'ReportId must be a Guid object. Please select a report you own and fill its Id in config.json.';
   }
 
-  if (!config.powerBIGroupId) {
+  if (!config.powerBIWorkspaceId) {
     return 'WorkspaceId is empty. Please select a group you own and fill its Id in config.json.';
   }
 
-  if (!guid.isGuid(config.powerBIGroupId)) {
+  if (!guid.isGuid(config.powerBIWorkspaceId)) {
     return 'WorkspaceId must be a Guid object. Please select a workspace you own and fill its Id in config.json.';
   }
 
@@ -77,11 +77,11 @@ function validateConfigForDynamicReport() {
 
   // Skip powerBIReportId validation for dynamic reports
 
-  if (!config.powerBIGroupId) {
+  if (!config.powerBIWorkspaceId) {
     return 'WorkspaceId is empty. Please select a group you own and fill its Id in config.json.';
   }
 
-  if (!guid.isGuid(config.powerBIGroupId)) {
+  if (!guid.isGuid(config.powerBIWorkspaceId)) {
     return 'WorkspaceId must be a Guid object. Please select a workspace you own and fill its Id in config.json.';
   }
 

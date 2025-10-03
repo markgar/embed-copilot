@@ -11,9 +11,8 @@ const config = {
   clientId: process.env.CLIENT_ID,
   clientSecret: process.env.CLIENT_SECRET,
     
-  // Support both property names for backwards compatibility
-  powerBIGroupId: process.env.POWERBI_GROUP_ID || process.env.POWERBI_WORKSPACE_ID,
-  powerBIWorkspaceId: process.env.POWERBI_WORKSPACE_ID || process.env.POWERBI_GROUP_ID,
+  // Power BI workspace configuration
+  powerBIWorkspaceId: process.env.POWERBI_WORKSPACE_ID,
   powerBIDatasetId: process.env.POWERBI_DATASET_ID,
     
   // Azure OpenAI Configuration
@@ -57,11 +56,11 @@ function validateConfig(config = null) {
 
 
 
-  if (!config.powerBIGroupId) {
-    return 'WorkspaceId is empty. Please select a group you own and fill its Id in config.json.';
+  if (!config.powerBIWorkspaceId) {
+    return 'WorkspaceId is empty. Please select a workspace you own and fill its Id in config.json.';
   }
 
-  if (!guid.isGuid(config.powerBIGroupId)) {
+  if (!guid.isGuid(config.powerBIWorkspaceId)) {
     return 'WorkspaceId must be a Guid object. Please select a workspace you own and fill its Id in config.json.';
   }
 

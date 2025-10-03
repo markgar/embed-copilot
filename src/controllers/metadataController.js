@@ -15,25 +15,25 @@ class MetadataController {
 
   /**
    * Get dataset metadata with caching
-   * GET /getDatasetMetadata?groupId=...&datasetId=...
+   * GET /getDatasetMetadata?workspaceId=...&datasetId=...
    */
   async getDatasetMetadata(req, res) {
     try {
       const config = configService.loadConfig();
             
-      // Get groupId from config or query parameters
-      const groupId = config.powerBIGroupId || req.query.groupId;
+      // Get workspaceId from config or query parameters
+      const workspaceId = config.powerBIWorkspaceId || req.query.workspaceId;
       let datasetId = config.powerBIDatasetId || req.query.datasetId;
             
       // Validate required parameters
-      if (!groupId) {
-        return errorService.sendError(res, 400, 'groupId is required');
+      if (!workspaceId) {
+        return errorService.sendError(res, 400, 'workspaceId is required');
       }
             
       // If datasetId not provided but reportId is available, derive it
       if (!datasetId && config.powerBIReportId) {
         try {
-          datasetId = await this.powerbiService.getDatasetIdFromReport(groupId, config.powerBIReportId);
+          datasetId = await this.powerbiService.getDatasetIdFromReport(workspaceId, config.powerBIReportId);
         } catch (err) {
           return errorService.sendError(res, 400, 'Could not determine dataset ID', err.message);
         }
@@ -44,7 +44,7 @@ class MetadataController {
       }
             
       // Get metadata using PowerBI service (includes automatic caching)
-      const metadata = await this.powerbiService.getDatasetMetadata(groupId, datasetId);
+      const metadata = await this.powerbiService.getDatasetMetadata(workspaceId, datasetId);
       res.json(metadata);
             
     } catch (error) {
@@ -55,22 +55,22 @@ class MetadataController {
 
   /**
    * Get simplified metadata for AI prompts
-   * GET /getSimplifiedMetadata?groupId=...&datasetId=...
+   * GET /getSimplifiedMetadata?workspaceId=...&datasetId=...
    */
   async getSimplifiedMetadata(req, res) {
     try {
       const config = configService.loadConfig();
             
-      const groupId = config.powerBIGroupId || req.query.groupId;
+      const workspaceId = config.powerBIWorkspaceId || req.query.workspaceId;
       let datasetId = config.powerBIDatasetId || req.query.datasetId;
             
-      if (!groupId) {
-        return errorService.sendError(res, 400, 'groupId is required');
+      if (!workspaceId) {
+        return errorService.sendError(res, 400, 'workspaceId is required');
       }
             
       if (!datasetId && config.powerBIReportId) {
         try {
-          datasetId = await this.powerbiService.getDatasetIdFromReport(groupId, config.powerBIReportId);
+          datasetId = await this.powerbiService.getDatasetIdFromReport(workspaceId, config.powerBIReportId);
         } catch (err) {
           return errorService.sendError(res, 400, 'Could not determine dataset ID', err.message);
         }
@@ -81,7 +81,7 @@ class MetadataController {
       }
             
       // Get simplified metadata for AI context
-      const simplifiedMetadata = await this.powerbiService.getSimplifiedMetadata(groupId, datasetId);
+      const simplifiedMetadata = await this.powerbiService.getSimplifiedMetadata(workspaceId, datasetId);
             
       res.setHeader('Content-Type', 'text/plain');
       res.send(simplifiedMetadata);
@@ -94,22 +94,22 @@ class MetadataController {
 
   /**
    * Get name-only schema for LLM grounding
-   * GET /getNameOnlySchema?groupId=...&datasetId=...
+   * GET /getNameOnlySchema?workspaceId=...&datasetId=...
    */
   async getNameOnlySchema(req, res) {
     try {
       const config = configService.loadConfig();
             
-      const groupId = config.powerBIGroupId || req.query.groupId;
+      const workspaceId = config.powerBIWorkspaceId || req.query.workspaceId;
       let datasetId = config.powerBIDatasetId || req.query.datasetId;
             
-      if (!groupId) {
-        return errorService.sendError(res, 400, 'groupId is required');
+      if (!workspaceId) {
+        return errorService.sendError(res, 400, 'workspaceId is required');
       }
             
       if (!datasetId && config.powerBIReportId) {
         try {
-          datasetId = await this.powerbiService.getDatasetIdFromReport(groupId, config.powerBIReportId);
+          datasetId = await this.powerbiService.getDatasetIdFromReport(workspaceId, config.powerBIReportId);
         } catch (err) {
           return errorService.sendError(res, 400, 'Could not determine dataset ID', err.message);
         }
@@ -120,7 +120,7 @@ class MetadataController {
       }
             
       // Get name-only schema for LLM context
-      const schema = await this.powerbiService.getNameOnlySchema(groupId, datasetId);
+      const schema = await this.powerbiService.getNameOnlySchema(workspaceId, datasetId);
             
       res.setHeader('Content-Type', 'text/plain');
       res.send(schema);
@@ -139,11 +139,11 @@ class MetadataController {
       const config = configService.loadConfig();
             
       // Basic validation
-      if (!config.powerBIGroupId) {
+      if (!config.powerBIWorkspaceId) {
         return res.json({
           status: 'error',
           service: 'metadata',
-          message: 'Missing powerBIGroupId configuration',
+          message: 'Missing powerBIWorkspaceId configuration',
           timestamp: new Date().toISOString()
         });
       }

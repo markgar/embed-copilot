@@ -93,7 +93,7 @@ class PowerBIService {
 
       // Get report details and embed token
       const embedParams = await this.getEmbedParamsForSingleReport(
-        this.config.powerBIGroupId, 
+        this.config.powerBIWorkspaceId, 
         targetReportId
       );
 
