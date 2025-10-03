@@ -2,12 +2,14 @@ import React, { useState, useEffect } from 'react'
 import { PowerBIEmbed } from 'powerbi-client-react'
 import { models } from 'powerbi-client'
 import { serverLog, logErrorToServer } from './utils/logging'
+import MetadataPanel from './components/MetadataPanel'
 
 function App() {
   const [embedConfig, setEmbedConfig] = useState(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
   const [debugInfo, setDebugInfo] = useState('Starting...')
+  const [metadataPanelCollapsed, setMetadataPanelCollapsed] = useState(false)
 
   useEffect(() => {
     // Get the frontend config and setup Power BI embedding
@@ -126,6 +128,10 @@ function App() {
     ['error', (event) => logErrorToServer('React App: PowerBI Error', event.detail)]
   ])
 
+  const toggleMetadataPanel = () => {
+    setMetadataPanelCollapsed(!metadataPanelCollapsed)
+  }
+
   if (loading) {
     return (
       <div style={{ 
@@ -160,58 +166,43 @@ function App() {
 
   return (
     <>
-      {/* Simulated left panel like vanilla app */}
-      <div className="simulated-left-panel">
-        <div>TreeView Panel<br/>(300px width)</div>
-      </div>
+      {/* Metadata Panel (replacing simulated left panel) */}
+      <MetadataPanel 
+        isCollapsed={metadataPanelCollapsed}
+        onToggle={toggleMetadataPanel}
+      />
       
       {/* Simulated right panel like vanilla app */}
       <div className="simulated-right-panel">
         <div>Chat Panel<br/>(525px width)</div>
       </div>
       
-      {/* PowerBI report container with same positioning as vanilla app */}
-      <div style={{ 
-        position: 'fixed',
-        left: '300px',
-        right: '525px',
-        top: 0,
-        bottom: 0,
-        display: 'flex',
-        flexDirection: 'column'
-      }}>
-        <div style={{
-          padding: '10px',
-          background: '#f5f5f5',
-          borderBottom: '1px solid #ddd',
-          height: '60px',
-          flexShrink: 0
-        }}>
-          <h2 style={{ margin: 0, fontSize: '18px' }}>Power BI React Integration</h2>
-        </div>
-        <div style={{ 
+      {/* PowerBI report container with margin-based positioning like vanilla app */}
+      <div 
+        className={`main-content ${metadataPanelCollapsed ? 'metadata-collapsed' : ''}`}
+        style={{ 
           flex: 1,
           position: 'relative',
-          overflow: 'hidden',
-          minHeight: '800px',
-          height: 'calc(100vh - 60px)'
-        }}>
-          <PowerBIEmbed
-            embedConfig={embedConfig}
-            eventHandlers={eventHandlers}
-            cssClassName="powerbi-report-container"
-            style={{ 
-              position: 'absolute',
-              top: 0,
-              left: 0,
-              right: 0,
-              bottom: 0,
-              width: '100%',
-              height: '100%',
-              minHeight: '800px'
-            }}
-          />
-        </div>
+          transition: 'margin-left 0.3s ease',
+          marginLeft: metadataPanelCollapsed ? '50px' : '300px',
+          marginRight: '525px',
+          height: '100vh'
+        }}
+      >
+        <PowerBIEmbed
+          embedConfig={embedConfig}
+          eventHandlers={eventHandlers}
+          cssClassName="powerbi-report-container"
+          style={{ 
+            position: 'absolute',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            width: '100%',
+            height: '100%'
+          }}
+        />
       </div>
     </>
   )

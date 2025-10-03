@@ -1,0 +1,286 @@
+/* Metadata Panel Styles - React Version */
+/* Based on treeview.css from vanilla app */
+
+.metadata-panel {
+  position: fixed;
+  left: 0;
+  top: 0;
+  width: 300px;
+  height: 100vh;
+  background: #f8f9fa;
+  border-right: 1px solid #dee2e6;
+  display: flex;
+  flex-direction: column;
+  z-index: 998;
+  transition: transform 0.3s ease;
+  font-family: Arial, sans-serif;
+}
+
+.metadata-panel.collapsed {
+  transform: translateX(-250px);
+}
+
+.metadata-panel.collapsed .metadata-controls,
+.metadata-panel.collapsed .metadata-content {
+  opacity: 0;
+  visibility: hidden;
+}
+
+.metadata-panel .toggle-open {
+  display: none;
+}
+
+.metadata-panel .toggle-close {
+  display: inline;
+}
+
+.metadata-panel.collapsed .toggle-open {
+  display: inline;
+}
+
+.metadata-panel.collapsed .toggle-close {
+  display: none;
+}
+
+.metadata-header {
+  background: #007bff;
+  color: white;
+  padding: 15px;
+  font-weight: bold;
+  border-bottom: 1px solid #0056b3;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.metadata-title {
+  font-size: 14px;
+  cursor: pointer;
+  user-select: none;
+  font-family: Arial, sans-serif;
+}
+
+.metadata-title:hover {
+  opacity: 0.8;
+}
+
+.metadata-toggle {
+  background: none;
+  border: none;
+  color: white;
+  font-size: 16px;
+  cursor: pointer;
+  padding: 4px 8px;
+  border-radius: 3px;
+  transition: background-color 0.2s;
+}
+
+.metadata-toggle:hover {
+  background-color: rgba(255, 255, 255, 0.1);
+}
+
+.metadata-controls {
+  background: white;
+  padding: 12px 15px;
+  border-bottom: 1px solid #dee2e6;
+  display: flex;
+  gap: 8px;
+  transition: opacity 0.3s ease, visibility 0.3s ease;
+}
+
+.metadata-control-btn {
+  background: #007bff;
+  color: white;
+  border: none;
+  padding: 6px 12px;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  flex: 1;
+}
+
+.metadata-control-btn:hover {
+  background: #0056b3;
+  transform: translateY(-1px);
+  box-shadow: 0 2px 4px rgba(0, 123, 255, 0.2);
+}
+
+.metadata-control-btn:active {
+  background: #004085;
+  transform: translateY(0);
+}
+
+.metadata-content {
+  flex: 1;
+  padding: 15px;
+  overflow-y: auto;
+  transition: opacity 0.3s ease, visibility 0.3s ease;
+  background: #fafbfc;
+}
+
+.metadata-loading {
+  text-align: center;
+  color: #6c757d;
+  font-style: italic;
+  margin-top: 20px;
+}
+
+.metadata-error {
+  text-align: center;
+  color: #dc3545;
+  padding: 20px;
+}
+
+.metadata-error button {
+  background: #007bff;
+  color: white;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 4px;
+  cursor: pointer;
+  margin-top: 10px;
+}
+
+.metadata-error button:hover {
+  background: #0056b3;
+}
+
+.metadata-tree {
+  font-size: 14px;
+  font-family: Arial, sans-serif;
+}
+
+.metadata-table {
+  margin-bottom: 16px;
+  padding: 8px;
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.metadata-table-header {
+  display: flex;
+  align-items: center;
+  padding: 8px 12px;
+  background: white;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-weight: 600;
+  color: #495057;
+  font-family: Arial, sans-serif;
+  margin-bottom: 4px;
+}
+
+.metadata-table-header:hover {
+  background: #f8f9fa;
+  transform: translateY(-1px);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.metadata-expand-icon {
+  margin-right: 6px;
+  font-size: 12px;
+  width: 12px;
+  text-align: center;
+  transition: transform 0.2s ease;
+}
+
+.metadata-table-name {
+  flex: 1;
+}
+
+.metadata-column-count {
+  font-size: 11px;
+  color: #6c757d;
+  font-weight: normal;
+  font-family: Arial, sans-serif;
+}
+
+.metadata-columns {
+  margin-top: 4px;
+  margin-left: 20px;
+  display: none;
+}
+
+.metadata-table.expanded .metadata-columns {
+  display: block;
+}
+
+.metadata-table.expanded .metadata-expand-icon {
+  transform: rotate(90deg);
+}
+
+.metadata-column {
+  display: flex;
+  align-items: center;
+  padding: 6px 12px;
+  margin: 2px 0;
+  border-radius: 4px;
+  transition: all 0.2s ease;
+  cursor: pointer;
+  background: white;
+}
+
+.metadata-column:hover {
+  background: #f8f9fa;
+  transform: translateX(4px);
+}
+
+.metadata-column-icon {
+  margin-right: 10px;
+  font-size: 10px;
+  width: 12px;
+  text-align: center;
+  color: #007bff;
+}
+
+.metadata-column-name {
+  flex: 1;
+  color: #495057;
+  font-family: Arial, sans-serif;
+}
+
+.metadata-column-type {
+  font-size: 10px;
+  color: #6c757d;
+  background: #f8f9fa;
+  padding: 1px 4px;
+  border-radius: 8px;
+  margin-left: 6px;
+  font-family: Arial, sans-serif;
+}
+
+.metadata-measure {
+  background: #fff3cd;
+}
+
+.metadata-measure:hover {
+  background: #ffeaa7;
+}
+
+.metadata-empty {
+  text-align: center;
+  color: #6c757d;
+  font-style: italic;
+  margin-top: 20px;
+}
+
+.metadata-no-columns {
+  text-align: center;
+  color: #6c757d;
+  font-style: italic;
+  padding: 10px;
+}
+
+/* Main content adjustment when metadata panel is visible */
+.main-content-with-metadata {
+  margin-left: 300px;
+  transition: margin-left 0.3s ease;
+}
+
+.main-content-with-metadata.metadata-collapsed {
+  margin-left: 50px;
+}
