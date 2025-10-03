@@ -1,8 +1,16 @@
 # Embed Copilot
 
-Node.js application that embeds Power BI reports with an AI-powered chat interface for data visualization and chart creation.
+Node.js application that embeds Power BI reports with an AI-powered chat interface for data visualization and chart creation. Available in both vanilla JavaScript and modern React versions.
 
 ![Chart Chat Demo](./chartchat.gif)
+
+## Application Options
+
+**Two implementations available:**
+- **Vanilla JavaScript** - Traditional web app (`/client`)
+- **React** - Modern React application with modular architecture (`/react`)
+
+Both versions provide identical functionality with clean, customized PowerBI interfaces.
 
 ## Features
 
@@ -32,6 +40,8 @@ Node.js application that embeds Power BI reports with an AI-powered chat interfa
    ```
 
 4. **Open** `http://localhost:5300`
+   - **Vanilla JS App**: `/` (served from `/client` directory)
+   - **React App**: `/react` (built app served from `/react`)
 
 ## Required Environment Variables
 
@@ -93,6 +103,11 @@ npm run dev              # Development server with nodemon
 npm start                # Production server
 npm run lint             # Run ESLint
 npm run lint:fix         # Fix ESLint errors
+
+# React Development
+npm run react:build      # Build React app
+npm run react:build:watch # Watch mode for React development
+npm run "Start Full Development" # Run both server and React watch mode
 ```
 
 ## Model Performance Testing
@@ -112,10 +127,18 @@ src/                       # Backend (Express.js)
   ├── routes/              # API route definitions
   ├── controllers/         # Request handlers
   └── services/            # Business logic (PowerBI, OpenAI, Fabric)
-client/                    # Frontend (static files)
+client/                    # Frontend - Vanilla JavaScript
   ├── css/                 # Stylesheets
   ├── js/modules/          # Client-side JavaScript modules
   └── views/               # HTML pages
+react/                     # Frontend - React Application
+  ├── src/
+  │   ├── components/      # React components (ChatPanel, MetadataPanel, etc.)
+  │   ├── hooks/           # Custom React hooks (usePowerBI, useLayout)
+  │   ├── services/        # React services (powerbiService, chartOperationsService)
+  │   └── utils/           # React utilities (logging, styling)
+  ├── public/              # Static assets
+  └── dist/                # Built React app (served by Express)
 templates/report/          # Power BI report templates (PBIR format)
 logs/                      # Runtime logs (not tracked in git)
 ```
