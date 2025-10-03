@@ -6,7 +6,7 @@
 import { useState } from 'react'
 
 export const useLayout = () => {
-  const [metadataPanelCollapsed, setMetadataPanelCollapsed] = useState(false)
+  const [metadataPanelCollapsed, setMetadataPanelCollapsed] = useState(true)
 
   const toggleMetadataPanel = () => {
     setMetadataPanelCollapsed(!metadataPanelCollapsed)
