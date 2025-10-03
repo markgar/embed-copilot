@@ -3,6 +3,7 @@ import { PowerBIEmbed } from 'powerbi-client-react'
 import { models } from 'powerbi-client'
 import { serverLog, logErrorToServer } from './utils/logging'
 import MetadataPanel from './components/MetadataPanel'
+import ChatPanel from './components/ChatPanel'
 
 function App() {
   const [embedConfig, setEmbedConfig] = useState(null)
@@ -123,7 +124,13 @@ function App() {
   }, [])
 
   const eventHandlers = new Map([
-    ['loaded', () => serverLog('React App: Report loaded')],
+    ['loaded', () => {
+      serverLog('React App: Report loaded')
+      // Enable chat when report is loaded
+      window.dispatchEvent(new CustomEvent('powerbi-chat-state', {
+        detail: { enableChat: true }
+      }))
+    }],
     ['rendered', () => serverLog('React App: Report rendered')],
     ['error', (event) => logErrorToServer('React App: PowerBI Error', event.detail)]
   ])
@@ -166,16 +173,14 @@ function App() {
 
   return (
     <>
-      {/* Metadata Panel (replacing simulated left panel) */}
+      {/* Metadata Panel */}
       <MetadataPanel 
         isCollapsed={metadataPanelCollapsed}
         onToggle={toggleMetadataPanel}
       />
       
-      {/* Simulated right panel like vanilla app */}
-      <div className="simulated-right-panel">
-        <div>Chat Panel<br/>(525px width)</div>
-      </div>
+      {/* Chat Panel - Real implementation */}
+      <ChatPanel />
       
       {/* PowerBI report container with margin-based positioning like vanilla app */}
       <div 
@@ -185,7 +190,7 @@ function App() {
           position: 'relative',
           transition: 'margin-left 0.3s ease',
           marginLeft: metadataPanelCollapsed ? '50px' : '300px',
-          marginRight: '525px',
+          marginRight: '30%',
           height: '100vh'
         }}
       >
