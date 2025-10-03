@@ -166,11 +166,18 @@ function embedReport(reportId) {
           background: models.BackgroundType.Transparent,
           commands: [
             {
-              exportData: { displayOption: models.CommandDisplayOption.Hidden },
+              // Hide drill up/down buttons
               drill: { displayOption: models.CommandDisplayOption.Hidden },
+              // Hide expand/collapse buttons  
+              expandCollapse: { displayOption: models.CommandDisplayOption.Hidden },
+              // Hide export data button
+              exportData: { displayOption: models.CommandDisplayOption.Hidden },
+              // Hide spotlight button
               spotlight: { displayOption: models.CommandDisplayOption.Hidden },
-              sort: { displayOption: models.CommandDisplayOption.Hidden },
-              seeData: { displayOption: models.CommandDisplayOption.Hidden }
+              // Hide see data button
+              seeData: { displayOption: models.CommandDisplayOption.Hidden },
+              // Hide sort button
+              sort: { displayOption: models.CommandDisplayOption.Hidden }
             }
           ],
           visualSettings: {
@@ -185,7 +192,7 @@ function embedReport(reportId) {
           panes: {
             filters: {
               expanded: false,
-              visible: true
+              visible: false  // Hide the filter pane completely
             },
             pageNavigation: {
               visible: true

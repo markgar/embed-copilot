@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react'
+import { updateChartFromAI, getCurrentChartConfig } from '../services/chartOperationsService'
 import './ChatPanel.css'
 
 const ChatPanel = () => {
@@ -174,7 +175,7 @@ const ChatPanel = () => {
         },
         body: JSON.stringify({ 
           message: message,
-          currentChart: null, // TODO: Get current chart config
+          currentChart: getCurrentChartConfig(), // Get current chart config from service
           chatHistory: chatHistoryRef.current
         })
       })
@@ -214,7 +215,8 @@ const ChatPanel = () => {
             console.log('=== PROCESSING CHART ACTION ===')
             console.log('Chart action received:', aiResponse.chartAction)
             console.log('===============================')
-            // TODO: Integrate with chart operations
+            // Integrate with chart operations service
+            updateChartFromAI(aiResponse.chartAction)
           }
           
         } catch (parseError) {
